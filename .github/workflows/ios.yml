@@ -3,9 +3,9 @@ name: iOS App
 on:
   push:
     branches: [main]
-    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml']
+    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml', '.github/scripts/**']
   pull_request:
-    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml']
+    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml', '.github/scripts/**']
   workflow_dispatch:
 
 permissions:
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   ios:
-    runs-on: macos-15-intel
+    runs-on: macos-26
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
@@ -168,10 +168,21 @@ jobs:
               pathlib.Path('artifacts/replay-smoke.json').write_text(json.dumps(summary, indent=2))
           PY
           xcrun simctl spawn "$DEVICE" launchctl list | grep jp.kb-dev.railvelo
+          mkdir -p .build/ci
+          xcrun swiftc .github/scripts/check-screenshot.swift -o .build/ci/check-screenshot
           xcrun simctl io "$DEVICE" screenshot artifacts/replay-light.png
+          .build/ci/check-screenshot artifacts/replay-light.png light
           xcrun simctl ui "$DEVICE" appearance dark
-          sleep 2
-          xcrun simctl io "$DEVICE" screenshot artifacts/replay-dark.png
+          DARK_READY=0
+          for attempt in 1 2 3 4 5 6; do
+            sleep 5
+            xcrun simctl io "$DEVICE" screenshot artifacts/replay-dark.png
+            if .build/ci/check-screenshot artifacts/replay-dark.png dark; then
+              DARK_READY=1
+              break
+            fi
+          done
+          test "$DARK_READY" = 1
       - name: Recover interrupted replay
         timeout-minutes: 3
         run: |

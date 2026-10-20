@@ -34,9 +34,23 @@ public final class CoreLocationSource: NSObject, CLLocationManagerDelegate {
         manager.pausesLocationUpdatesAutomatically = false
     }
     public var authorizationStatus: CLAuthorizationStatus { manager.authorizationStatus }
+    public var hasPreciseLocation: Bool { manager.accuracyAuthorization == .fullAccuracy }
     public func requestWhenInUseAuthorization() { manager.requestWhenInUseAuthorization() }
-    public func start() { manager.startUpdatingLocation() }
-    public func stop() { manager.stopUpdatingLocation() }
+    public func start() {
+        guard manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse else { return }
+        #if os(iOS)
+        // The host declares UIBackgroundModes/location. Only an active ride enables it.
+        manager.allowsBackgroundLocationUpdates = true
+        manager.showsBackgroundLocationIndicator = true
+        #endif
+        manager.startUpdatingLocation()
+    }
+    public func stop() {
+        manager.stopUpdatingLocation()
+        #if os(iOS)
+        manager.allowsBackgroundLocationUpdates = false
+        #endif
+    }
 
     nonisolated public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let observations = locations.map(Observation.init(location:))

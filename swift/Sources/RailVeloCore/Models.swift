@@ -145,7 +145,7 @@ public struct MatchResult: Codable, Sendable {
     public var candidates: [MatchCandidate]
     public var events: [StationEvent]
 
-    init(timestamp: Double?, status: String, reason: String, uncertaintyM: Double? = nil) {
+    public init(timestamp: Double?, status: String, reason: String, uncertaintyM: Double? = nil) {
         self.timestamp = timestamp; self.status = status; self.reason = reason
         self.direction = 0; self.confidence = 0; self.uncertaintyM = uncertaintyM
         self.candidates = []; self.events = []

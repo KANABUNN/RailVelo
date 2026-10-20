@@ -1,0 +1,138 @@
+name: iOS App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select installed Xcode 26
+        run: |
+          python3 - <<'PY'
+          import pathlib, plistlib, subprocess
+          candidates = []
+          for app in pathlib.Path('/Applications').glob('Xcode*.app'):
+              info = app / 'Contents/Info.plist'
+              if not info.exists() or 'beta' in app.name.lower():
+                  continue
+              version = plistlib.loads(info.read_bytes()).get('CFBundleShortVersionString', '')
+              if version.startswith('26.'):
+                  candidates.append((tuple(int(x) for x in version.split('.')), app))
+          if not candidates:
+              raise SystemExit('Xcode 26 is required. Update the runner image before retrying.')
+          app = max(candidates)[1]
+          subprocess.run(['sudo', 'xcode-select', '-s', str(app / 'Contents/Developer')], check=True)
+          PY
+          xcodebuild -version
+          xcodebuild -showsdks
+      - name: Select iPhone 16 simulator
+        id: simulator
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, subprocess
+          runtimes = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'devices', 'available', '--json']))['devices']
+          candidates = [d for runtime, devices in runtimes.items() if '.iOS-' in runtime for d in devices if d['name'] == 'iPhone 16' and d.get('isAvailable')]
+          if candidates:
+              identifier = candidates[-1]['udid']
+          else:
+              available = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'runtimes', '--json']))['runtimes']
+              ios = [r for r in available if '.iOS-' in r['identifier'] and r.get('isAvailable')]
+              if not ios:
+                  raise SystemExit('The runner does not include an available iOS simulator runtime.')
+              runtime = max(ios, key=lambda r: tuple(int(x) for x in r['version'].split('.')))
+              identifier = subprocess.check_output(['xcrun', 'simctl', 'create', 'RailVelo iPhone 16', 'com.apple.CoreSimulator.SimDeviceType.iPhone-16', runtime['identifier']], text=True).strip()
+          print('id=' + identifier)
+          PY
+      - name: Build Simulator application
+        run: |
+          set -o pipefail
+          mkdir -p artifacts
+          xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo \
+            -configuration Debug -destination 'id=${{ steps.simulator.outputs.id }}' \
+            -derivedDataPath .build/ios-simulator CODE_SIGNING_ALLOWED=NO build \
+            | tee artifacts/ios-simulator-build.log
+      - name: Build iPhone application without signing
+        run: |
+          set -o pipefail
+          xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -derivedDataPath .build/ios-device CODE_SIGNING_ALLOWED=NO build \
+            | tee artifacts/ios-device-build.log
+      - name: Launch replay and capture light and dark screenshots
+        run: |
+          DEVICE='${{ steps.simulator.outputs.id }}'
+          xcrun simctl boot "$DEVICE" || xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl status_bar "$DEVICE" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
+          xcrun simctl install "$DEVICE" .build/ios-simulator/Build/Products/Debug-iphonesimulator/RailVelo.app
+          xcrun simctl ui "$DEVICE" appearance light
+          xcrun simctl launch "$DEVICE" jp.kb-dev.railvelo --replay-smoke
+          export APP_DATA="$(xcrun simctl get_app_container "$DEVICE" jp.kb-dev.railvelo data)"
+          python3 - <<'PY'
+          import json, os, pathlib, sqlite3, time
+          database = pathlib.Path(os.environ['APP_DATA']) / 'Library/Application Support/RailVelo/rides.sqlite'
+          deadline = time.monotonic() + 45
+          while True:
+              try:
+                  with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
+                      ready = connection.execute('SELECT COUNT(*) FROM samples WHERE speed_kmh IS NOT NULL').fetchone()[0] >= 5
+              except sqlite3.Error:
+                  ready = False
+              if ready:
+                  break
+              if time.monotonic() >= deadline:
+                  raise SystemExit('Replay did not persist five valid speed samples within 45 seconds.')
+              time.sleep(1)
+          with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
+              mode, status = connection.execute('SELECT mode,status FROM sessions ORDER BY started_at DESC LIMIT 1').fetchone()
+              assert mode == 'replay' and status == 'recording', (mode, status)
+              rows = connection.execute('SELECT speed_kmh,match_json FROM samples').fetchall()
+              valid = sum(speed is not None for speed, _ in rows)
+              matched = sum(json.loads(match)['status'] == 'matched' for _, match in rows)
+              assert len(rows) >= 5 and valid >= 5 and matched >= 1, (len(rows), valid, matched)
+              summary = {'mode': mode, 'samples': len(rows), 'valid_speeds': valid, 'matched_positions': matched}
+              pathlib.Path('artifacts/replay-smoke.json').write_text(json.dumps(summary, indent=2))
+          PY
+          xcrun simctl spawn "$DEVICE" launchctl list | grep jp.kb-dev.railvelo
+          xcrun simctl io "$DEVICE" screenshot artifacts/replay-light.png
+          xcrun simctl ui "$DEVICE" appearance dark
+          sleep 2
+          xcrun simctl io "$DEVICE" screenshot artifacts/replay-dark.png
+          xcrun simctl terminate "$DEVICE" jp.kb-dev.railvelo
+          xcrun simctl launch "$DEVICE" jp.kb-dev.railvelo
+          python3 - <<'PY'
+          import os, pathlib, sqlite3, time
+          database = pathlib.Path(os.environ['APP_DATA']) / 'Library/Application Support/RailVelo/rides.sqlite'
+          deadline = time.monotonic() + 30
+          while True:
+              with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
+                  status, ended = connection.execute('SELECT status,ended_at FROM sessions ORDER BY started_at DESC LIMIT 1').fetchone()
+              if status == 'interrupted' and ended is not None:
+                  break
+              if time.monotonic() >= deadline:
+                  raise SystemExit(f'Replay was not recovered as interrupted: {status}')
+              time.sleep(1)
+          pathlib.Path('artifacts/recovery-smoke.txt').write_text('Terminated replay recovered as interrupted with an end timestamp.\n')
+          PY
+          xcrun simctl terminate "$DEVICE" jp.kb-dev.railvelo
+      - name: Upload build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-evidence
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 7

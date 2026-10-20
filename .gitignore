@@ -11,6 +11,9 @@ dist/
 # Signing material, account secrets, and personal ride recordings
 *.p8
 *.p12
+*.pfx
+*.key
+*.pem
 *.mobileprovision
 *.cer
 .env
@@ -18,6 +21,8 @@ dist/
 !.env.example
 secrets/
 recordings/
+*.sqlite-wal
+*.sqlite-shm
 *.xcuserstate
 xcuserdata/
 DerivedData/

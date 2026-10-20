@@ -8,6 +8,7 @@ let package = Package(
         .library(name: "RailVeloCore", targets: ["RailVeloCore"]),
         .library(name: "RailVeloSQLite", targets: ["RailVeloSQLite"]),
         .library(name: "RailVeloLocation", targets: ["RailVeloLocation"]),
+        .library(name: "RailVeloRecording", targets: ["RailVeloRecording"]),
         .executable(name: "railvelo-replay", targets: ["RailVeloReplay"])
     ],
     targets: [
@@ -16,7 +17,9 @@ let package = Package(
                        providers: [.brew(["sqlite3"]), .apt(["libsqlite3-dev"])]),
         .target(name: "RailVeloSQLite", dependencies: ["RailVeloCore", "CSQLite"]),
         .target(name: "RailVeloLocation", dependencies: ["RailVeloCore"]),
+        .target(name: "RailVeloRecording", dependencies: ["RailVeloCore", "CSQLite"]),
         .executableTarget(name: "RailVeloReplay", dependencies: ["RailVeloCore", "RailVeloSQLite"]),
-        .testTarget(name: "RailVeloCoreTests", dependencies: ["RailVeloCore", "RailVeloSQLite"])
+        .testTarget(name: "RailVeloCoreTests", dependencies: ["RailVeloCore", "RailVeloSQLite"]),
+        .testTarget(name: "RailVeloRecordingTests", dependencies: ["RailVeloCore", "RailVeloRecording", "CSQLite"])
     ]
 )

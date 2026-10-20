@@ -1,8 +1,19 @@
-# RailVelo — JR九州 鉄道走行モニター v0.3
+# RailVelo — JR九州 鉄道走行モニター v0.4
 
-門司港〜博多のN02線路データと連続GPSから、走行路線・方面・線路上位置・前後駅・次に通過する駅までの線路距離を計算するオフラインエンジンです。Python参照実装と、iPhoneへの組み込みを想定したSwift Packageを収録しています。時刻表API・有料サービス・クラウドへのGPS送信は使用しません。
+JR九州・鹿児島本線の門司港〜博多を対象に、GPS速度と線路上の推定位置・駅間情報を表示するSwiftUIアプリです。既存のオフライン推定エンジンを再利用し、Core Location、Swift Charts、走行履歴SQLite、CSV共有、合成GPSリプレイを接続しています。推定に外部APIやクラウドへのGPS送信は使用しません。
 
-実行した検証は合成GPSによるものです。実走GPS・iPhone実機・Swift/iOSビルドの検証状況は [検証記録](docs/VALIDATION.md) を確認してください。合成データの誤差を実測精度として扱わないでください。
+**Python自動試験36件は成功。Swift試験25件はソース作成済みで、Swift/iOSビルド・Simulator・iPhone実機・実走は未検証です。** 最初のmacOS CIはアカウントの支払い・利用上限に関する理由で処理開始前に失敗しました。公開準備後に再実行する段階です。最新の実行結果と未完了項目は [検証記録](docs/VALIDATION.md) を確認してください。合成GPSの評価値を実測精度として扱わないでください。
+
+## アプリに接続した機能
+
+- 大きな現在速度、セッション最高速度、水平/速度精度、GPS・走行状態。無効値、古い測位、不自然な速度変化や座標跳躍を検査し、採用しない理由を保存します。
+- 60秒・5分・全体の速度グラフ。取得時刻を横軸に使い、欠測・速度無効・一時停止の間は線を切ります。
+- 路線、方面、前後駅、次に通る駅までの線路距離、駅間進捗、推定の候補支持度。
+- 記録開始・一時停止・再開・終了。履歴の再読込、確認付き削除、UTC/WGS84/単位/有効性を明示したCSV共有。
+- 実GPSと、同梱の門司港〜博多の合成走行を25倍速で再生するモード。履歴にもモードを残します。
+- 日本語、ダークモード、iPhone縦画面、基本的なVoiceOverラベル。実機の表示・操作性は受入試験が必要です。
+
+実GPSの記録中だけ背景位置情報を有効にする構成です。OS終了後の無欠測継続は保証せず、再起動時には未終了の記録を中断として保存します。履歴は端末内に保存し、バックアップ除外と端末ファイル保護を設定しています。CSV共有は利用者が選ぶ共有先へ渡します。背景動作・ロック中の保護・電池消費は実機で確認してください。
 
 ## まず実行する
 
@@ -40,12 +51,17 @@ result = matcher.update({
 | 場所 | 内容 |
 | --- | --- |
 | `python/railvelo/` | HMM推定、幾何・グラフ、駅イベント、読み取り専用SQLiteローダー |
-| `swift/` | Core / SQLite / Core Locationの独立モジュール、リプレイCLI、Swiftテスト |
+| `ios/RailVelo.xcodeproj` | 共有scheme `RailVelo` を持つiPhoneアプリのXcodeプロジェクト |
+| `ios/RailVelo/` | SwiftUI画面、Charts、ViewModel、背景位置情報・プライバシー設定 |
+| `swift/` | Core / SQLite / Location / Recordingの独立モジュール、リプレイCLI、Swiftテスト |
 | `data/railway.sqlite` / `data/network.json` | 検証済みの計算用ネットワーク |
 | `scripts/` | データ変換、合成GPS生成、評価、Python/Swift結果比較、リプレイ |
 | `fixtures/` / `tests/` | 観測値と正解を分離した共通データ、自動テスト |
-| `docs/TECHNICAL_DESIGN_v0.3.md` | 推定方式・入力出力・既定値・拡張方針 |
-| `docs/SWIFTUI_HANDOFF.md` | 次工程の画面への接続仕様と残課題 |
+| `docs/TECHNICAL_DESIGN_v0.4.md` | アプリ・入力分離・速度採否・履歴・背景・拡張の設計 |
+| `docs/TECHNICAL_DESIGN_v0.3.md` | 継承した推定方式・入力出力・既定値 |
+| `docs/APPLE_SETUP.md` | Windows中心のビルド、署名、Apple設定、本人用TestFlight導入 |
+| `docs/DEVICE_TEST_PLAN.md` | 許可・欠測・背景・OS終了・電池・実走の試験手順 |
+| `.github/workflows/` | Swift/Python比較とiOSアプリのビルド・Simulator検証の定義 |
 | `docs/evaluation.json` / `docs/evaluation.md` | 実行済み評価の定量結果 |
 | `docs/data-quality.md` / `docs/data-quality.json` | 前工程と今回のSQLite検証 |
 | `docs/WORK_LOG.md` | 実施内容と未検証範囲 |
@@ -53,7 +69,21 @@ result = matcher.update({
 
 ## Swift / iPhone
 
-Xcodeの「Add Package Dependencies」でローカルの `swift/` を追加し、`RailVeloCore`、`RailVeloSQLite`、`RailVeloLocation` を利用します。iOS 16 / macOS 13以上、Package manifestはSwift tools 5.9です。SQLiteはOS標準ライブラリを使います。Swiftの具体例とビルド手順は [Swift README](swift/README.md) を参照してください。
+アプリはiOS 16以上、Swift PackageはiOS 16 / macOS 13以上を対象とし、Package manifestはSwift tools 5.9です。iPhone 16では端末の対応する搭載OSを使います。アプリの外部Swiftライブラリ依存はなく、SQLiteはOS付属のライブラリです。元データからの再生成時にだけ別途GIS依存が必要です。
+
+Macを使用できる場合は `ios/RailVelo.xcodeproj` をXcodeで開き、scheme `RailVelo` とiPhone Simulatorを選んで起動します。プロジェクトはローカル `swift/` を参照し、線路DBとリプレイfixtureを同梱します。アプリの実機署名には本人のTeamと配布設定が必要です。最低対応OSとアップロード用SDKの要件、署名資料・APIキーの扱いは [Apple手順](docs/APPLE_SETUP.md) を参照してください。
+
+macOSでの署名なしビルド例：
+
+```sh
+swift test --package-path swift
+xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generic/platform=iOS Simulator' -derivedDataPath artifacts/DerivedData CODE_SIGNING_ALLOWED=NO build
+xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generic/platform=iOS' -derivedDataPath artifacts/DeviceBuild CODE_SIGNING_ALLOWED=NO build
+```
+
+署名なし端末向けビルドだけではiPhoneへのインストールはできません。個人導入は内部TestFlightを第一候補とし、App ID、App Store Connectアプリ、署名、アップロード、処理完了、本人グループへの割当、端末導入を順に確認します。Apple Developer Programの会員資格と契約同意の状態は画面確認済みです。本アプリの登録・配布の進捗は [検証記録](docs/VALIDATION.md) を確認してください。秘密鍵や証明書のパスワードはリポジトリへ保存しません。
+
+導入後は「リプレイ」で開始すると同梱合成GPSを再生します。「実GPS」は前面で開始し、位置情報を許可します。停止・再開・終了は画面下の操作、保存済み走行は履歴からグラフ参照・CSV共有・削除を行います。
 
 macOSにて共通データを処理・比較する例：
 
@@ -64,7 +94,9 @@ swift run --package-path swift railvelo-replay --network fixtures/synthetic_netw
 python3 scripts/compare_replays.py python-normal.jsonl swift-normal.jsonl
 ```
 
-全シナリオ比較とiOS Simulatorビルドは `.github/workflows/swift.yml` に定義しています。ワークフローを置いたことはCI成功を意味しません。本作業フォルダーにはGitリモートがなく、GitHubへの公開・CI実行は行っていません。
+全17シナリオ比較とライブラリのSimulatorビルドは `.github/workflows/swift.yml` に定義しています。`.github/workflows/ios.yml` はXcode 26の選択、Swift試験、Simulator/端末向け署名なしビルド、リプレイ起動・DB検査・ライト/ダーク画像・中断復旧の確認を定義します。実行結果が成功するまで、これらを検証済みと扱いません。
+
+標準GitHub-hosted runnerはpublicリポジトリで無料、privateリポジトリでは含有枠超過時に有料です。公開前監査と履歴整理を進めており、公開設定は利用者が行います。課金の条件と代替手段は [Apple手順の費用説明](docs/APPLE_SETUP.md#2-osxcode費用) を参照してください。
 
 ## データの範囲と制約
 
@@ -73,6 +105,8 @@ python3 scripts/compare_replays.py python-normal.jsonl swift-normal.jsonl
 対象外路線・別経路では、駅順や距離の裏付けが足りない場合に方面・前後駅・残距離を確定しません。幾何的な交差から接続を補作していないため、他路線への実際の転線・直通追跡は追加データと検証が必要です。全国へ拡張できるデータ形式ですが、全国データ完成とは扱いません。
 
 `next_station_id` は次に通過する地理上の駅です。次の**停車駅**・列車種別・列車ID・到着予定時刻は提供しません。`predicted` は欠測時の短時間予測、`uncertain` / `lost` / `rejected` は位置や路線を確定できない状態です。信頼度は候補内の相対支持度で、実世界の正解確率に較正した値ではありません。
+
+受入が残る項目は、Swift/iOSの実コンパイル、Python/Swift一致、Simulator操作、署名配布、iPhoneの実GPS、ロック/別アプリ中の継続、OS終了復旧、長時間性能と電池、実際の駅イベント・並走・トンネル復帰です。v0.1/v0.2設計書の本文は再取得できておらず、前工程の元SQLと設計対応記録を継承しています。全国対応、他路線への直通、営業上の停車駅判定には追加データと実証が必要です。
 
 ## 出典と再現
 

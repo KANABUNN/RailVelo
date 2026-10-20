@@ -37,7 +37,11 @@ public final class CoreLocationSource: NSObject, CLLocationManagerDelegate {
     public var hasPreciseLocation: Bool { manager.accuracyAuthorization == .fullAccuracy }
     public func requestWhenInUseAuthorization() { manager.requestWhenInUseAuthorization() }
     public func start() {
+        #if os(macOS)
+        guard manager.authorizationStatus == .authorizedAlways else { return }
+        #else
         guard manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse else { return }
+        #endif
         #if os(iOS)
         // The host declares UIBackgroundModes/location. Only an active ride enables it.
         manager.allowsBackgroundLocationUpdates = true

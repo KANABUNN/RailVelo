@@ -13,8 +13,9 @@ let package = Package(
     ],
     targets: [
         .target(name: "RailVeloCore"),
-        .systemLibrary(name: "CSQLite", pkgConfig: "sqlite3",
-                       providers: [.brew(["sqlite3"]), .apt(["libsqlite3-dev"])]),
+        // SDK SQLite must be used when cross-compiling iOS. Host pkg-config
+        // flags can accidentally select Homebrew's macOS-only dylib.
+        .systemLibrary(name: "CSQLite", providers: [.apt(["libsqlite3-dev"])]),
         .target(name: "RailVeloSQLite", dependencies: ["RailVeloCore", "CSQLite"]),
         .target(name: "RailVeloLocation", dependencies: ["RailVeloCore"]),
         .target(name: "RailVeloRecording", dependencies: ["RailVeloCore", "CSQLite"]),

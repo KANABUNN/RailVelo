@@ -271,7 +271,9 @@ private final class RideWorker {
         }, completion: { [weak self] result in
             guard let self else { return }; self.transitioning = false
             switch result {
-            case .success: self.state = "recording"; self.connectSource(token: self.generation); self.refreshHistory()
+            case .success:
+                self.segment += 1; self.previousPoint = nil
+                self.state = "recording"; self.connectSource(token: self.generation); self.refreshHistory()
             case .failure(let error): self.storageFailure(error)
             }
         })

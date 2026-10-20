@@ -202,10 +202,10 @@ private final class RideWorker {
                 self.maximumSpeedKmh = maximum
                 if self.state == "recording" {
                     self.speedKmh = sample.speedKmh
-                    self.horizontalAccuracyM = observation.horizontalAccuracyM >= 0 ? observation.horizontalAccuracyM : nil
-                    self.speedAccuracyMps = observation.speedAccuracyMps
+                    self.horizontalAccuracyM = observation.horizontalAccuracyM.isFinite && observation.horizontalAccuracyM >= 0 ? observation.horizontalAccuracyM : nil
+                    self.speedAccuracyMps = observation.speedAccuracyMps.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }
                     let prefix = self.sourceMode == .replay ? "リプレイ・" : ""
-                    if sample.speedKmh == nil { self.signalText = prefix + "速度取得なし（\(sample.exclusionReason ?? sample.result.reason)）" }
+                    if sample.speedKmh == nil { self.signalText = prefix + self.speedIssueText(sample.exclusionReason ?? sample.result.reason) }
                     else { self.signalText = prefix + (sample.speedKmh! < 2 ? "停車" : "走行") }
                     if self.sourceMode == .live && !self.live.hasPreciseLocation { self.signalText += "・概算位置" }
                     if sample.result.status == "matched" || sample.result.status == "predicted" {
@@ -244,6 +244,21 @@ private final class RideWorker {
     private func clearMatch() {
         routeName = "判定中"; directionText = "判定中"; previousStation = "—"; nextStation = "—"
         distanceToNextM = nil; progress = nil; confidence = 0
+    }
+
+    private func speedIssueText(_ reason: String) -> String {
+        if reason.hasPrefix("coordinate_jump") || reason.hasPrefix("unreachable_transition") { return "位置の急変を除外" }
+        switch reason {
+        case "missing_fix": return "測位不能・速度取得なし"
+        case "poor_accuracy": return "GPS位置精度が不足"
+        case "poor_speed_accuracy": return "GPS速度精度が不足"
+        case "invalid_speed": return "有効な速度を待機中"
+        case "invalid_coordinates": return "有効な位置を待機中"
+        case "implausible_acceleration", "speed_position_disagreement": return "速度の異常値を除外"
+        case "stale_fix": return "古いGPS観測を除外"
+        case "future_fix", "invalid_timestamp", "invalid_receipt_timestamp", "non_monotonic_timestamp": return "観測時刻の異常を除外"
+        default: return "速度取得なし"
+        }
     }
 
     func pause() {

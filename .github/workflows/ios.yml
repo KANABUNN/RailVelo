@@ -43,20 +43,25 @@ jobs:
       - name: Select iPhone 16 simulator
         id: simulator
         run: |
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json, subprocess
-          runtimes = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'devices', 'available', '--json']))['devices']
-          candidates = [d for runtime, devices in runtimes.items() if '.iOS-' in runtime for d in devices if d['name'] == 'iPhone 16' and d.get('isAvailable')]
+          python3 - <<'PY'
+          import json, os, pathlib, platform, subprocess
+          devices = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'devices', 'available', '--json'], timeout=60))['devices']
+          available = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'runtimes', '--json'], timeout=60))['runtimes']
+          ios = [r for r in available if '.iOS-' in r['identifier'] and r.get('isAvailable')]
+          if not ios:
+              raise SystemExit('The runner does not include an available iOS simulator runtime.')
+          runtime = max(ios, key=lambda r: tuple(int(x) for x in r['version'].split('.')))
+          candidates = [d for d in devices.get(runtime['identifier'], []) if d['name'] == 'iPhone 16' and d.get('isAvailable')]
           if candidates:
-              identifier = candidates[-1]['udid']
+              identifier = sorted(candidates, key=lambda d: d['udid'])[0]['udid']
           else:
-              available = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'runtimes', '--json']))['runtimes']
-              ios = [r for r in available if '.iOS-' in r['identifier'] and r.get('isAvailable')]
-              if not ios:
-                  raise SystemExit('The runner does not include an available iOS simulator runtime.')
-              runtime = max(ios, key=lambda r: tuple(int(x) for x in r['version'].split('.')))
-              identifier = subprocess.check_output(['xcrun', 'simctl', 'create', 'RailVelo iPhone 16', 'com.apple.CoreSimulator.SimDeviceType.iPhone-16', runtime['identifier']], text=True).strip()
-          print('id=' + identifier)
+              identifier = subprocess.check_output(['xcrun', 'simctl', 'create', 'RailVelo iPhone 16', 'com.apple.CoreSimulator.SimDeviceType.iPhone-16', runtime['identifier']], text=True, timeout=60).strip()
+          selection = {'device': 'iPhone 16', 'id': identifier, 'runtime': runtime, 'host_architecture': platform.machine()}
+          print(json.dumps(selection, indent=2), flush=True)
+          pathlib.Path('artifacts').mkdir(exist_ok=True)
+          pathlib.Path('artifacts/simulator-selection.json').write_text(json.dumps(selection, indent=2))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('id=' + identifier + '\n')
           PY
       - name: Build Simulator application
         run: |
@@ -73,13 +78,56 @@ jobs:
             -configuration Release -destination 'generic/platform=iOS' \
             -derivedDataPath .build/ios-device CODE_SIGNING_ALLOWED=NO build \
             | tee artifacts/ios-device-build.log
-      - name: Launch replay and capture light and dark screenshots
+      - name: Boot Simulator
+        timeout-minutes: 8
+        env:
+          SIMULATOR_ID: ${{ steps.simulator.outputs.id }}
         run: |
+          python3 - <<'PY'
+          import datetime, json, os, pathlib, platform, subprocess, time
+          device = os.environ['SIMULATOR_ID']
+          def run(args, timeout, check=True):
+              started = time.monotonic()
+              print(datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'), 'START', ' '.join(args), flush=True)
+              try:
+                  result = subprocess.run(args, check=check, timeout=timeout)
+                  print('Exit code:', result.returncode, flush=True)
+                  return result
+              finally:
+                  print(datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds'), 'END', ' '.join(args), f'({time.monotonic() - started:.1f}s)', flush=True)
+          try:
+              result = run(['xcrun', 'simctl', 'boot', device], timeout=90, check=False)
+              if result.returncode:
+                  inventory = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'devices', '--json'], timeout=8))
+                  booted = any(d['udid'] == device and d['state'] == 'Booted' for devices in inventory['devices'].values() for d in devices)
+                  if not booted:
+                      raise subprocess.CalledProcessError(result.returncode, result.args)
+              run(['xcrun', 'simctl', 'bootstatus', device, '-b'], timeout=360)
+          except (subprocess.SubprocessError, OSError):
+              folder = pathlib.Path('artifacts')
+              folder.mkdir(exist_ok=True)
+              host = {'time_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'platform': platform.platform(), 'architecture': platform.machine(), 'mac_version': platform.mac_ver()[0]}
+              (folder / 'simulator-host.json').write_text(json.dumps(host, indent=2))
+              for name, args in [('devices', ['xcrun', 'simctl', 'list', 'devices', '--json']), ('runtimes', ['xcrun', 'simctl', 'list', 'runtimes', '--json']), ('runtime-images', ['xcrun', 'simctl', 'runtime', 'list', '-j'])]:
+                  with (folder / f'simulator-{name}.txt').open('w') as output:
+                      try:
+                          subprocess.run(args, stdout=output, stderr=subprocess.STDOUT, timeout=8, check=False)
+                      except (subprocess.SubprocessError, OSError) as error:
+                          output.write(str(error) + '\n')
+              raise
+          PY
+      - name: Install Simulator application
+        timeout-minutes: 3
+        run: |
+          set -x
           DEVICE='${{ steps.simulator.outputs.id }}'
-          xcrun simctl boot "$DEVICE" || xcrun simctl bootstatus "$DEVICE" -b
-          xcrun simctl bootstatus "$DEVICE" -b
           xcrun simctl status_bar "$DEVICE" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
           xcrun simctl install "$DEVICE" .build/ios-simulator/Build/Products/Debug-iphonesimulator/RailVelo.app
+      - name: Launch replay and capture light and dark screenshots
+        timeout-minutes: 4
+        run: |
+          set -x
+          DEVICE='${{ steps.simulator.outputs.id }}'
           xcrun simctl ui "$DEVICE" appearance light
           xcrun simctl launch "$DEVICE" jp.kb-dev.railvelo --replay-smoke
           export APP_DATA="$(xcrun simctl get_app_container "$DEVICE" jp.kb-dev.railvelo data)"
@@ -113,6 +161,12 @@ jobs:
           xcrun simctl ui "$DEVICE" appearance dark
           sleep 2
           xcrun simctl io "$DEVICE" screenshot artifacts/replay-dark.png
+      - name: Recover interrupted replay
+        timeout-minutes: 3
+        run: |
+          set -x
+          DEVICE='${{ steps.simulator.outputs.id }}'
+          export APP_DATA="$(xcrun simctl get_app_container "$DEVICE" jp.kb-dev.railvelo data)"
           xcrun simctl terminate "$DEVICE" jp.kb-dev.railvelo
           xcrun simctl launch "$DEVICE" jp.kb-dev.railvelo
           python3 - <<'PY'

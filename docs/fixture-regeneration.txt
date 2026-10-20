@@ -1,0 +1,5 @@
+{
+  "kind": "synthetic_only",
+  "scenarios": 17,
+  "observations": 1213
+}

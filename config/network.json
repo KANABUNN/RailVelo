@@ -1,0 +1,13 @@
+{
+  "upstream_root": "vendor/n02",
+  "upstream_database": "output/rail_jrkyushu.sqlite",
+  "expected_database_sha256": "8f71f9d080065194b3b3a0e03b9d900e09949760d4faee18335dd4bad61982c3",
+  "expected_archive_sha256": "aaf76af133b2e771e538fabc4646d2e443dc1d5a67b221382a28d744e706cc9f",
+  "expected_upstream_manifest_sha256": "1a288c3ed59f1a7530d9e837178c8ad7fef4c5e75f4b5e3af0404ab9aa6ac273",
+  "route_id": "jrkyushu.kagoshima.mojiko-hakata",
+  "forward_label": "博多方面",
+  "reverse_label": "門司港方面",
+  "station_radius_margin_m": 20,
+  "station_radius_min_m": 30,
+  "station_radius_max_m": 250
+}

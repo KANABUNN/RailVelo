@@ -1,0 +1,148 @@
+{
+  "package": "railmonitor_n02",
+  "config": {
+    "id": "jrkyushu.kagoshima.mojiko-hakata",
+    "public_name": "鹿児島本線",
+    "operator_id": "jrkyushu",
+    "source_operator": "九州旅客鉄道",
+    "source_line": "鹿児島線",
+    "source_railway_type": "11",
+    "source_provider_type": "2",
+    "station_order_source": "https://www.jrkyushu-timetable.jp/sp/railway_list.html",
+    "direction_source": "https://www.jrkyushu-timetable.jp/cgi-bin/sp/sp-tt_list.cgi/28345",
+    "forward_direction": "down",
+    "forward_description": "門司港→小倉→博多",
+    "operating_km_reference": {
+      "source_url": "https://www.jrkyushu.co.jp/company/info/data/pdf/2024senku.pdf",
+      "source_reference": "2024年度末 線区別ご利用状況、PDF 1ページ目の在来線（幹線）",
+      "segments": [
+        {
+          "from": "門司港",
+          "to": "小倉",
+          "operating_km": 11.0
+        },
+        {
+          "from": "小倉",
+          "to": "博多",
+          "operating_km": 67.2
+        }
+      ]
+    },
+    "stations": [
+      "門司港",
+      "小森江",
+      "門司",
+      "小倉",
+      "西小倉",
+      "九州工大前",
+      "戸畑",
+      "枝光",
+      "スペースワールド",
+      "八幡",
+      "黒崎",
+      "陣原",
+      "折尾",
+      "水巻",
+      "遠賀川",
+      "海老津",
+      "教育大前",
+      "赤間",
+      "東郷",
+      "東福間",
+      "福間",
+      "千鳥",
+      "古賀",
+      "ししぶ",
+      "新宮中央",
+      "福工大前",
+      "九産大前",
+      "香椎",
+      "千早",
+      "箱崎",
+      "吉塚",
+      "博多"
+    ],
+    "policy": {
+      "path": "shortest_geodesic_reference_only_not_confirmed_running_track",
+      "connectivity": "identical_original_vertices_only_no_snap_no_crossing_noding",
+      "alternate_paths": "retain_all_off_reference_components_attached_to_two_or_more_reference_vertices",
+      "station_representative": "source_midpoint_on_reference_preferred_all_variants_preserved",
+      "platform_fields": "N02_station_line_extent_only_not_a_surveyed_platform",
+      "origin": "Mojiko_source_station_line_midpoint",
+      "terminal_extent": "include_full_primary_terminal_station_lines",
+      "nearby_audit_radius_m": 150,
+      "source_reference_date": "2025-12-31"
+    }
+  },
+  "source_archive": "N02-25_GML.zip",
+  "source_archive_sha256": "aaf76af133b2e771e538fabc4646d2e443dc1d5a67b221382a28d744e706cc9f",
+  "schema_sha256": "0b902c29858a854c8502682aacf877e4440b2a4e62a11684ff9f46b46d470783",
+  "input_configuration_sha256": {
+    "schemas/n02_extensions.sql": "6232e9b5f90e94a02e5a44e7ce7a6fc434c430deacfc3161126106cbd156a891",
+    "config/corridor.json": "923c7de9fe766cbc95d014fe55a8751cb7ee3b2c8e10e49f0d4b2d41b093a10f",
+    "config/station_registry.json": "1cec8fe9b5abf25e79c5116eb851add31f88fe56dcad74db01a701cab1ff0888",
+    "requirements.lock.txt": "d133355a6465bb6799a62e43ee5bf3c35f0a6bc9a81b490edf3acf29c723fd82"
+  },
+  "built_utc": "2026-10-20T12:01:39.813536+00:00",
+  "build_time_policy": "Pinned to archive retrieval timestamp for reproducible bytes",
+  "coordinate_transform": {
+    "description": "axis order change (2D) + JGD2011 to WGS 84 (1) + axis order change (2D)",
+    "accuracy_m": 1.0,
+    "definition": "proj=noop ellps=GRS80"
+  },
+  "source_crs": "EPSG:6668",
+  "db_crs": "EPSG:4326",
+  "metric_projection": "EPSG:6670",
+  "distance_model": "GRS80 ellipsoid, sum of source line segments; not operating kilometres",
+  "reference_center_length_m": 77552.43291229702,
+  "full_reference_length_m": 77787.40077250611,
+  "official_operating_km_comparison": [
+    {
+      "from": "門司港",
+      "to": "小倉",
+      "operating_km": 11.0,
+      "n02_reference_m": 10871.706546245498,
+      "difference_m": -128.29345375450248,
+      "difference_percent": -1.166304125040929
+    },
+    {
+      "from": "小倉",
+      "to": "博多",
+      "operating_km": 67.2,
+      "n02_reference_m": 66680.72636605153,
+      "difference_m": -519.2736339484691,
+      "difference_percent": -0.7727286219471274
+    },
+    {
+      "from_station": "門司港",
+      "to_station": "博多",
+      "operating_km": 78.2,
+      "n02_reference_m": 77552.43291229702,
+      "difference_m": -647.567087702977,
+      "difference_percent": -0.828090904991019
+    }
+  ],
+  "reference_begin_chainage_m": -123.4364674255293,
+  "reference_end_chainage_m": 77663.96430508058,
+  "registry_policy": "Frozen application IDs generated once; never replace them with N02 codes on update",
+  "runtime": {
+    "python": "3.12.14",
+    "sqlite": "3.53.1",
+    "shapely": "2.1.2",
+    "geos": "3.13.1",
+    "pyproj": "3.7.2",
+    "proj": "9.5.1"
+  },
+  "code_sha256": {
+    "build_rail_db.py": "ace475b10aaeeb20782a037e2d2a8f31dedfafeb5b7ffe63dfdab61b528d1b1f",
+    "create_bundle.py": "d6bdba585c50c6358a4b18dae0b23069507c74ae4e513da0f19b51e28c609542",
+    "fetch.py": "a1ddffeac4167a2ac7c4126a4038a125603f9edfbd82bec71c47d3769e1ab911",
+    "inspect_source.py": "066bad5ed890df7762fab1261e45583e66989544c5690343c1c039d1ca6b8be6",
+    "make_review.py": "7d4c9fdc074b2b70a1b69374362f846828a94e9240718add8cc706f22c1841ca",
+    "probe_path.py": "e12939f7d7b07539b849fc128657712518d33ee08cd91b699af92cf3b32db8d9",
+    "test_topology.py": "9b915889bf6582d0a1d11c3793559a2b27e0acb7f74ff1e98af144e7645f4f81",
+    "topology.py": "980fe80e6a616b35845399eced68dad6b9e9e0302f0326413da31970d5201336",
+    "validate_rail_db.py": "c3081455074a32288e3d5eeb559b05c6fd52b177714c3e915be1c9677c6714c3",
+    "verify_reference_sources.py": "70d5b9989e9e2125956428e61f96c4f128be76c7d76d442365fdf6e0861fbee4"
+  }
+}

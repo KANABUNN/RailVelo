@@ -1,0 +1,84 @@
+{
+  "passed": true,
+  "method": "Independent offline rebuild, same frozen inputs/configuration/code/runtime, compare bytes",
+  "files": [
+    {
+      "file": "rail_jrkyushu.sqlite",
+      "byte_identical": true,
+      "sha256": "8f71f9d080065194b3b3a0e03b9d900e09949760d4faee18335dd4bad61982c3",
+      "bytes": 540672
+    },
+    {
+      "file": "metadata.json",
+      "byte_identical": true,
+      "sha256": "80a93ea57ffc2dc5f5c56f6ef384d604f834b91933927451cc336c11c8b2c3fb",
+      "bytes": 5800
+    },
+    {
+      "file": "quality_issues.json",
+      "byte_identical": true,
+      "sha256": "46b3a635e180789a538b6ee881ec2a41f00f309e2dde3b53d05011632a7fe98f",
+      "bytes": 9823
+    },
+    {
+      "file": "station_sources.json",
+      "byte_identical": true,
+      "sha256": "61ad96faadd4a7d08e053624c7dad52be0e632170769c8a23e369a26f6cf74f5",
+      "bytes": 11699
+    },
+    {
+      "file": "station_registry.json",
+      "byte_identical": true,
+      "sha256": "1cec8fe9b5abf25e79c5116eb851add31f88fe56dcad74db01a701cab1ff0888",
+      "bytes": 2989
+    },
+    {
+      "file": "corridor.geojson",
+      "byte_identical": true,
+      "sha256": "ca5dcab9e5893453558dc15d78be3e6ee0f36a4c45b53802e056ce904345a673",
+      "bytes": 113575
+    },
+    {
+      "file": "station_lines.geojson",
+      "byte_identical": true,
+      "sha256": "a7d77fe340e34d4475cc1608f763ceb7af0c6219d762535c17f9b825e7b2e0d1",
+      "bytes": 32796
+    },
+    {
+      "file": "nearby_excluded.geojson",
+      "byte_identical": true,
+      "sha256": "74b40be8229f725b5cb0bb39befb371b8379256827198eb5f4b3df1eaeeacd1e",
+      "bytes": 112303
+    },
+    {
+      "file": "stations.csv",
+      "byte_identical": true,
+      "sha256": "5e0abef4e5b0821bff654d7044f8a485f93c55bc2733f524b228a3a3818a8f52",
+      "bytes": 4027
+    },
+    {
+      "file": "station_distances.csv",
+      "byte_identical": true,
+      "sha256": "7ab336c29fdf5b592a95d74f3f41a4ef062a55f1c43d8189ae5f85692ae06d2c",
+      "bytes": 3126
+    },
+    {
+      "file": "selection_audit.csv",
+      "byte_identical": true,
+      "sha256": "af79f4fccf908d4409c53152f4a7b39e5c81aed02d376e30400f006d60e10308",
+      "bytes": 2823025
+    },
+    {
+      "file": "selection_counts.json",
+      "byte_identical": true,
+      "sha256": "bbf3fc035b0832fc3165314347ae52dd9b9784c8637afc2c8938881ad4774723",
+      "bytes": 901
+    },
+    {
+      "file": "build.jsonl",
+      "byte_identical": true,
+      "sha256": "58714a7a5363146ee9058bffae041a52e4a2e5f192d38af6fcc969e54b331e44",
+      "bytes": 4318
+    }
+  ]
+}

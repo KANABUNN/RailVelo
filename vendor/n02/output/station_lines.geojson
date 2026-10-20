@@ -1,0 +1,1265 @@
+{
+  "type": "FeatureCollection",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:EPSG::6668"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "枝光",
+        "N02_005c": "008690",
+        "N02_005g": "008690",
+        "source_id": "Station:01459",
+        "station_id": "1011ae15-7b31-5d2d-a277-4a7bcec3b84f",
+        "public_name": "枝光",
+        "sequence": 7,
+        "chainage_m": 19361.969064582667,
+        "offset_m": 0.0,
+        "extent_begin_m": 19321.520170248477,
+        "extent_end_m": 19402.417965469893,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.81296,
+            33.87954
+          ],
+          [
+            130.81276,
+            33.87883
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "八幡",
+        "N02_005c": "008700",
+        "N02_005g": "008700",
+        "source_id": "Station:01460",
+        "station_id": "b35cc031-61bc-50cc-8637-b4f63a98f153",
+        "public_name": "八幡",
+        "sequence": 9,
+        "chainage_m": 21523.514707988514,
+        "offset_m": 0.0,
+        "extent_begin_m": 21408.024626832565,
+        "extent_end_m": 21639.004744726095,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.79655,
+            33.86918
+          ],
+          [
+            130.79483,
+            33.8693
+          ],
+          [
+            130.79406,
+            33.86932
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "折尾",
+        "N02_005c": "008707",
+        "N02_005g": "008707",
+        "source_id": "Station:01461",
+        "station_id": "f72e25db-0567-5775-af9e-8f7e821630ff",
+        "public_name": "折尾",
+        "sequence": 12,
+        "chainage_m": 29229.32243864942,
+        "offset_m": 39.87342081441309,
+        "extent_begin_m": 29199.623476554658,
+        "extent_end_m": 29257.960437835627,
+        "on_candidate_graph": false
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.71499,
+            33.8639
+          ],
+          [
+            130.71475,
+            33.8639
+          ],
+          [
+            130.71458,
+            33.86386
+          ],
+          [
+            130.71436,
+            33.86379
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "門司港",
+        "N02_005c": "008637",
+        "N02_005g": "008637",
+        "source_id": "Station:01462",
+        "station_id": "a0cecdb9-5b97-5bb6-acaa-e2ec96f2bd8b",
+        "public_name": "門司港",
+        "sequence": 0,
+        "chainage_m": 1.1795009413617663e-12,
+        "offset_m": 0.0,
+        "extent_begin_m": -123.4364674255293,
+        "extent_end_m": 123.43693871189488,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.96133,
+            33.94493
+          ],
+          [
+            130.95968,
+            33.94318
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "九州工大前",
+        "N02_005c": "008664",
+        "N02_005g": "008664",
+        "source_id": "Station:01463",
+        "station_id": "4e62a46c-ba2e-5c5d-83ec-6c93d63fd0fe",
+        "public_name": "九州工大前",
+        "sequence": 5,
+        "chainage_m": 15207.378165426686,
+        "offset_m": 0.0,
+        "extent_begin_m": 15079.100139112368,
+        "extent_end_m": 15335.655928805876,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.84153,
+            33.90028
+          ],
+          [
+            130.83879,
+            33.90064
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "折尾",
+        "N02_005c": "008707",
+        "N02_005g": "008707",
+        "source_id": "Station:01464",
+        "station_id": "f72e25db-0567-5775-af9e-8f7e821630ff",
+        "public_name": "折尾",
+        "sequence": 12,
+        "chainage_m": 29546.062498775296,
+        "offset_m": 0.0,
+        "extent_begin_m": 29431.617316917444,
+        "extent_end_m": 29660.507708207857,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.71251,
+            33.86424
+          ],
+          [
+            130.7124,
+            33.86422
+          ],
+          [
+            130.71218,
+            33.86417
+          ],
+          [
+            130.71147,
+            33.86393
+          ],
+          [
+            130.71083,
+            33.8636
+          ],
+          [
+            130.71037,
+            33.86326
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "小倉",
+        "N02_005c": "008683",
+        "N02_005g": "008684",
+        "source_id": "Station:01465",
+        "station_id": "92d697b2-5fc1-527b-8927-49eb1dac4c3e",
+        "public_name": "小倉",
+        "sequence": 3,
+        "chainage_m": 10871.7065462455,
+        "offset_m": 0.0,
+        "extent_begin_m": 10706.60575795031,
+        "extent_end_m": 11036.807263293656,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.88497,
+            33.88641
+          ],
+          [
+            130.8832,
+            33.88703
+          ],
+          [
+            130.88159,
+            33.88733
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "黒崎",
+        "N02_005c": "008702",
+        "N02_005g": "008702",
+        "source_id": "Station:01466",
+        "station_id": "52727ede-f5a1-5c44-b86a-06c401b28d77",
+        "public_name": "黒崎",
+        "sequence": 10,
+        "chainage_m": 24211.555641770403,
+        "offset_m": 0.0,
+        "extent_begin_m": 24069.595321463585,
+        "extent_end_m": 24353.516118438685,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.76809,
+            33.86701
+          ],
+          [
+            130.76503,
+            33.86682
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "門司",
+        "N02_005c": "008661",
+        "N02_005g": "008660",
+        "source_id": "Station:01467",
+        "station_id": "aed40e40-8da5-5717-8138-afa1c0bf478a",
+        "public_name": "門司",
+        "sequence": 2,
+        "chainage_m": 5391.194632335713,
+        "offset_m": 0.0,
+        "extent_begin_m": 5225.292630649304,
+        "extent_end_m": 5557.096746210563,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.9337,
+            33.90544
+          ],
+          [
+            130.93287,
+            33.90439
+          ],
+          [
+            130.93173,
+            33.90294
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "水巻",
+        "N02_005c": "008723",
+        "N02_005g": "008723",
+        "source_id": "Station:01468",
+        "station_id": "35b9e03f-f23d-5b24-bcc9-64f35974a65d",
+        "public_name": "水巻",
+        "sequence": 13,
+        "chainage_m": 31471.45333256601,
+        "offset_m": 0.0,
+        "extent_begin_m": 31345.831715920423,
+        "extent_end_m": 31597.075427251446,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.69757,
+            33.85295
+          ],
+          [
+            130.695,
+            33.85222
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "陣原",
+        "N02_005c": "008701",
+        "N02_005g": "008701",
+        "source_id": "Station:01469",
+        "station_id": "4b0b6d8a-473d-5e32-8125-153ba94ed1de",
+        "public_name": "陣原",
+        "sequence": 11,
+        "chainage_m": 26367.62339750753,
+        "offset_m": 0.0,
+        "extent_begin_m": 26307.475702635784,
+        "extent_end_m": 26427.771027826577,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.74285,
+            33.86828
+          ],
+          [
+            130.74413,
+            33.86809
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "小森江",
+        "N02_005c": "008652",
+        "N02_005g": "008652",
+        "source_id": "Station:01470",
+        "station_id": "d0e52a79-c004-53a1-b6e7-accd95bf7df7",
+        "public_name": "小森江",
+        "sequence": 1,
+        "chainage_m": 3899.645285527395,
+        "offset_m": 0.0,
+        "extent_begin_m": 3778.106209123423,
+        "extent_end_m": 4021.184451876391,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.93923,
+            33.91757
+          ],
+          [
+            130.93852,
+            33.91546
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "陣原",
+        "N02_005c": "008701",
+        "N02_005g": "008701",
+        "source_id": "Station:01471",
+        "station_id": "4b0b6d8a-473d-5e32-8125-153ba94ed1de",
+        "public_name": "陣原",
+        "sequence": 11,
+        "chainage_m": 26368.844328680214,
+        "offset_m": 22.184379001604146,
+        "extent_begin_m": 26309.054963320923,
+        "extent_end_m": 26428.489141206046,
+        "on_candidate_graph": false
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.74407,
+            33.86789
+          ],
+          [
+            130.7428,
+            33.86809
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "スペースワールド",
+        "N02_005c": "008697",
+        "N02_005g": "008697",
+        "source_id": "Station:01472",
+        "station_id": "db059552-d38d-5f4d-be40-39abe11500c9",
+        "public_name": "スペースワールド",
+        "sequence": 8,
+        "chainage_m": 20460.124461552223,
+        "offset_m": 0.0,
+        "extent_begin_m": 20339.483250775516,
+        "extent_end_m": 20580.76567817806,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.80711,
+            33.87187
+          ],
+          [
+            130.80652,
+            33.87145
+          ],
+          [
+            130.80608,
+            33.87116
+          ],
+          [
+            130.80504,
+            33.87055
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "西小倉",
+        "N02_005c": "008679",
+        "N02_005g": "008679",
+        "source_id": "Station:01473",
+        "station_id": "60198b90-5e76-58f6-8584-613b3698b840",
+        "public_name": "西小倉",
+        "sequence": 4,
+        "chainage_m": 11750.377720949904,
+        "offset_m": 0.0,
+        "extent_begin_m": 11631.2040875381,
+        "extent_end_m": 11869.551014263281,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.87531,
+            33.88846
+          ],
+          [
+            130.87281,
+            33.88898
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "戸畑",
+        "N02_005c": "008667",
+        "N02_005g": "008667",
+        "source_id": "Station:01474",
+        "station_id": "ef3c7235-bff6-59a5-a44f-ff5b91c16728",
+        "public_name": "戸畑",
+        "sequence": 6,
+        "chainage_m": 17111.332870815808,
+        "offset_m": 0.0,
+        "extent_begin_m": 17009.59865716188,
+        "extent_end_m": 17213.067489970515,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.82187,
+            33.89787
+          ],
+          [
+            130.81996,
+            33.89696
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "門司",
+        "N02_005c": "008661",
+        "N02_005g": "008660",
+        "source_id": "Station:01475",
+        "station_id": "aed40e40-8da5-5717-8138-afa1c0bf478a",
+        "public_name": "門司",
+        "sequence": 2,
+        "chainage_m": 5391.089537817323,
+        "offset_m": 33.229295245102364,
+        "extent_begin_m": 5226.719958238614,
+        "extent_end_m": 5555.536773315439,
+        "on_candidate_graph": false
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.93349,
+            33.90554
+          ],
+          [
+            130.93239,
+            33.90433
+          ],
+          [
+            130.93134,
+            33.90317
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "海老津",
+        "N02_005c": "008763",
+        "N02_005g": "008763",
+        "source_id": "Station:01476",
+        "station_id": "05eaf5ed-2296-5f01-9242-cf4e9c5d5d85",
+        "public_name": "海老津",
+        "sequence": 15,
+        "chainage_m": 38768.7596387959,
+        "offset_m": 0.0,
+        "extent_begin_m": 38644.14560481187,
+        "extent_end_m": 38893.373686203115,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.62508,
+            33.84027
+          ],
+          [
+            130.62406,
+            33.84019
+          ],
+          [
+            130.62343,
+            33.84011
+          ],
+          [
+            130.62265,
+            33.83992
+          ],
+          [
+            130.62244,
+            33.83987
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "遠賀川",
+        "N02_005c": "008745",
+        "N02_005g": "008745",
+        "source_id": "Station:01482",
+        "station_id": "83d16cc2-07d5-5376-ac59-f918eb13ddd0",
+        "public_name": "遠賀川",
+        "sequence": 14,
+        "chainage_m": 33665.81885841103,
+        "offset_m": 0.0,
+        "extent_begin_m": 33533.76848914696,
+        "extent_end_m": 33797.86973016558,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.67499,
+            33.84711
+          ],
+          [
+            130.67227,
+            33.84639
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "東福間",
+        "N02_005c": "008840",
+        "N02_005g": "008840",
+        "source_id": "Station:01483",
+        "station_id": "f4307416-1151-5905-8d10-492130e9927f",
+        "public_name": "東福間",
+        "sequence": 19,
+        "chainage_m": 53379.06990646867,
+        "offset_m": 0.0,
+        "extent_begin_m": 53205.0215861933,
+        "extent_end_m": 53553.119439560294,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.51224,
+            33.77476
+          ],
+          [
+            130.50917,
+            33.77295
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "千鳥",
+        "N02_005c": "008859",
+        "N02_005g": "008859",
+        "source_id": "Station:01484",
+        "station_id": "c3ead898-9733-57b6-9f3b-9e200f048d05",
+        "public_name": "千鳥",
+        "sequence": 21,
+        "chainage_m": 57878.23357483002,
+        "offset_m": 0.0,
+        "extent_begin_m": 57757.811710007605,
+        "extent_end_m": 57998.655645964536,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.47687,
+            33.75005
+          ],
+          [
+            130.47583,
+            33.74806
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "吉塚",
+        "N02_005c": "009002",
+        "N02_005g": "009002",
+        "source_id": "Station:01485",
+        "station_id": "41207f89-087a-5567-b231-ab2d955b10ad",
+        "public_name": "吉塚",
+        "sequence": 30,
+        "chainage_m": 75606.79108632599,
+        "offset_m": 0.0,
+        "extent_begin_m": 75469.55430504473,
+        "extent_end_m": 75744.02798457905,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.42411,
+            33.60839
+          ],
+          [
+            130.4233,
+            33.60601
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "赤間",
+        "N02_005c": "008807",
+        "N02_005g": "008807",
+        "source_id": "Station:01487",
+        "station_id": "d9383e21-2f41-5307-9eb0-bd2cbf2b6185",
+        "public_name": "赤間",
+        "sequence": 17,
+        "chainage_m": 45891.616280313014,
+        "offset_m": 0.0,
+        "extent_begin_m": 45741.28555103771,
+        "extent_end_m": 46041.94685289519,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.57121,
+            33.80814
+          ],
+          [
+            130.56797,
+            33.80832
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "福工大前",
+        "N02_005c": "008894",
+        "N02_005g": "008894",
+        "source_id": "Station:01489",
+        "station_id": "95d2388e-955a-5c30-974d-05505400ba1c",
+        "public_name": "福工大前",
+        "sequence": 25,
+        "chainage_m": 64478.69665755263,
+        "offset_m": 0.0,
+        "extent_begin_m": 64357.86121875905,
+        "extent_end_m": 64599.53234824726,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.44134,
+            33.69938
+          ],
+          [
+            130.44105,
+            33.69903
+          ],
+          [
+            130.43982,
+            33.69761
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "九産大前",
+        "N02_005c": "008916",
+        "N02_005g": "008916",
+        "source_id": "Station:01495",
+        "station_id": "e6373230-fbec-5497-b822-fdc6932ab099",
+        "public_name": "九産大前",
+        "sequence": 26,
+        "chainage_m": 67526.42995528935,
+        "offset_m": 0.0,
+        "extent_begin_m": 67486.68320943361,
+        "extent_end_m": 67566.17673553794,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.44094,
+            33.67404
+          ],
+          [
+            130.44137,
+            33.67342
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "香椎",
+        "N02_005c": "008931",
+        "N02_005g": "008931",
+        "source_id": "Station:01497",
+        "station_id": "a437b90d-d8a4-5c11-8e43-0231ff59d786",
+        "public_name": "香椎",
+        "sequence": 27,
+        "chainage_m": 69131.58884524457,
+        "offset_m": 0.0,
+        "extent_begin_m": 68963.24125392789,
+        "extent_end_m": 69299.9364062244,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.44413,
+            33.66125
+          ],
+          [
+            130.44391,
+            33.65822
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "教育大前",
+        "N02_005c": "008808",
+        "N02_005g": "008808",
+        "source_id": "Station:01499",
+        "station_id": "1dde3a19-271b-53cb-948b-4b4628e572e2",
+        "public_name": "教育大前",
+        "sequence": 16,
+        "chainage_m": 43968.20372569166,
+        "offset_m": 0.0,
+        "extent_begin_m": 43847.92289143339,
+        "extent_end_m": 44088.48481117646,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.59159,
+            33.80836
+          ],
+          [
+            130.58903,
+            33.80799
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "博多",
+        "N02_005c": "009030",
+        "N02_005g": "009033",
+        "source_id": "Station:01500",
+        "station_id": "bd47650c-b2f8-51eb-94e1-ec8bf31a0202",
+        "public_name": "博多",
+        "sequence": 31,
+        "chainage_m": 77552.43291229702,
+        "offset_m": 0.0,
+        "extent_begin_m": 77440.90150282254,
+        "extent_end_m": 77663.96430507986,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.4206,
+            33.591
+          ],
+          [
+            130.42052,
+            33.58899
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "千早",
+        "N02_005c": "008948",
+        "N02_005g": "008948",
+        "source_id": "Station:01502",
+        "station_id": "36962792-05b9-52a7-bccd-3d15e5a1e7ba",
+        "public_name": "千早",
+        "sequence": 28,
+        "chainage_m": 70333.19130697669,
+        "offset_m": 0.0,
+        "extent_begin_m": 70239.25583417714,
+        "extent_end_m": 70427.12701340756,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.44125,
+            33.65011
+          ],
+          [
+            130.44011,
+            33.64871
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "古賀",
+        "N02_005c": "008868",
+        "N02_005g": "008868",
+        "source_id": "Station:01503",
+        "station_id": "1e3af193-a74e-5f86-a59f-0c347e05a635",
+        "public_name": "古賀",
+        "sequence": 22,
+        "chainage_m": 59929.25438131642,
+        "offset_m": 0.0,
+        "extent_begin_m": 59767.54018767511,
+        "extent_end_m": 60090.96904767463,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.46768,
+            33.73386
+          ],
+          [
+            130.4661,
+            33.73126
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "箱崎",
+        "N02_005c": "008985",
+        "N02_005g": "008985",
+        "source_id": "Station:01505",
+        "station_id": "218ec38a-347f-5e86-b572-02c67ce91a1d",
+        "public_name": "箱崎",
+        "sequence": 29,
+        "chainage_m": 74376.30996158165,
+        "offset_m": 0.0,
+        "extent_begin_m": 74255.0136915334,
+        "extent_end_m": 74497.60626200082,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.42679,
+            33.6191
+          ],
+          [
+            130.42631,
+            33.61695
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "福間",
+        "N02_005c": "008847",
+        "N02_005g": "008847",
+        "source_id": "Station:01509",
+        "station_id": "4b825d57-63a6-5edc-a394-7ac293650572",
+        "public_name": "福間",
+        "sequence": 20,
+        "chainage_m": 55906.52483966483,
+        "offset_m": 0.0,
+        "extent_begin_m": 55792.5813864606,
+        "extent_end_m": 56020.46880614344,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.48826,
+            33.76429
+          ],
+          [
+            130.48616,
+            33.76322
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "東郷",
+        "N02_005c": "008822",
+        "N02_005g": "008822",
+        "source_id": "Station:01511",
+        "station_id": "8fd27e4f-6b80-5d03-9bb3-0297183f69ca",
+        "public_name": "東郷",
+        "sequence": 18,
+        "chainage_m": 50053.42728126457,
+        "offset_m": 0.0,
+        "extent_begin_m": 49931.71397265193,
+        "extent_end_m": 50175.14118130181,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.52989,
+            33.79515
+          ],
+          [
+            130.52779,
+            33.79383
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "ししぶ",
+        "N02_005c": "008879",
+        "N02_005g": "008879",
+        "source_id": "Station:09907",
+        "station_id": "c3aed6e8-f335-5dbb-abad-1ec298b5d874",
+        "public_name": "ししぶ",
+        "sequence": 23,
+        "chainage_m": 61517.62898044209,
+        "offset_m": 0.0,
+        "extent_begin_m": 61495.57804090671,
+        "extent_end_m": 61539.6799391257,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.45752,
+            33.72105
+          ],
+          [
+            130.45715,
+            33.7208
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "N02_001": "11",
+        "N02_002": "2",
+        "N02_003": "鹿児島線",
+        "N02_004": "九州旅客鉄道",
+        "N02_005": "新宮中央",
+        "N02_005c": "008886",
+        "N02_005g": "008886",
+        "source_id": "Station:09948",
+        "station_id": "367c2d51-9ed9-5602-9c73-24309fb5f207",
+        "public_name": "新宮中央",
+        "sequence": 24,
+        "chainage_m": 62766.01314065897,
+        "offset_m": 0.0,
+        "extent_begin_m": 62673.038922415784,
+        "extent_end_m": 62858.98752836877,
+        "on_candidate_graph": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            130.449917,
+            33.712764
+          ],
+          [
+            130.448968,
+            33.711287
+          ]
+        ]
+      }
+    }
+  ]
+}

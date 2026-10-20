@@ -1,0 +1,18 @@
+normal: n=64 route=1.0 coverage=1.0 p95=0.109ms
+reverse: n=64 route=1.0 coverage=1.0 p95=0.106ms
+station_stop_depart: n=57 route=1.0 coverage=1.0 p95=0.105ms
+station_pass: n=39 route=1.0 coverage=1.0 p95=0.107ms
+between_station_stop: n=82 route=1.0 coverage=1.0 p95=0.103ms
+branch_merge: n=113 route=1.0 coverage=0.9181818181818182 p95=0.095ms
+parallel: n=61 route=1.0 coverage=1.0 p95=0.109ms
+endpoint: n=23 route=1.0 coverage=0.85 p95=0.080ms
+position_jump: n=64 route=1.0 coverage=1.0 p95=0.105ms
+speed_spike: n=64 route=1.0 coverage=1.0 p95=0.110ms
+poor_accuracy: n=64 route=1.0 coverage=1.0 p95=0.108ms
+signal_loss: n=64 route=1.0 coverage=1.0 p95=0.104ms
+long_signal_loss: n=64 route=1.0 coverage=0.9354838709677419 p95=0.092ms
+tunnel_reentry: n=64 route=1.0 coverage=0.43333333333333335 p95=0.094ms
+ambiguous_stationary: n=12 route=None coverage=0.0 p95=0.081ms
+corridor_full: n=157 route=1.0 coverage=0.9805194805194806 p95=0.818ms
+corridor_reverse: n=157 route=1.0 coverage=0.9935064935064936 p95=0.802ms
+Report: docs/evaluation.json

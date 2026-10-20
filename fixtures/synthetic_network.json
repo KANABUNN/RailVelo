@@ -1,0 +1,763 @@
+{
+  "schema_version": 1,
+  "nodes": [
+    {
+      "id": "m0",
+      "lat": 33.0,
+      "lon": 130.0
+    },
+    {
+      "id": "m1",
+      "lat": 33.0,
+      "lon": 130.01072316590205
+    },
+    {
+      "id": "m2",
+      "lat": 33.0,
+      "lon": 130.0214463318041
+    },
+    {
+      "id": "m3",
+      "lat": 33.0,
+      "lon": 130.03216949770615
+    },
+    {
+      "id": "m4",
+      "lat": 33.0,
+      "lon": 130.0428926636082
+    },
+    {
+      "id": "m5",
+      "lat": 33.0,
+      "lon": 130.05361582951025
+    },
+    {
+      "id": "m6",
+      "lat": 33.0,
+      "lon": 130.0643389954123
+    },
+    {
+      "id": "p0",
+      "lat": 33.00053959221823,
+      "lon": 130.0
+    },
+    {
+      "id": "p1",
+      "lat": 33.00053959221823,
+      "lon": 130.01072316590205
+    },
+    {
+      "id": "p2",
+      "lat": 33.00053959221823,
+      "lon": 130.0214463318041
+    },
+    {
+      "id": "p3",
+      "lat": 33.00053959221823,
+      "lon": 130.03216949770615
+    },
+    {
+      "id": "p4",
+      "lat": 33.00053959221823,
+      "lon": 130.0428926636082
+    },
+    {
+      "id": "p5",
+      "lat": 33.00053959221823,
+      "lon": 130.05361582951025
+    },
+    {
+      "id": "p6",
+      "lat": 33.00053959221823,
+      "lon": 130.0643389954123
+    },
+    {
+      "id": "b1",
+      "lat": 33.00269796109117,
+      "lon": 130.03216949770615
+    },
+    {
+      "id": "b2",
+      "lat": 33.00314762127304,
+      "lon": 130.0428926636082
+    },
+    {
+      "id": "b3",
+      "lat": 33.00224830090931,
+      "lon": 130.05361582951025
+    }
+  ],
+  "edges": [
+    {
+      "id": "m0",
+      "from_node": "m0",
+      "to_node": "m1",
+      "route_ids": [
+        "main",
+        "branch"
+      ],
+      "coordinates": [
+        [
+          33.0,
+          130.0
+        ],
+        [
+          33.000107918443646,
+          130.00536158295102
+        ],
+        [
+          33.0,
+          130.01072316590205
+        ]
+      ],
+      "length_m": 1000.2873470169508
+    },
+    {
+      "id": "m1",
+      "from_node": "m1",
+      "to_node": "m2",
+      "route_ids": [
+        "main",
+        "branch"
+      ],
+      "coordinates": [
+        [
+          33.0,
+          130.01072316590205
+        ],
+        [
+          33.000107918443646,
+          130.01608474885307
+        ],
+        [
+          33.0,
+          130.0214463318041
+        ]
+      ],
+      "length_m": 1000.2873470169508
+    },
+    {
+      "id": "m2",
+      "from_node": "m2",
+      "to_node": "m3",
+      "route_ids": [
+        "main"
+      ],
+      "coordinates": [
+        [
+          33.0,
+          130.0214463318041
+        ],
+        [
+          33.000107918443646,
+          130.02680791475512
+        ],
+        [
+          33.0,
+          130.03216949770615
+        ]
+      ],
+      "length_m": 1000.2873470169508
+    },
+    {
+      "id": "m3",
+      "from_node": "m3",
+      "to_node": "m4",
+      "route_ids": [
+        "main"
+      ],
+      "coordinates": [
+        [
+          33.0,
+          130.03216949770615
+        ],
+        [
+          33.000107918443646,
+          130.03753108065717
+        ],
+        [
+          33.0,
+          130.0428926636082
+        ]
+      ],
+      "length_m": 1000.2873470169508
+    },
+    {
+      "id": "m4",
+      "from_node": "m4",
+      "to_node": "m5",
+      "route_ids": [
+        "main"
+      ],
+      "coordinates": [
+        [
+          33.0,
+          130.0428926636082
+        ],
+        [
+          33.000107918443646,
+          130.04825424655922
+        ],
+        [
+          33.0,
+          130.05361582951025
+        ]
+      ],
+      "length_m": 1000.2873470169508
+    },
+    {
+      "id": "m5",
+      "from_node": "m5",
+      "to_node": "m6",
+      "route_ids": [
+        "main"
+      ],
+      "coordinates": [
+        [
+          33.0,
+          130.05361582951025
+        ],
+        [
+          33.000107918443646,
+          130.05897741246127
+        ],
+        [
+          33.0,
+          130.0643389954123
+        ]
+      ],
+      "length_m": 1000.2873470169508
+    },
+    {
+      "id": "p0",
+      "from_node": "p0",
+      "to_node": "p1",
+      "route_ids": [
+        "parallel"
+      ],
+      "coordinates": [
+        [
+          33.00053959221823,
+          130.0
+        ],
+        [
+          33.000647510661885,
+          130.00536158295102
+        ],
+        [
+          33.00053959221823,
+          130.01072316590205
+        ]
+      ],
+      "length_m": 1000.2812328239631
+    },
+    {
+      "id": "p1",
+      "from_node": "p1",
+      "to_node": "p2",
+      "route_ids": [
+        "parallel"
+      ],
+      "coordinates": [
+        [
+          33.00053959221823,
+          130.01072316590205
+        ],
+        [
+          33.000647510661885,
+          130.01608474885307
+        ],
+        [
+          33.00053959221823,
+          130.0214463318041
+        ]
+      ],
+      "length_m": 1000.2812328239631
+    },
+    {
+      "id": "p2",
+      "from_node": "p2",
+      "to_node": "p3",
+      "route_ids": [
+        "parallel"
+      ],
+      "coordinates": [
+        [
+          33.00053959221823,
+          130.0214463318041
+        ],
+        [
+          33.000647510661885,
+          130.02680791475512
+        ],
+        [
+          33.00053959221823,
+          130.03216949770615
+        ]
+      ],
+      "length_m": 1000.2812328239631
+    },
+    {
+      "id": "p3",
+      "from_node": "p3",
+      "to_node": "p4",
+      "route_ids": [
+        "parallel"
+      ],
+      "coordinates": [
+        [
+          33.00053959221823,
+          130.03216949770615
+        ],
+        [
+          33.000647510661885,
+          130.03753108065717
+        ],
+        [
+          33.00053959221823,
+          130.0428926636082
+        ]
+      ],
+      "length_m": 1000.2812328239631
+    },
+    {
+      "id": "p4",
+      "from_node": "p4",
+      "to_node": "p5",
+      "route_ids": [
+        "parallel"
+      ],
+      "coordinates": [
+        [
+          33.00053959221823,
+          130.0428926636082
+        ],
+        [
+          33.000647510661885,
+          130.04825424655922
+        ],
+        [
+          33.00053959221823,
+          130.05361582951025
+        ]
+      ],
+      "length_m": 1000.2812328239631
+    },
+    {
+      "id": "p5",
+      "from_node": "p5",
+      "to_node": "p6",
+      "route_ids": [
+        "parallel"
+      ],
+      "coordinates": [
+        [
+          33.00053959221823,
+          130.05361582951025
+        ],
+        [
+          33.000647510661885,
+          130.05897741246127
+        ],
+        [
+          33.00053959221823,
+          130.0643389954123
+        ]
+      ],
+      "length_m": 1000.2812328239631
+    },
+    {
+      "id": "b0",
+      "from_node": "m2",
+      "to_node": "b1",
+      "route_ids": [
+        "branch"
+      ],
+      "coordinates": [
+        [
+          33.0,
+          130.0214463318041
+        ],
+        [
+          33.00269796109117,
+          130.03216949770615
+        ]
+      ],
+      "length_m": 1044.0160050939637
+    },
+    {
+      "id": "b1",
+      "from_node": "b1",
+      "to_node": "b2",
+      "route_ids": [
+        "branch"
+      ],
+      "coordinates": [
+        [
+          33.00269796109117,
+          130.03216949770615
+        ],
+        [
+          33.00314762127304,
+          130.0428926636082
+        ]
+      ],
+      "length_m": 1001.2161315268213
+    },
+    {
+      "id": "b2",
+      "from_node": "b2",
+      "to_node": "b3",
+      "route_ids": [
+        "branch"
+      ],
+      "coordinates": [
+        [
+          33.00314762127304,
+          130.0428926636082
+        ],
+        [
+          33.00224830090931,
+          130.05361582951025
+        ]
+      ],
+      "length_m": 1004.9571328176253
+    },
+    {
+      "id": "b3",
+      "from_node": "b3",
+      "to_node": "m6",
+      "route_ids": [
+        "branch"
+      ],
+      "coordinates": [
+        [
+          33.00224830090931,
+          130.05361582951025
+        ],
+        [
+          33.0,
+          130.0643389954123
+        ]
+      ],
+      "length_m": 1030.7640446299279
+    }
+  ],
+  "routes": [
+    {
+      "id": "main",
+      "name": "Synthetic main",
+      "forward_label": "forward",
+      "reverse_label": "reverse"
+    },
+    {
+      "id": "branch",
+      "name": "Synthetic branch",
+      "forward_label": "forward",
+      "reverse_label": "reverse"
+    },
+    {
+      "id": "parallel",
+      "name": "Synthetic parallel",
+      "forward_label": "forward",
+      "reverse_label": "reverse"
+    }
+  ],
+  "route_edges": [
+    {
+      "route_id": "main",
+      "edge_id": "m0",
+      "sequence": 0,
+      "direction": 1,
+      "start_m": 0.0
+    },
+    {
+      "route_id": "main",
+      "edge_id": "m1",
+      "sequence": 1,
+      "direction": 1,
+      "start_m": 1000.2873470169508
+    },
+    {
+      "route_id": "main",
+      "edge_id": "m2",
+      "sequence": 2,
+      "direction": 1,
+      "start_m": 2000.5746940339016
+    },
+    {
+      "route_id": "main",
+      "edge_id": "m3",
+      "sequence": 3,
+      "direction": 1,
+      "start_m": 3000.8620410508524
+    },
+    {
+      "route_id": "main",
+      "edge_id": "m4",
+      "sequence": 4,
+      "direction": 1,
+      "start_m": 4001.149388067803
+    },
+    {
+      "route_id": "main",
+      "edge_id": "m5",
+      "sequence": 5,
+      "direction": 1,
+      "start_m": 5001.436735084754
+    },
+    {
+      "route_id": "parallel",
+      "edge_id": "p0",
+      "sequence": 0,
+      "direction": 1,
+      "start_m": 0.0
+    },
+    {
+      "route_id": "parallel",
+      "edge_id": "p1",
+      "sequence": 1,
+      "direction": 1,
+      "start_m": 1000.2812328239631
+    },
+    {
+      "route_id": "parallel",
+      "edge_id": "p2",
+      "sequence": 2,
+      "direction": 1,
+      "start_m": 2000.5624656479263
+    },
+    {
+      "route_id": "parallel",
+      "edge_id": "p3",
+      "sequence": 3,
+      "direction": 1,
+      "start_m": 3000.843698471889
+    },
+    {
+      "route_id": "parallel",
+      "edge_id": "p4",
+      "sequence": 4,
+      "direction": 1,
+      "start_m": 4001.1249312958525
+    },
+    {
+      "route_id": "parallel",
+      "edge_id": "p5",
+      "sequence": 5,
+      "direction": 1,
+      "start_m": 5001.406164119816
+    },
+    {
+      "route_id": "branch",
+      "edge_id": "m0",
+      "sequence": 0,
+      "direction": 1,
+      "start_m": 0.0
+    },
+    {
+      "route_id": "branch",
+      "edge_id": "m1",
+      "sequence": 1,
+      "direction": 1,
+      "start_m": 1000.2873470169508
+    },
+    {
+      "route_id": "branch",
+      "edge_id": "b0",
+      "sequence": 2,
+      "direction": 1,
+      "start_m": 2000.5746940339016
+    },
+    {
+      "route_id": "branch",
+      "edge_id": "b1",
+      "sequence": 3,
+      "direction": 1,
+      "start_m": 3044.5906991278653
+    },
+    {
+      "route_id": "branch",
+      "edge_id": "b2",
+      "sequence": 4,
+      "direction": 1,
+      "start_m": 4045.8068306546866
+    },
+    {
+      "route_id": "branch",
+      "edge_id": "b3",
+      "sequence": 5,
+      "direction": 1,
+      "start_m": 5050.763963472312
+    }
+  ],
+  "stations": [
+    {
+      "id": "main_s0",
+      "name": "Synthetic main station 0"
+    },
+    {
+      "id": "main_s1",
+      "name": "Synthetic main station 1"
+    },
+    {
+      "id": "main_s2",
+      "name": "Synthetic main station 2"
+    },
+    {
+      "id": "main_s3",
+      "name": "Synthetic main station 3"
+    },
+    {
+      "id": "main_s4",
+      "name": "Synthetic main station 4"
+    },
+    {
+      "id": "parallel_s0",
+      "name": "Synthetic parallel station 0"
+    },
+    {
+      "id": "parallel_s1",
+      "name": "Synthetic parallel station 1"
+    },
+    {
+      "id": "parallel_s2",
+      "name": "Synthetic parallel station 2"
+    },
+    {
+      "id": "parallel_s3",
+      "name": "Synthetic parallel station 3"
+    },
+    {
+      "id": "parallel_s4",
+      "name": "Synthetic parallel station 4"
+    },
+    {
+      "id": "branch_s0",
+      "name": "Synthetic branch station 0"
+    },
+    {
+      "id": "branch_s1",
+      "name": "Synthetic branch station 1"
+    },
+    {
+      "id": "branch_s2",
+      "name": "Synthetic branch station 2"
+    },
+    {
+      "id": "branch_s3",
+      "name": "Synthetic branch station 3"
+    },
+    {
+      "id": "branch_s4",
+      "name": "Synthetic branch station 4"
+    }
+  ],
+  "route_stations": [
+    {
+      "route_id": "main",
+      "station_id": "main_s0",
+      "sequence": 0,
+      "measure_m": 0.0,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "main",
+      "station_id": "main_s1",
+      "sequence": 1,
+      "measure_m": 1000.288,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "main",
+      "station_id": "main_s2",
+      "sequence": 2,
+      "measure_m": 3000.864,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "main",
+      "station_id": "main_s3",
+      "sequence": 3,
+      "measure_m": 5001.44,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "main",
+      "station_id": "main_s4",
+      "sequence": 4,
+      "measure_m": 6001.724082101705,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "parallel",
+      "station_id": "parallel_s0",
+      "sequence": 0,
+      "measure_m": 0.0,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "parallel",
+      "station_id": "parallel_s1",
+      "sequence": 1,
+      "measure_m": 1000.288,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "parallel",
+      "station_id": "parallel_s2",
+      "sequence": 2,
+      "measure_m": 3000.864,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "parallel",
+      "station_id": "parallel_s3",
+      "sequence": 3,
+      "measure_m": 5001.44,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "parallel",
+      "station_id": "parallel_s4",
+      "sequence": 4,
+      "measure_m": 6001.687396943779,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "branch",
+      "station_id": "branch_s0",
+      "sequence": 0,
+      "measure_m": 0.0,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "branch",
+      "station_id": "branch_s1",
+      "sequence": 1,
+      "measure_m": 1000.288,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "branch",
+      "station_id": "branch_s2",
+      "sequence": 2,
+      "measure_m": 3000.864,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "branch",
+      "station_id": "branch_s3",
+      "sequence": 3,
+      "measure_m": 5001.44,
+      "radius_m": 80.0
+    },
+    {
+      "route_id": "branch",
+      "station_id": "branch_s4",
+      "sequence": 4,
+      "measure_m": 6081.528008102239,
+      "radius_m": 80.0
+    }
+  ]
+}

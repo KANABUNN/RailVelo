@@ -1,0 +1,206 @@
+{
+  "status": "PASS_WITH_DOCUMENTED_LIMITATIONS",
+  "passed": 30,
+  "total": 30,
+  "checks": [
+    {
+      "name": "sqlite_integrity",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "foreign_keys",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "schema_version",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "original_v0_2_schema_unchanged",
+      "passed": true,
+      "details": {
+        "original_objects": 23,
+        "changed": [],
+        "schema_sha256": "0b902c29858a854c8502682aacf877e4440b2a4e62a11684ff9f46b46d470783"
+      }
+    },
+    {
+      "name": "source_archive_hash",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "Station_source_crs",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "RailroadSection_source_crs",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "source_features_exactly_preserved",
+      "passed": true,
+      "details": {
+        "compared": 110,
+        "errors": []
+      }
+    },
+    {
+      "name": "operator_line_and_railway_type_filter",
+      "passed": true,
+      "details": {
+        "freight_and_non_jr_imported": 0
+      }
+    },
+    {
+      "name": "selected_geometry_valid_and_nonempty",
+      "passed": true,
+      "details": {
+        "errors": []
+      }
+    },
+    {
+      "name": "finite_numeric_values",
+      "passed": true,
+      "details": {
+        "errors": []
+      }
+    },
+    {
+      "name": "progress_indices_and_positive_lengths",
+      "passed": true,
+      "details": {
+        "errors": []
+      }
+    },
+    {
+      "name": "ellipsoid_distance_recomputed",
+      "passed": true,
+      "details": {
+        "maximum_error_m": 1.3642420526593924e-12
+      }
+    },
+    {
+      "name": "exact_edge_node_endpoints",
+      "passed": true,
+      "details": {
+        "errors": []
+      }
+    },
+    {
+      "name": "reverse_virtual_edges",
+      "passed": true,
+      "details": {
+        "errors": []
+      }
+    },
+    {
+      "name": "no_fabricated_gap_geometry",
+      "passed": true,
+      "details": {
+        "tolerance_degrees": 1e-09,
+        "errors": []
+      }
+    },
+    {
+      "name": "rtree_complete_outward_bounds",
+      "passed": true,
+      "details": {
+        "edges": 240,
+        "missing": [],
+        "wrong_bounds": []
+      }
+    },
+    {
+      "name": "continuous_ordered_reference_path",
+      "passed": true,
+      "details": {
+        "edges": 117,
+        "errors": []
+      }
+    },
+    {
+      "name": "official_station_order_and_count",
+      "passed": true,
+      "details": {
+        "expected": 32,
+        "actual": 32
+      }
+    },
+    {
+      "name": "station_chainage_monotonic",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "center_distance_equals_reference",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "station_extent_bounds",
+      "passed": true,
+      "details": {
+        "errors": []
+      }
+    },
+    {
+      "name": "all_stations_have_graph_locations",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "all_35_station_line_variants_retained",
+      "passed": true,
+      "details": {
+        "source_line_features": 35
+      }
+    },
+    {
+      "name": "no_fabricated_rides",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "no_fabricated_gps_samples",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "no_fabricated_match_results",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "no_fabricated_station_events",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "commercial_timetable_absent",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "limitations_persisted",
+      "passed": true,
+      "details": {
+        "issue_count": 14
+      }
+    }
+  ],
+  "counts": {
+    "stations": 32,
+    "source_station_lines": 35,
+    "nodes": 118,
+    "directed_edges": 240,
+    "reference_edges": 117
+  },
+  "reference_center_length_m": 77552.43291229702,
+  "sqlite_sha256": "8f71f9d080065194b3b3a0e03b9d900e09949760d4faee18335dd4bad61982c3"
+}

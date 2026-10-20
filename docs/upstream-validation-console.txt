@@ -1,0 +1,14 @@
+{
+  "status": "PASS_WITH_DOCUMENTED_LIMITATIONS",
+  "passed": 30,
+  "total": 30,
+  "counts": {
+    "stations": 32,
+    "source_station_lines": 35,
+    "nodes": 118,
+    "directed_edges": 240,
+    "reference_edges": 117
+  },
+  "reference_center_length_m": 77552.43291229702,
+  "sqlite_sha256": "8f71f9d080065194b3b3a0e03b9d900e09949760d4faee18335dd4bad61982c3"
+}

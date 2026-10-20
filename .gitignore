@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.build/
+.swiftpm/
+.DS_Store
+reports/replays/
+dist/
+
+# Signing material, account secrets, and personal ride recordings
+*.p8
+*.p12
+*.mobileprovision
+*.cer
+.env
+.env.*
+!.env.example
+secrets/
+recordings/
+*.xcuserstate
+xcuserdata/
+DerivedData/
+*.xcarchive/
+*.ipa
+artifacts/

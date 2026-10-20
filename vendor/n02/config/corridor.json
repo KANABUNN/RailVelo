@@ -1,0 +1,38 @@
+{
+  "id": "jrkyushu.kagoshima.mojiko-hakata",
+  "public_name": "鹿児島本線",
+  "operator_id": "jrkyushu",
+  "source_operator": "九州旅客鉄道",
+  "source_line": "鹿児島線",
+  "source_railway_type": "11",
+  "source_provider_type": "2",
+  "station_order_source": "https://www.jrkyushu-timetable.jp/sp/railway_list.html",
+  "direction_source": "https://www.jrkyushu-timetable.jp/cgi-bin/sp/sp-tt_list.cgi/28345",
+  "forward_direction": "down",
+  "forward_description": "門司港→小倉→博多",
+  "operating_km_reference": {
+    "source_url": "https://www.jrkyushu.co.jp/company/info/data/pdf/2024senku.pdf",
+    "source_reference": "2024年度末 線区別ご利用状況、PDF 1ページ目の在来線（幹線）",
+    "segments": [
+      {"from": "門司港", "to": "小倉", "operating_km": 11.0},
+      {"from": "小倉", "to": "博多", "operating_km": 67.2}
+    ]
+  },
+  "stations": [
+    "門司港", "小森江", "門司", "小倉", "西小倉", "九州工大前", "戸畑", "枝光",
+    "スペースワールド", "八幡", "黒崎", "陣原", "折尾", "水巻", "遠賀川", "海老津",
+    "教育大前", "赤間", "東郷", "東福間", "福間", "千鳥", "古賀", "ししぶ", "新宮中央",
+    "福工大前", "九産大前", "香椎", "千早", "箱崎", "吉塚", "博多"
+  ],
+  "policy": {
+    "path": "shortest_geodesic_reference_only_not_confirmed_running_track",
+    "connectivity": "identical_original_vertices_only_no_snap_no_crossing_noding",
+    "alternate_paths": "retain_all_off_reference_components_attached_to_two_or_more_reference_vertices",
+    "station_representative": "source_midpoint_on_reference_preferred_all_variants_preserved",
+    "platform_fields": "N02_station_line_extent_only_not_a_surveyed_platform",
+    "origin": "Mojiko_source_station_line_midpoint",
+    "terminal_extent": "include_full_primary_terminal_station_lines",
+    "nearby_audit_radius_m": 150,
+    "source_reference_date": "2025-12-31"
+  }
+}

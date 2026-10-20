@@ -1,0 +1,184 @@
+{
+  "catalog_checked": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html",
+  "files": {
+    "catalog.html": {
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html",
+      "final_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html",
+      "status": 200,
+      "retrieved_utc": "2026-10-20T12:01:38.060303+00:00",
+      "content_type": "text/html; charset=UTF-8",
+      "last_modified": null,
+      "etag": null,
+      "bytes": 54969,
+      "sha256": "63a8e42f6699bbfec5b16e4cdaeef95f0bfe616451f8dfe85f96a528716f4716"
+    },
+    "terms.html": {
+      "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "final_url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "status": 200,
+      "retrieved_utc": "2026-10-20T12:01:38.184244+00:00",
+      "content_type": "text/html; charset=UTF-8",
+      "last_modified": null,
+      "etag": null,
+      "bytes": 27978,
+      "sha256": "f20653d611953683777606c0eabd9bf8cdae9e39bd2d64edf5090dbbe4608b0c"
+    },
+    "KS-PS-N02-v3_0.pdf": {
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/product_spec/KS-PS-N02-v3_0.pdf",
+      "final_url": "https://nlftp.mlit.go.jp/ksj/gml/product_spec/KS-PS-N02-v3_0.pdf",
+      "status": 200,
+      "retrieved_utc": "2026-10-20T12:01:38.361829+00:00",
+      "content_type": "application/pdf",
+      "last_modified": "Thu, 17 Mar 2022 09:44:53 GMT",
+      "etag": "\"35746-5da66e1c72f40\"",
+      "bytes": 218950,
+      "sha256": "1e6038cb7a5235ea195d2cdfd1675a89d0d18c321a218443de1a45b277ed798a"
+    },
+    "cc-by-4.0.html": {
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "final_url": "https://creativecommons.org/licenses/by/4.0/",
+      "status": 200,
+      "retrieved_utc": "2026-10-20T12:01:38.479893+00:00",
+      "content_type": "text/html",
+      "last_modified": "Thu, 01 Oct 2026 17:09:56 GMT",
+      "etag": null,
+      "bytes": 31950,
+      "sha256": "8dda1ccec4be91fc80821d4e4fd5c568072b9a3a74b2fdc07c249a27e920ef01"
+    },
+    "N02-25_GML.zip": {
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/data/N02/N02-25/N02-25_GML.zip",
+      "final_url": "https://nlftp.mlit.go.jp/ksj/gml/data/N02/N02-25/N02-25_GML.zip",
+      "status": 200,
+      "retrieved_utc": "2026-10-20T12:01:39.813536+00:00",
+      "content_type": "application/zip",
+      "last_modified": "Tue, 07 Apr 2026 08:15:28 GMT",
+      "etag": "\"e369de-64eda62d18800\"",
+      "bytes": 14903774,
+      "sha256": "aaf76af133b2e771e538fabc4646d2e443dc1d5a67b221382a28d744e706cc9f"
+    }
+  },
+  "selected_year": 2025,
+  "archive": "N02-25_GML.zip",
+  "zip_members": [
+    {
+      "name": "N02-25_GML/",
+      "bytes": 0,
+      "crc32": "00000000"
+    },
+    {
+      "name": "N02-25_GML/KS-META-N02-25.xml",
+      "bytes": 14797,
+      "crc32": "ccd48331"
+    },
+    {
+      "name": "N02-25_GML/KsjAppSchema-N02-v3_1.xsd",
+      "bytes": 11500,
+      "crc32": "b054c01e"
+    },
+    {
+      "name": "N02-25_GML/Shift-JIS/",
+      "bytes": 0,
+      "crc32": "00000000"
+    },
+    {
+      "name": "N02-25_GML/Shift-JIS/N02-25_RailroadSection.dbf",
+      "bytes": 11229858,
+      "crc32": "3b673161"
+    },
+    {
+      "name": "N02-25_GML/Shift-JIS/N02-25_RailroadSection.prj",
+      "bytes": 145,
+      "crc32": "018110fc"
+    },
+    {
+      "name": "N02-25_GML/Shift-JIS/N02-25_RailroadSection.shp",
+      "bytes": 7702684,
+      "crc32": "2b673f68"
+    },
+    {
+      "name": "N02-25_GML/Shift-JIS/N02-25_RailroadSection.shx",
+      "bytes": 175564,
+      "crc32": "b4167200"
+    },
+    {
+      "name": "N02-25_GML/Shift-JIS/N02-25_Station.dbf",
+      "bytes": 13038374,
+      "crc32": "e72beccc"
+    },
+    {
+      "name": "N02-25_GML/Shift-JIS/N02-25_Station.prj",
+      "bytes": 145,
+      "crc32": "018110fc"
+    },
+    {
+      "name": "N02-25_GML/Shift-JIS/N02-25_Station.shp",
+      "bytes": 971044,
+      "crc32": "aeeb55bd"
+    },
+    {
+      "name": "N02-25_GML/Shift-JIS/N02-25_Station.shx",
+      "bytes": 81972,
+      "crc32": "3a27d9c8"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/",
+      "bytes": 0,
+      "crc32": "00000000"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25.xml",
+      "bytes": 32572334,
+      "crc32": "c8f38e3f"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_RailroadSection.dbf",
+      "bytes": 11229858,
+      "crc32": "b98ce455"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_RailroadSection.geojson",
+      "bytes": 14239859,
+      "crc32": "9f559376"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_RailroadSection.prj",
+      "bytes": 145,
+      "crc32": "018110fc"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_RailroadSection.shp",
+      "bytes": 7702684,
+      "crc32": "e82df7cd"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_RailroadSection.shx",
+      "bytes": 175564,
+      "crc32": "bb3fc637"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_Station.dbf",
+      "bytes": 13038374,
+      "crc32": "983137a3"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_Station.geojson",
+      "bytes": 3261590,
+      "crc32": "cfb2f6b6"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_Station.prj",
+      "bytes": 145,
+      "crc32": "018110fc"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_Station.shp",
+      "bytes": 971012,
+      "crc32": "567b8016"
+    },
+    {
+      "name": "N02-25_GML/UTF-8/N02-25_Station.shx",
+      "bytes": 81972,
+      "crc32": "b398cbad"
+    }
+  ]
+}

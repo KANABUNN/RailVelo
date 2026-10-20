@@ -1,0 +1,22 @@
+{
+  "source_code_matches_db": {
+    "build_rail_db.py": true,
+    "create_bundle.py": true,
+    "fetch.py": true,
+    "inspect_source.py": true,
+    "make_review.py": true,
+    "probe_path.py": true,
+    "test_topology.py": true,
+    "topology.py": true,
+    "validate_rail_db.py": true,
+    "verify_reference_sources.py": true
+  },
+  "configuration_matches_db": {
+    "schemas/n02_extensions.sql": true,
+    "config/corridor.json": true,
+    "config/station_registry.json": true,
+    "requirements.lock.txt": true
+  },
+  "original_sql_byte_identical": true,
+  "topology_test_exit_code": 0
+}

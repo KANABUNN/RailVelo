@@ -1,0 +1,309 @@
+[
+  {
+    "id": "Q0001",
+    "code": "REFERENCE_NOT_SURVEYED_RUNNING_TRACK",
+    "severity": "limitation",
+    "related_ids": [],
+    "details": {
+      "message": "N02線形による計算用代表経路。上下線・番線・転轍器・接続可否を保証しない。最短経路は実際の乗車経路の同定ではない。"
+    }
+  },
+  {
+    "id": "Q0002",
+    "code": "MULTIPLE_STATION_LINE_FEATURES",
+    "severity": "warning",
+    "related_ids": [
+      "Station:01467",
+      "Station:01475"
+    ],
+    "details": {
+      "station": "門司",
+      "representatives": [
+        {
+          "source_id": "Station:01467",
+          "station_id": "aed40e40-8da5-5717-8138-afa1c0bf478a",
+          "public_name": "門司",
+          "sequence": 2,
+          "chainage_m": 5391.194632335713,
+          "offset_m": 0.0,
+          "extent_begin_m": 5225.292630649304,
+          "extent_end_m": 5557.096746210563,
+          "on_candidate_graph": true
+        },
+        {
+          "source_id": "Station:01475",
+          "station_id": "aed40e40-8da5-5717-8138-afa1c0bf478a",
+          "public_name": "門司",
+          "sequence": 2,
+          "chainage_m": 5391.089537817323,
+          "offset_m": 33.229295245102364,
+          "extent_begin_m": 5226.719958238614,
+          "extent_end_m": 5555.536773315439,
+          "on_candidate_graph": false
+        }
+      ],
+      "message": "同一駅の複数線形を保存。位置・用途・現行番線との対応はN02だけでは確定できない。"
+    }
+  },
+  {
+    "id": "Q0003",
+    "code": "STATION_VARIANT_NOT_ON_THROUGH_GRAPH",
+    "severity": "warning",
+    "related_ids": [
+      "Station:01475"
+    ],
+    "details": {
+      "station": "門司",
+      "reference_offset_m": 33.229295245102364,
+      "message": "鹿児島線属性の通り抜け経路に載らない駅線形。代表経路へ接続線を補作しない。"
+    }
+  },
+  {
+    "id": "Q0004",
+    "code": "MULTIPLE_STATION_LINE_FEATURES",
+    "severity": "warning",
+    "related_ids": [
+      "Station:01469",
+      "Station:01471"
+    ],
+    "details": {
+      "station": "陣原",
+      "representatives": [
+        {
+          "source_id": "Station:01469",
+          "station_id": "4b0b6d8a-473d-5e32-8125-153ba94ed1de",
+          "public_name": "陣原",
+          "sequence": 11,
+          "chainage_m": 26367.62339750753,
+          "offset_m": 0.0,
+          "extent_begin_m": 26307.475702635784,
+          "extent_end_m": 26427.771027826577,
+          "on_candidate_graph": true
+        },
+        {
+          "source_id": "Station:01471",
+          "station_id": "4b0b6d8a-473d-5e32-8125-153ba94ed1de",
+          "public_name": "陣原",
+          "sequence": 11,
+          "chainage_m": 26368.844328680214,
+          "offset_m": 22.184379001604146,
+          "extent_begin_m": 26309.054963320923,
+          "extent_end_m": 26428.489141206046,
+          "on_candidate_graph": false
+        }
+      ],
+      "message": "同一駅の複数線形を保存。位置・用途・現行番線との対応はN02だけでは確定できない。"
+    }
+  },
+  {
+    "id": "Q0005",
+    "code": "STATION_VARIANT_NOT_ON_THROUGH_GRAPH",
+    "severity": "warning",
+    "related_ids": [
+      "Station:01471"
+    ],
+    "details": {
+      "station": "陣原",
+      "reference_offset_m": 22.184379001604146,
+      "message": "鹿児島線属性の通り抜け経路に載らない駅線形。代表経路へ接続線を補作しない。"
+    }
+  },
+  {
+    "id": "Q0006",
+    "code": "MULTIPLE_STATION_LINE_FEATURES",
+    "severity": "warning",
+    "related_ids": [
+      "Station:01461",
+      "Station:01464"
+    ],
+    "details": {
+      "station": "折尾",
+      "representatives": [
+        {
+          "source_id": "Station:01461",
+          "station_id": "f72e25db-0567-5775-af9e-8f7e821630ff",
+          "public_name": "折尾",
+          "sequence": 12,
+          "chainage_m": 29229.32243864942,
+          "offset_m": 39.87342081441309,
+          "extent_begin_m": 29199.623476554658,
+          "extent_end_m": 29257.960437835627,
+          "on_candidate_graph": false
+        },
+        {
+          "source_id": "Station:01464",
+          "station_id": "f72e25db-0567-5775-af9e-8f7e821630ff",
+          "public_name": "折尾",
+          "sequence": 12,
+          "chainage_m": 29546.062498775296,
+          "offset_m": 0.0,
+          "extent_begin_m": 29431.617316917444,
+          "extent_end_m": 29660.507708207857,
+          "on_candidate_graph": true
+        }
+      ],
+      "message": "同一駅の複数線形を保存。位置・用途・現行番線との対応はN02だけでは確定できない。"
+    }
+  },
+  {
+    "id": "Q0007",
+    "code": "STATION_VARIANT_NOT_ON_THROUGH_GRAPH",
+    "severity": "warning",
+    "related_ids": [
+      "Station:01461"
+    ],
+    "details": {
+      "station": "折尾",
+      "reference_offset_m": 39.87342081441309,
+      "message": "鹿児島線属性の通り抜け経路に載らない駅線形。代表経路へ接続線を補作しない。"
+    }
+  },
+  {
+    "id": "Q0008",
+    "code": "DIFFERENCE_FROM_OFFICIAL_OPERATING_KM",
+    "severity": "warning",
+    "related_ids": [],
+    "details": {
+      "source": {
+        "source_url": "https://www.jrkyushu.co.jp/company/info/data/pdf/2024senku.pdf",
+        "source_reference": "2024年度末 線区別ご利用状況、PDF 1ページ目の在来線（幹線）",
+        "segments": [
+          {
+            "from": "門司港",
+            "to": "小倉",
+            "operating_km": 11.0
+          },
+          {
+            "from": "小倉",
+            "to": "博多",
+            "operating_km": 67.2
+          }
+        ]
+      },
+      "comparisons": [
+        {
+          "from": "門司港",
+          "to": "小倉",
+          "operating_km": 11.0,
+          "n02_reference_m": 10871.706546245498,
+          "difference_m": -128.29345375450248,
+          "difference_percent": -1.166304125040929
+        },
+        {
+          "from": "小倉",
+          "to": "博多",
+          "operating_km": 67.2,
+          "n02_reference_m": 66680.72636605153,
+          "difference_m": -519.2736339484691,
+          "difference_percent": -0.7727286219471274
+        },
+        {
+          "from_station": "門司港",
+          "to_station": "博多",
+          "operating_km": 78.2,
+          "n02_reference_m": 77552.43291229702,
+          "difference_m": -647.567087702977,
+          "difference_percent": -0.828090904991019
+        }
+      ],
+      "message": "形状弧長と営業キロには差がある。原因・現在の実走距離との誤差は確定できない。値の較正・引伸しは行っていない。"
+    }
+  },
+  {
+    "id": "Q0009",
+    "code": "SOURCE_GRAPH_JUNCTION_UNVERIFIED",
+    "severity": "warning",
+    "related_ids": [
+      "RailroadSection:02928",
+      "RailroadSection:02929",
+      "RailroadSection:02938",
+      "Station:01500"
+    ],
+    "details": {
+      "longitude": 130.4206,
+      "latitude": 33.591,
+      "degree": 3,
+      "message": "元データで同一頂点を共有する分岐候補。実際の線路接続・立体交差・進入方向は未確認。"
+    }
+  },
+  {
+    "id": "Q0010",
+    "code": "SOURCE_GRAPH_JUNCTION_UNVERIFIED",
+    "severity": "warning",
+    "related_ids": [
+      "RailroadSection:02918",
+      "RailroadSection:02928",
+      "RailroadSection:02929"
+    ],
+    "details": {
+      "longitude": 130.42098,
+      "latitude": 33.59441,
+      "degree": 3,
+      "message": "元データで同一頂点を共有する分岐候補。実際の線路接続・立体交差・進入方向は未確認。"
+    }
+  },
+  {
+    "id": "Q0011",
+    "code": "SOURCE_GRAPH_JUNCTION_UNVERIFIED",
+    "severity": "warning",
+    "related_ids": [
+      "RailroadSection:02901",
+      "RailroadSection:02906",
+      "RailroadSection:02915"
+    ],
+    "details": {
+      "longitude": 130.60463,
+      "latitude": 33.8186,
+      "degree": 3,
+      "message": "元データで同一頂点を共有する分岐候補。実際の線路接続・立体交差・進入方向は未確認。"
+    }
+  },
+  {
+    "id": "Q0012",
+    "code": "SOURCE_GRAPH_JUNCTION_UNVERIFIED",
+    "severity": "warning",
+    "related_ids": [
+      "RailroadSection:02904",
+      "RailroadSection:02906",
+      "RailroadSection:02915"
+    ],
+    "details": {
+      "longitude": 130.60873,
+      "latitude": 33.82756,
+      "degree": 3,
+      "message": "元データで同一頂点を共有する分岐候補。実際の線路接続・立体交差・進入方向は未確認。"
+    }
+  },
+  {
+    "id": "Q0013",
+    "code": "SOURCE_GRAPH_JUNCTION_UNVERIFIED",
+    "severity": "warning",
+    "related_ids": [
+      "RailroadSection:02871",
+      "RailroadSection:02881",
+      "RailroadSection:02897"
+    ],
+    "details": {
+      "longitude": 130.76097,
+      "latitude": 33.86656,
+      "degree": 3,
+      "message": "元データで同一頂点を共有する分岐候補。実際の線路接続・立体交差・進入方向は未確認。"
+    }
+  },
+  {
+    "id": "Q0014",
+    "code": "SOURCE_GRAPH_JUNCTION_UNVERIFIED",
+    "severity": "warning",
+    "related_ids": [
+      "RailroadSection:02881",
+      "RailroadSection:02882",
+      "RailroadSection:02884"
+    ],
+    "details": {
+      "longitude": 130.77032,
+      "latitude": 33.86712,
+      "degree": 3,
+      "message": "元データで同一頂点を共有する分岐候補。実際の線路接続・立体交差・進入方向は未確認。"
+    }
+  }
+]

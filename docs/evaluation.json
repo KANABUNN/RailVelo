@@ -1,0 +1,1006 @@
+{
+  "schema_version": 1,
+  "evaluation_kind": "synthetic_only",
+  "real_gps_logs_evaluated": false,
+  "inference_source_sha256": {
+    "network.py": "4f7c01080d7710c14abc31ca2a9ff2f2424f9595a6ad1e32a7da7c58735500e8",
+    "matcher.py": "318bf204c59732277fc6cb4fe9a11515654d26fb5de2a9c97c225fc2d94a1340",
+    "events.py": "d54e68b109942ab98c151d6dd64947f2d1055973d6cfcad02aec81b5e99ff382"
+  },
+  "limitations": [
+    "Ground truth follows source geometry; source positional error is not measured.",
+    "No real train logs, tunnel propagation or iPhone GPS behavior were measured.",
+    "Classification accuracy is conditional on a confirmed result; coverage is reported separately.",
+    "Observed and short-gap predicted position errors are reported separately.",
+    "Route can be unknowable on shared tracks; synthetic route labels express generator intent.",
+    "Wall-clock timing includes Python inference only on this machine and is not an iOS benchmark."
+  ],
+  "environment": {
+    "python": "3.14.6 (tags/v3.14.6:c63aec6, Jun 10 2026, 10:26:10) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel"
+  },
+  "scenarios": [
+    {
+      "name": "normal",
+      "kind": "synthetic",
+      "observations": 64,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 61,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 62
+      },
+      "events": {
+        "pass": 1
+      },
+      "route": {
+        "confirmed": 61,
+        "correct": 61,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 61,
+        "correct": 61,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 62,
+        "mean": 2.229894180163507,
+        "median": 2.043042303294442,
+        "p95": 4.39765914052532,
+        "maximum": 6.987241974334211
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 62,
+        "mean": 2.2298939683181715,
+        "median": 2.04304194432785,
+        "p95": 4.397657460832716,
+        "maximum": 6.98724224251788
+      },
+      "processing_ms": {
+        "n": 64,
+        "mean": 0.07317343624890782,
+        "median": 0.06425002356991172,
+        "p95": 0.10900001507252455,
+        "maximum": 0.1517999917268753
+      },
+      "total_processing_ms": 4.6830999199301,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "5d3041c6a8a105b78243d0ea18e8c6aa9cc86366e65bb4d67f80f9ed0960fc51"
+    },
+    {
+      "name": "reverse",
+      "kind": "synthetic",
+      "observations": 64,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 61,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 62
+      },
+      "events": {
+        "pass": 1
+      },
+      "route": {
+        "confirmed": 61,
+        "correct": 61,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 61,
+        "correct": 61,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 62,
+        "mean": 2.237948840541402,
+        "median": 2.0575462137546765,
+        "p95": 4.321104213263425,
+        "maximum": 7.023250014560745
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 62,
+        "mean": 2.23794867011865,
+        "median": 2.057546662611342,
+        "p95": 4.3211036875260955,
+        "maximum": 7.023248653712916
+      },
+      "processing_ms": {
+        "n": 64,
+        "mean": 0.07105937402229756,
+        "median": 0.06434990791603923,
+        "p95": 0.10609999299049377,
+        "maximum": 0.11460005771368742
+      },
+      "total_processing_ms": 4.547799937427044,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "e4f44cf24aacad2ab56e40a0116727ae78f5089a7c12a03bc9241d8bcfb69b63"
+    },
+    {
+      "name": "station_stop_depart",
+      "kind": "synthetic",
+      "observations": 57,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 54,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 55
+      },
+      "events": {
+        "arrival": 1,
+        "departure": 1
+      },
+      "route": {
+        "confirmed": 54,
+        "correct": 54,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 54,
+        "correct": 54,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 55,
+        "mean": 1.8428134259175915,
+        "median": 1.2078368656225393,
+        "p95": 4.397658136754217,
+        "maximum": 6.063751537041298
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 55,
+        "mean": 1.8428134883993785,
+        "median": 1.2078373660656132,
+        "p95": 4.397657453407861,
+        "maximum": 6.063755200547386
+      },
+      "processing_ms": {
+        "n": 57,
+        "mean": 0.08160702010061134,
+        "median": 0.07239996921271086,
+        "p95": 0.1047999830916524,
+        "maximum": 0.1623000716790557
+      },
+      "total_processing_ms": 4.651600145734847,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "6d923fe4b0cce8723db496002985ddbb59de28cc6207ee7aef0f6550fddd61a6"
+    },
+    {
+      "name": "station_pass",
+      "kind": "synthetic",
+      "observations": 39,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 36,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 37
+      },
+      "events": {
+        "pass": 1
+      },
+      "route": {
+        "confirmed": 36,
+        "correct": 36,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 36,
+        "correct": 36,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 37,
+        "mean": 2.477699816581183,
+        "median": 2.196623689984335,
+        "p95": 4.583153905728977,
+        "maximum": 6.987243582819701
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 37,
+        "mean": 2.477695802934434,
+        "median": 2.19662371521634,
+        "p95": 4.583155462965217,
+        "maximum": 6.987242236718769
+      },
+      "processing_ms": {
+        "n": 39,
+        "mean": 0.07171794855728364,
+        "median": 0.06490002851933241,
+        "p95": 0.10679999832063913,
+        "maximum": 0.11260004248470068
+      },
+      "total_processing_ms": 2.7969999937340617,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "59f2da02371892c28fbb5b4df7f2e8ea5823a973e3b8e17fc1b6d8ab7ba8fc72"
+    },
+    {
+      "name": "between_station_stop",
+      "kind": "synthetic",
+      "observations": 82,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 79,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 80
+      },
+      "events": {
+        "between_station_stop": 1,
+        "resume": 1
+      },
+      "route": {
+        "confirmed": 79,
+        "correct": 79,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 79,
+        "correct": 79,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 80,
+        "mean": 2.3560092508753145,
+        "median": 1.2832157899372305,
+        "p95": 6.065074884324986,
+        "maximum": 8.976353786506934
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 80,
+        "mean": 2.355848867990378,
+        "median": 1.283142477045987,
+        "p95": 6.064005903050875,
+        "maximum": 8.975205216857315
+      },
+      "processing_ms": {
+        "n": 82,
+        "mean": 0.08754390178293717,
+        "median": 0.09925005724653602,
+        "p95": 0.10299996938556433,
+        "maximum": 0.11520006228238344
+      },
+      "total_processing_ms": 7.178599946200848,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "392c61e3e62e4ad76d2301dc084e27d69aef7a82b3861094fd378bbea8cfa257"
+    },
+    {
+      "name": "branch_merge",
+      "kind": "synthetic",
+      "observations": 113,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 110,
+      "statuses": {
+        "uncertain": 12,
+        "matched": 101
+      },
+      "events": {
+        "pass": 2
+      },
+      "route": {
+        "confirmed": 101,
+        "correct": 101,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.9181818181818182
+      },
+      "direction": {
+        "confirmed": 101,
+        "correct": 101,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.9181818181818182
+      },
+      "observed_along_track_error_m": {
+        "n": 101,
+        "mean": 2.26088196129609,
+        "median": 1.7277159631926224,
+        "p95": 6.087954656249167,
+        "maximum": 7.359649139312751
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 101,
+        "mean": 2.2608802763067,
+        "median": 1.7277273867950849,
+        "p95": 6.087947121658403,
+        "maximum": 7.359678444708044
+      },
+      "processing_ms": {
+        "n": 113,
+        "mean": 0.06134690205871531,
+        "median": 0.05449994932860136,
+        "p95": 0.09539991151541471,
+        "maximum": 0.16519997734576464
+      },
+      "total_processing_ms": 6.9321999326348305,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "8eaf8580ccc3d1bd6750f9142f2cea2adfa04e2d363cc3d424fca693ca1b6ca0"
+    },
+    {
+      "name": "parallel",
+      "kind": "synthetic",
+      "observations": 61,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 58,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 59
+      },
+      "events": {
+        "pass": 1
+      },
+      "route": {
+        "confirmed": 58,
+        "correct": 58,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 58,
+        "correct": 58,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 59,
+        "mean": 2.2659127847363134,
+        "median": 2.124820011036718,
+        "p95": 4.499952267234221,
+        "maximum": 6.9872436825544355
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 59,
+        "mean": 2.2659016621848322,
+        "median": 2.124819129873057,
+        "p95": 4.499950871285875,
+        "maximum": 6.987242100456637
+      },
+      "processing_ms": {
+        "n": 61,
+        "mean": 0.07270163948052243,
+        "median": 0.06510003004223108,
+        "p95": 0.1094000181183219,
+        "maximum": 0.12719992082566023
+      },
+      "total_processing_ms": 4.434800008311868,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "62357e96538b8371b3b87c90d1d7ced3f0800aee597161d60089124517e9d744"
+    },
+    {
+      "name": "endpoint",
+      "kind": "synthetic",
+      "observations": 23,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 20,
+      "statuses": {
+        "uncertain": 5,
+        "matched": 18
+      },
+      "events": {},
+      "route": {
+        "confirmed": 17,
+        "correct": 17,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.85
+      },
+      "direction": {
+        "confirmed": 17,
+        "correct": 17,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.85
+      },
+      "observed_along_track_error_m": {
+        "n": 18,
+        "mean": 2.394047167304709,
+        "median": 2.8415831687148057,
+        "p95": 4.499952197321363,
+        "maximum": 4.583154000360992
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 18,
+        "mean": 2.3940472210691692,
+        "median": 2.8415832086786983,
+        "p95": 4.499950830724212,
+        "maximum": 4.583155466594862
+      },
+      "processing_ms": {
+        "n": 23,
+        "mean": 0.06709565185820279,
+        "median": 0.06469991058111191,
+        "p95": 0.07960002403706312,
+        "maximum": 0.09259989019483328
+      },
+      "total_processing_ms": 1.5431999927386642,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "e1e2299c192b17fbe62e151f3e7feea3e591a821a35b374447030a68fdcdfac3"
+    },
+    {
+      "name": "position_jump",
+      "kind": "synthetic",
+      "observations": 64,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 60,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 61,
+        "predicted": 1
+      },
+      "events": {},
+      "route": {
+        "confirmed": 60,
+        "correct": 60,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 60,
+        "correct": 60,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 61,
+        "mean": 2.2521016712084334,
+        "median": 2.1248190375563354,
+        "p95": 4.4999511175669795,
+        "maximum": 6.987241974334211
+      },
+      "predicted_along_track_error_m": {
+        "n": 1,
+        "mean": 3.0667339177193753,
+        "median": 3.0667339177193753,
+        "p95": 3.0667339177193753,
+        "maximum": 3.0667339177193753
+      },
+      "observed_horizontal_error_m": {
+        "n": 61,
+        "mean": 2.2521014473823877,
+        "median": 2.1248187631535553,
+        "p95": 4.499950826742598,
+        "maximum": 6.98724224251788
+      },
+      "processing_ms": {
+        "n": 64,
+        "mean": 0.09500781015958637,
+        "median": 0.06465002661570907,
+        "p95": 0.10529998689889908,
+        "maximum": 1.6488999826833606
+      },
+      "total_processing_ms": 6.080499850213528,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "65f3e009cec6546d7a19c344abb67a5b566c94d7e3e0a44e70804fce2de4536b"
+    },
+    {
+      "name": "speed_spike",
+      "kind": "synthetic",
+      "observations": 64,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 61,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 62
+      },
+      "events": {
+        "pass": 1
+      },
+      "route": {
+        "confirmed": 61,
+        "correct": 61,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 61,
+        "correct": 61,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 62,
+        "mean": 2.229894180163507,
+        "median": 2.043042303294442,
+        "p95": 4.39765914052532,
+        "maximum": 6.987241974334211
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 62,
+        "mean": 2.2298939683181715,
+        "median": 2.04304194432785,
+        "p95": 4.397657460832716,
+        "maximum": 6.98724224251788
+      },
+      "processing_ms": {
+        "n": 64,
+        "mean": 0.07164218914113007,
+        "median": 0.06434996612370014,
+        "p95": 0.11000002268701792,
+        "maximum": 0.12690003495663404
+      },
+      "total_processing_ms": 4.585100105032325,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "737ae6f896470e84f8457aa198fa293039e29d310162fd05b08d7890ca4146b7"
+    },
+    {
+      "name": "poor_accuracy",
+      "kind": "synthetic",
+      "observations": 64,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 51,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 52,
+        "predicted": 5,
+        "rejected": 5
+      },
+      "events": {},
+      "route": {
+        "confirmed": 51,
+        "correct": 51,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 51,
+        "correct": 51,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 52,
+        "mean": 2.1437041526155465,
+        "median": 1.9167875461596395,
+        "p95": 4.39765914052532,
+        "maximum": 6.9204192967622475
+      },
+      "predicted_along_track_error_m": {
+        "n": 5,
+        "mean": 3.0667339177191026,
+        "median": 3.0667339177189206,
+        "p95": 3.0667339177193753,
+        "maximum": 3.0667339177193753
+      },
+      "observed_horizontal_error_m": {
+        "n": 52,
+        "mean": 2.1437038545097016,
+        "median": 1.9167870419919677,
+        "p95": 4.397657460832716,
+        "maximum": 6.92041661096656
+      },
+      "processing_ms": {
+        "n": 64,
+        "mean": 0.0636921868135687,
+        "median": 0.06415002280846238,
+        "p95": 0.10810000821948051,
+        "maximum": 0.161800067871809
+      },
+      "total_processing_ms": 4.076299956068397,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "4d2aa7dfe65b1b065668c84cd7dadbb86c6bf4106e9fad424b8081f05f340421"
+    },
+    {
+      "name": "signal_loss",
+      "kind": "synthetic",
+      "observations": 64,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 56,
+      "statuses": {
+        "uncertain": 2,
+        "matched": 57,
+        "predicted": 5
+      },
+      "events": {
+        "pass": 1
+      },
+      "route": {
+        "confirmed": 56,
+        "correct": 56,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "direction": {
+        "confirmed": 56,
+        "correct": 56,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 1.0
+      },
+      "observed_along_track_error_m": {
+        "n": 57,
+        "mean": 2.150435123849212,
+        "median": 1.8723095232867308,
+        "p95": 4.39765914052532,
+        "maximum": 6.987241974334211
+      },
+      "predicted_along_track_error_m": {
+        "n": 5,
+        "mean": 3.395016568184201,
+        "median": 3.395016568184019,
+        "p95": 3.3950165681844737,
+        "maximum": 3.3950165681844737
+      },
+      "observed_horizontal_error_m": {
+        "n": 57,
+        "mean": 2.1504348126311483,
+        "median": 1.8723089584817914,
+        "p95": 4.397657460832716,
+        "maximum": 6.98724224251788
+      },
+      "processing_ms": {
+        "n": 64,
+        "mean": 0.06615625170525163,
+        "median": 0.06364996079355478,
+        "p95": 0.10379997547715902,
+        "maximum": 0.12720003724098206
+      },
+      "total_processing_ms": 4.234000109136105,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "9cfd08a43b1bbcf8e5440c9db35a07711b0cd21327da4d2321267ad5b74d2d26"
+    },
+    {
+      "name": "long_signal_loss",
+      "kind": "synthetic",
+      "observations": 64,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 31,
+      "statuses": {
+        "uncertain": 4,
+        "matched": 30,
+        "predicted": 5,
+        "lost": 25
+      },
+      "events": {},
+      "route": {
+        "confirmed": 29,
+        "correct": 29,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.9354838709677419
+      },
+      "direction": {
+        "confirmed": 29,
+        "correct": 29,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.9354838709677419
+      },
+      "observed_along_track_error_m": {
+        "n": 30,
+        "mean": 1.8902565195613534,
+        "median": 1.4485416627558152,
+        "p95": 4.114973812008429,
+        "maximum": 4.4999511175669795
+      },
+      "predicted_along_track_error_m": {
+        "n": 5,
+        "mean": 0.3218766441164007,
+        "median": 0.3218766441164007,
+        "p95": 0.3218766441164007,
+        "maximum": 0.3218766441164007
+      },
+      "observed_horizontal_error_m": {
+        "n": 30,
+        "mean": 1.8902561883654585,
+        "median": 1.4485415898458363,
+        "p95": 4.114971320768445,
+        "maximum": 4.499950826742598
+      },
+      "processing_ms": {
+        "n": 64,
+        "mean": 0.039224998545250855,
+        "median": 0.06125000072643161,
+        "p95": 0.09220000356435776,
+        "maximum": 0.12550002429634333
+      },
+      "total_processing_ms": 2.5103999068960547,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "18e59ff1832b1071ae1815b833a5d96ac9a4165759febab264be022de5f19ad8"
+    },
+    {
+      "name": "tunnel_reentry",
+      "kind": "synthetic",
+      "observations": 64,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 30,
+      "statuses": {
+        "uncertain": 5,
+        "matched": 14,
+        "predicted": 5,
+        "lost": 25,
+        "rejected": 15
+      },
+      "events": {},
+      "route": {
+        "confirmed": 13,
+        "correct": 13,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.43333333333333335
+      },
+      "direction": {
+        "confirmed": 13,
+        "correct": 13,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.43333333333333335
+      },
+      "observed_along_track_error_m": {
+        "n": 14,
+        "mean": 2.1505871705427517,
+        "median": 2.0782915872730428,
+        "p95": 4.114973812008429,
+        "maximum": 4.4999511175669795
+      },
+      "predicted_along_track_error_m": {
+        "n": 5,
+        "mean": 0.3218766441164007,
+        "median": 0.3218766441164007,
+        "p95": 0.3218766441164007,
+        "maximum": 0.3218766441164007
+      },
+      "observed_horizontal_error_m": {
+        "n": 14,
+        "mean": 2.150586319129144,
+        "median": 2.078290461385884,
+        "p95": 4.114971320768445,
+        "maximum": 4.499950826742598
+      },
+      "processing_ms": {
+        "n": 64,
+        "mean": 0.03871250373777002,
+        "median": 0.037849938962608576,
+        "p95": 0.09430001955479383,
+        "maximum": 0.22409996017813683
+      },
+      "total_processing_ms": 2.4776002392172813,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "60168692e58ca1e2c892cdac95531c099dcde807e037f8527ab29a7be034ccd6"
+    },
+    {
+      "name": "ambiguous_stationary",
+      "kind": "synthetic",
+      "observations": 12,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 9,
+      "statuses": {
+        "uncertain": 12
+      },
+      "events": {},
+      "route": {
+        "confirmed": 0,
+        "correct": 0,
+        "accuracy_when_confirmed": null,
+        "coverage": 0.0
+      },
+      "direction": {
+        "confirmed": 0,
+        "correct": 0,
+        "accuracy_when_confirmed": null,
+        "coverage": 0.0
+      },
+      "observed_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "processing_ms": {
+        "n": 12,
+        "mean": 0.07242500820818047,
+        "median": 0.06775005022063851,
+        "p95": 0.08110003545880318,
+        "maximum": 0.10299996938556433
+      },
+      "total_processing_ms": 0.8691000984981656,
+      "network_edges": 16,
+      "network_sha256": "3da1e892a3d133b32798b5f9ccdd10922840da71e6475995aca53246b81d44c4",
+      "input_sha256": "834f54a9974486574e5eb1fa7a6239a7825eb0fc1ce0a7d680394d19bcdad312"
+    },
+    {
+      "name": "corridor_full",
+      "kind": "synthetic",
+      "observations": 157,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 154,
+      "statuses": {
+        "uncertain": 5,
+        "matched": 152
+      },
+      "events": {},
+      "route": {
+        "confirmed": 151,
+        "correct": 151,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.9805194805194806
+      },
+      "direction": {
+        "confirmed": 151,
+        "correct": 151,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.9805194805194806
+      },
+      "observed_along_track_error_m": {
+        "n": 152,
+        "mean": 4.372563772553859,
+        "median": 3.663191367722902,
+        "p95": 12.143158742812375,
+        "maximum": 17.61954182858608
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 152,
+        "mean": 4.3719053340146585,
+        "median": 3.6625335798702734,
+        "p95": 12.113639578427184,
+        "maximum": 17.64616134687482
+      },
+      "processing_ms": {
+        "n": 157,
+        "mean": 0.19540445831645825,
+        "median": 0.11369993444532156,
+        "p95": 0.8175000548362732,
+        "maximum": 1.1030999012291431
+      },
+      "total_processing_ms": 30.678499955683947,
+      "network_edges": 180,
+      "network_sha256": "45c6ac24b8113e88a978c735f6c53d5e8715ea34cfe32c4c347b03852fc33d7a",
+      "input_sha256": "092872ca4addf8afe6786efe8bc66dc2862ef51ccfc804e53edd4eebd4a630c1"
+    },
+    {
+      "name": "corridor_reverse",
+      "kind": "synthetic",
+      "observations": 157,
+      "startup_fixes_excluded": 3,
+      "valid_sensor_fixes_after_startup": 154,
+      "statuses": {
+        "uncertain": 3,
+        "matched": 154
+      },
+      "events": {},
+      "route": {
+        "confirmed": 153,
+        "correct": 153,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.9935064935064936
+      },
+      "direction": {
+        "confirmed": 153,
+        "correct": 153,
+        "accuracy_when_confirmed": 1.0,
+        "coverage": 0.9935064935064936
+      },
+      "observed_along_track_error_m": {
+        "n": 154,
+        "mean": 4.580628940374168,
+        "median": 3.850376401358517,
+        "p95": 11.425258082861546,
+        "maximum": 15.757584628518089
+      },
+      "predicted_along_track_error_m": {
+        "n": 0,
+        "mean": null,
+        "median": null,
+        "p95": null,
+        "maximum": null
+      },
+      "observed_horizontal_error_m": {
+        "n": 154,
+        "mean": 4.580024866501018,
+        "median": 3.8535665868918376,
+        "p95": 11.445551239741958,
+        "maximum": 15.783992437196195
+      },
+      "processing_ms": {
+        "n": 157,
+        "mean": 0.19279617673842012,
+        "median": 0.11330004781484604,
+        "p95": 0.8015999337658286,
+        "maximum": 1.1113000800833106
+      },
+      "total_processing_ms": 30.268999747931957,
+      "network_edges": 180,
+      "network_sha256": "45c6ac24b8113e88a978c735f6c53d5e8715ea34cfe32c4c347b03852fc33d7a",
+      "input_sha256": "da4774c3e72707ca51b61a5773753b3ff3d6f2ee3e89c569072448d1b13a57ca"
+    }
+  ]
+}

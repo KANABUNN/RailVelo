@@ -1,0 +1,142 @@
+{
+  "status": "PASS_WITH_DOCUMENTED_LIMITATIONS",
+  "passed": 22,
+  "total": 22,
+  "checks": [
+    {
+      "name": "unique_ids",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "all_geometry_finite",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "positive_lengths",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "exact_edge_node_endpoints",
+      "passed": true,
+      "details": {
+        "errors": []
+      }
+    },
+    {
+      "name": "point_measures_preserved",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "independent_ellipsoid_length_recomputation",
+      "passed": true,
+      "details": {
+        "maximum_error_m": 4.9801464228949044e-05
+      }
+    },
+    {
+      "name": "no_duplicate_geometry_within_same_route",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "continuous_reference_path_without_snap",
+      "passed": true,
+      "details": {
+        "errors": []
+      }
+    },
+    {
+      "name": "configured_stations_monotonic",
+      "passed": true,
+      "details": {
+        "count": 32
+      }
+    },
+    {
+      "name": "station_extent_contains_center",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "center_length_matches_upstream",
+      "passed": true,
+      "details": {
+        "center_length_m": 77552.43291229702
+      }
+    },
+    {
+      "name": "sqlite_integrity",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "sqlite_foreign_keys",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "sqlite_count_nodes",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "sqlite_count_edges",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "sqlite_count_routes",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "sqlite_count_route_edges",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "sqlite_count_stations",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "sqlite_count_route_stations",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "sqlite_runtime_values_match_json",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "no_fabricated_cross_route_connections",
+      "passed": true,
+      "details": {}
+    },
+    {
+      "name": "competing_routes_have_no_invented_chainage",
+      "passed": true,
+      "details": {}
+    }
+  ],
+  "counts": {
+    "nodes": 193,
+    "physical_edges": 180,
+    "reference_edges": 117,
+    "alternate_edges": 3,
+    "nearby_competitor_edges": 60,
+    "routes": 16,
+    "stations": 32,
+    "source_junction_candidates": 6
+  },
+  "center_length_m": 77552.43291229702,
+  "full_path_length_m": 77787.40077250605,
+  "interstation_min_m": 878.6711747044046,
+  "interstation_max_m": 5480.511913909785,
+  "sqlite_sha256": "6c3bd3760afd8920bfd4f7f26522316e4d641da44a1d25e493e9a6a38e491aa1"
+}

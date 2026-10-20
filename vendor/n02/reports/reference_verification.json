@@ -1,0 +1,75 @@
+{
+  "official_station_list": {
+    "url": "https://www.jrkyushu-timetable.jp/sp/railway_list.html",
+    "status": 200,
+    "bytes": 79309,
+    "sha256": "de04c78d7cf809ba6685137129d9ced9d1d3dee67652df0442f991ec23603115",
+    "retrieved_utc": "2026-10-20T12:23:06.907248+00:00",
+    "verified_station_order": [
+      "門司港",
+      "小森江",
+      "門司",
+      "小倉",
+      "西小倉",
+      "九州工大前",
+      "戸畑",
+      "枝光",
+      "スペースワールド",
+      "八幡",
+      "黒崎",
+      "陣原",
+      "折尾",
+      "水巻",
+      "遠賀川",
+      "海老津",
+      "教育大前",
+      "赤間",
+      "東郷",
+      "東福間",
+      "福間",
+      "千鳥",
+      "古賀",
+      "ししぶ",
+      "新宮中央",
+      "福工大前",
+      "九産大前",
+      "香椎",
+      "千早",
+      "箱崎",
+      "吉塚",
+      "博多"
+    ],
+    "verified_count": 32
+  },
+  "official_direction": {
+    "url": "https://www.jrkyushu-timetable.jp/cgi-bin/sp/sp-tt_list.cgi/28345",
+    "status": 200,
+    "bytes": 7881,
+    "sha256": "c33426d4f534df34bd5bcc5bfe7435cefcdb70b7bf67384869170d3f367ce97a",
+    "retrieved_utc": "2026-10-20T12:23:07.023563+00:00",
+    "verified_direction": "小倉・博多・久留米・大牟田方面（下り）"
+  },
+  "official_operating_km": {
+    "url": "https://www.jrkyushu.co.jp/company/info/data/pdf/2024senku.pdf",
+    "status": 403,
+    "error": "Direct Python retrieval rejected; official PDF was read using the web research tool",
+    "retrieved_utc": "2026-10-20T12:23:07.121197+00:00",
+    "facts": {
+      "source_url": "https://www.jrkyushu.co.jp/company/info/data/pdf/2024senku.pdf",
+      "source_reference": "2024年度末 線区別ご利用状況、PDF 1ページ目の在来線（幹線）",
+      "segments": [
+        {
+          "from": "門司港",
+          "to": "小倉",
+          "operating_km": 11.0
+        },
+        {
+          "from": "小倉",
+          "to": "博多",
+          "operating_km": 67.2
+        }
+      ]
+    },
+    "fact_verification": "Manual reading of official PDF page 1 in this run; this script verifies retrieval/hash, not PDF numeric extraction"
+  }
+}

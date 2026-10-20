@@ -1,0 +1,47 @@
+[
+  {
+    "layer": "RailroadSection",
+    "decision": "line_filter",
+    "count": 1130
+  },
+  {
+    "layer": "RailroadSection",
+    "decision": "operator_filter",
+    "count": 20570
+  },
+  {
+    "layer": "RailroadSection",
+    "decision": "outside_source_through_graph",
+    "count": 158
+  },
+  {
+    "layer": "RailroadSection",
+    "decision": "selected_partly_or_fully",
+    "count": 75
+  },
+  {
+    "layer": "Station",
+    "decision": "line_filter",
+    "count": 523
+  },
+  {
+    "layer": "Station",
+    "decision": "operator_filter",
+    "count": 9612
+  },
+  {
+    "layer": "Station",
+    "decision": "outside_target_station_order",
+    "count": 64
+  },
+  {
+    "layer": "Station",
+    "decision": "preserved_unmapped_station_variant",
+    "count": 3
+  },
+  {
+    "layer": "Station",
+    "decision": "selected_partly_or_fully",
+    "count": 32
+  }
+]

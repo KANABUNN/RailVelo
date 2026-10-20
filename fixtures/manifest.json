@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "kind": "synthetic_only",
+  "seed": 42,
+  "generator": "scripts/generate_fixtures.py",
+  "scenarios": [
+    {
+      "name": "normal",
+      "network": "synthetic_network.json",
+      "observations": "normal.jsonl",
+      "truth": "normal.truth.jsonl",
+      "count": 64
+    },
+    {
+      "name": "reverse",
+      "network": "synthetic_network.json",
+      "observations": "reverse.jsonl",
+      "truth": "reverse.truth.jsonl",
+      "count": 64
+    },
+    {
+      "name": "station_stop_depart",
+      "network": "synthetic_network.json",
+      "observations": "station_stop_depart.jsonl",
+      "truth": "station_stop_depart.truth.jsonl",
+      "count": 57
+    },
+    {
+      "name": "station_pass",
+      "network": "synthetic_network.json",
+      "observations": "station_pass.jsonl",
+      "truth": "station_pass.truth.jsonl",
+      "count": 39
+    },
+    {
+      "name": "between_station_stop",
+      "network": "synthetic_network.json",
+      "observations": "between_station_stop.jsonl",
+      "truth": "between_station_stop.truth.jsonl",
+      "count": 82
+    },
+    {
+      "name": "branch_merge",
+      "network": "synthetic_network.json",
+      "observations": "branch_merge.jsonl",
+      "truth": "branch_merge.truth.jsonl",
+      "count": 113
+    },
+    {
+      "name": "parallel",
+      "network": "synthetic_network.json",
+      "observations": "parallel.jsonl",
+      "truth": "parallel.truth.jsonl",
+      "count": 61
+    },
+    {
+      "name": "endpoint",
+      "network": "synthetic_network.json",
+      "observations": "endpoint.jsonl",
+      "truth": "endpoint.truth.jsonl",
+      "count": 23
+    },
+    {
+      "name": "position_jump",
+      "network": "synthetic_network.json",
+      "observations": "position_jump.jsonl",
+      "truth": "position_jump.truth.jsonl",
+      "count": 64
+    },
+    {
+      "name": "speed_spike",
+      "network": "synthetic_network.json",
+      "observations": "speed_spike.jsonl",
+      "truth": "speed_spike.truth.jsonl",
+      "count": 64
+    },
+    {
+      "name": "poor_accuracy",
+      "network": "synthetic_network.json",
+      "observations": "poor_accuracy.jsonl",
+      "truth": "poor_accuracy.truth.jsonl",
+      "count": 64
+    },
+    {
+      "name": "signal_loss",
+      "network": "synthetic_network.json",
+      "observations": "signal_loss.jsonl",
+      "truth": "signal_loss.truth.jsonl",
+      "count": 64
+    },
+    {
+      "name": "long_signal_loss",
+      "network": "synthetic_network.json",
+      "observations": "long_signal_loss.jsonl",
+      "truth": "long_signal_loss.truth.jsonl",
+      "count": 64
+    },
+    {
+      "name": "tunnel_reentry",
+      "network": "synthetic_network.json",
+      "observations": "tunnel_reentry.jsonl",
+      "truth": "tunnel_reentry.truth.jsonl",
+      "count": 64
+    },
+    {
+      "name": "ambiguous_stationary",
+      "network": "synthetic_network.json",
+      "observations": "ambiguous_stationary.jsonl",
+      "truth": "ambiguous_stationary.truth.jsonl",
+      "count": 12
+    },
+    {
+      "name": "corridor_full",
+      "network": "../data/network.json",
+      "observations": "corridor_full.jsonl",
+      "truth": "corridor_full.truth.jsonl",
+      "count": 157
+    },
+    {
+      "name": "corridor_reverse",
+      "network": "../data/network.json",
+      "observations": "corridor_reverse.jsonl",
+      "truth": "corridor_reverse.truth.jsonl",
+      "count": 157
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+name: Swift and iOS offline engine
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  swift-and-parity:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Python reference unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Swift package unit tests
+        run: swift test --package-path swift
+      - name: iOS Simulator library build
+        working-directory: swift
+        run: |
+          xcodebuild -scheme RailVeloLocation -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/ios CODE_SIGNING_ALLOWED=NO build
+          xcodebuild -scheme RailVeloSQLite -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/ios CODE_SIGNING_ALLOWED=NO build
+      - name: Compare Python and Swift replays for every shared fixture
+        env:
+          PYTHONPATH: python
+        run: |
+          swift build --package-path swift -c release
+          mkdir -p artifacts/parity
+          python - <<'PY'
+          import json, pathlib, subprocess, sys
+          manifest = json.loads(pathlib.Path('fixtures/manifest.json').read_text())
+          for scenario in manifest['scenarios']:
+              name = scenario['name']
+              network = 'fixtures/' + scenario['network']
+              observations = 'fixtures/' + scenario['observations']
+              py_out = f'artifacts/parity/{name}.python.jsonl'
+              sw_out = f'artifacts/parity/{name}.swift.jsonl'
+              subprocess.run([sys.executable, 'scripts/replay.py', network, observations, '--output', py_out], check=True)
+              subprocess.run(['swift/.build/release/railvelo-replay', '--network', network, '--input', observations, '--output', sw_out], check=True)
+              subprocess.run([sys.executable, 'scripts/compare_replays.py', py_out, sw_out], check=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: swift-python-parity-replays
+          path: artifacts/parity/

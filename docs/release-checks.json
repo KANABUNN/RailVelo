@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-20",
+  "status": "PASS_WITH_UNVERIFIED_SWIFT_AND_DEVICE_SCOPE",
+  "python_tests": 36,
+  "synthetic_scenarios": 17,
+  "synthetic_observations": 1213,
+  "runtime_sqlite_sha256": "6c3bd3760afd8920bfd4f7f26522316e4d641da44a1d25e493e9a6a38e491aa1",
+  "database_reproduction_identical": true,
+  "fixture_reproduction_identical": true,
+  "sqlite_json_replay_identical_rows": 157,
+  "python_files_parsed": 14,
+  "swift_compiled": false,
+  "python_swift_replay_compared": false,
+  "ios_simulator_built": false,
+  "iphone_tested": false,
+  "real_gps_evaluated": false
+}

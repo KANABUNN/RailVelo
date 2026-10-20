@@ -123,10 +123,17 @@ public final class Network {
         let minY = Int(floor((point.lat - latRadius) / Self.cellSize)), maxY = Int(floor((point.lat + latRadius) / Self.cellSize))
         var ids = Set<String>()
         for x in minX...maxX { for y in minY...maxY { ids.formUnion(spatialIndex["\(x):\(y)"] ?? []) } }
-        return ids.map { geometry[$0]!.project(point, edgeId: $0) }
-            .filter { $0.distance <= radius }
-            .sorted { $0.distance == $1.distance ? $0.edgeId < $1.edgeId : $0.distance < $1.distance }
-            .prefix(12).map { $0 }
+        var projections: [Projection] = []
+        projections.reserveCapacity(ids.count)
+        for edgeId in ids {
+            let projection: Projection = geometry[edgeId]!.project(point, edgeId: edgeId)
+            if projection.distance <= radius { projections.append(projection) }
+        }
+        projections.sort { (left: Projection, right: Projection) -> Bool in
+            if left.distance == right.distance { return left.edgeId < right.edgeId }
+            return left.distance < right.distance
+        }
+        return Array(projections.prefix(12))
     }
 
     func shortestDistance(from: String, to: String, limit: Double) -> Double {

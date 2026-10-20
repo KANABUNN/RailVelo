@@ -26,26 +26,34 @@
 6. 現在/最高速度、GPS精度と状態、路線・方面、前後駅、残距離・進捗・候補支持度、60秒/5分/全体グラフ、履歴画面を作成した。直近バッファと全体グラフ点数を制限し、欠測・無効速度・一時停止を線で結ばない構成とした。
 7. 実GPSの記録中だけ背景位置情報を有効化し、一時停止・終了・リプレイでは停止する。OS終了後の自動復帰による無欠測記録を保証せず、残る未終了セッションを再起動時に中断扱いへ変更する。
 8. 履歴保存ディレクトリに端末ファイル保護とバックアップ除外を設定した。CSV共有先は本人が選び、一時出力は次のエクスポート時に24時間超の古いものを削除する。位置履歴を外部へ自動送信する機能は追加していない。
-9. Core/SQLiteのXCTest 12件に加え、RecordingのXCTest 13件を作成した。Pythonは36/36件の再実行に成功した。Swiftの25件はコンパイル・実行待ちである。
-10. iOS CIへXcode選択、Swift試験、Simulator/端末向け署名なしビルド、リプレイ起動、DBの有効速度/確定推定確認、ライト/ダーク画像、中断復旧の確認を定義した。
+9. Core/SQLiteのXCTest 12件に加え、RecordingのXCTest 17件を作成し、macOS CIで29/29件の成功を確認した。PythonもWindowsとengine CIで36/36件成功。保存時刻とGPS/リプレイ時刻を分離し、中断復旧の終了時刻が開始時刻より前にならない処理と既存DBへの列追加も試験した。
+10. Swift/Python試験と17 fixture比較はengine CIで実行し成功した。アプリCIへXcode選択、Simulator/端末向け署名なしビルド、built Info.plist/同梱リソース、リプレイ起動、DBの有効速度/確定推定確認、ライト/ダーク画像、中断復旧を定義し、こちらも成功した。アプリCIではengine試験を重複実行しない。
 11. `TECHNICAL_DESIGN_v0.4.md`、`APPLE_SETUP.md`、`DEVICE_TEST_PLAN.md`を作成し、READMEと検証記録を更新した。v0.1/v0.2設計書本文の未取得は継続する。
 
 ### 実行・Apple設定の状態
 
-- 最初の [macOS CI](https://github.com/KANABUNN/RailVelo-private-backup-20261021/actions/runs/39443935454) はprivateリポジトリの支払い・利用上限に関する理由で約6秒後、処理開始前に失敗した。Swiftコンパイルは行われていない。公開準備後の再実行を予定している。
-- Appleのアカウント画面を読み取り、有効な会員資格と契約同意済みの状態を確認した。本アプリのApp IDとApp Store Connectアプリの登録は準備中。秘密鍵・署名資料の設定、アップロード、TestFlight配布、iPhone導入は未完了である。
-- Simulator、実GPS、iPhone 16、背景継続、長時間・電池、実走は未検証。現在の完成範囲はアプリソース・設定・自動確認定義とWindowsでのPython試験である。
+- [アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39453148802) がcommit `8808fdd9f4bccf9122b7dceedfac99b60285a0eb`でsuccess。`macos-26` arm64、Xcode 26.6（17F113）/ iOS 26.5 SDK、iPhone 16 Simulator runtime 26.5で、Simulator/端末向け署名なしビルド、built Info.plist/同梱リソース、リプレイDB5観測・有効速度5件・matched3件、`interrupted`への中断復旧が成功した。
+- ライト/ダークは実画像の背景3点平均輝度（約0.9648 / 0.0）と目視で切替を確認した。画像では合成速度71.7 km/h、鹿児島本線・博多方面・駅間進捗を確認。グラフは画像の下にあり、今回の目視に含まれない。UI全操作・VoiceOverも未検証として残す。
+- [engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39447558500) がcommit `e206e23aacaaf9dcc298c54557808fda13ce40ba`で成功。Xcode 16.4 / iOS Simulator 18.5 SDK、Python36件、Swift29件、Core Location/SQLiteのiOS Simulator向けライブラリビルド、17 fixture全件のPython/Swift比較に成功した。
+- engine runnerは`macos-15-intel`、アプリrunnerは`macos-26`（arm64）。関連pathのみの自動実行とブランチ単位のconcurrencyで実行数を抑える。
+- 過去試行ではprivate実行のアカウント制約、Network/type guardとpkg-config経由ホストdylib参照、Simulatorの待機・scene設定・ダーク画像反映を修正した。現在表示は観測時刻から5秒で失効させ、古いキュー結果の再表示と受信継続中の偽欠測を防いだ。[前段CI](https://github.com/KANABUNN/RailVelo/actions/runs/39450278021) はDB・中断復旧まで成功したがdark画像がlightだったため、最終runで画像の輝度検査と目視を追加して成功を確認した。
+- 利用者の明示許可を得て、合成リプレイの失敗画面と件数を診断artifactへ保存する設定を追加した。保持期間は1日で、実GPS・個人データは対象に含めない。
+- Appleのアカウント画面を読み取り、有効な会員資格と契約同意済みの状態を確認した。Explicit App ID `jp.kb-dev.railvelo`（Description: RailVelo）の登録完了を一覧で直接確認した。App Store Connectアプリ「RailVelo」（ID `6824978233`、日本語、SKU `railvelo-ios`、Bundle ID `jp.kb-dev.railvelo`）も登録完了を確認した。
+- 内部グループ「本人検証」を作成した。自動配信オフ、テスター0人、ビルド0件、公開リンクなし。招待・証明書/APIキー生成・署名・アップロードは行っていない。個人情報を除いたApple画面証跡はリポジトリ外に保存し、公開ソースへ含めない。対象buildの割当、TestFlight配布、iPhone導入は未完了である。
+- 署名・TestFlight・iPhone実GPS・背景継続・長時間/電池・実走は未検証。Simulatorでの限定したリプレイ、DB、中断復旧、ライト/ダークの成功と、iPhone実機受入を区別する。
 
 ### 公開前の点検と履歴整理
 
 初期の1 commit・157 blob、SQLite 2個、原典ZIP/PDF/HTMLを読み取り点検した。既知の秘密鍵・トークン・具体的credentialのパターンは0件。旧DBの個人記録用4テーブルは全て空、fixtureは固定seedの合成GPS。原典5ファイルは取得manifestのSHA-256と一致した。公式ライセンスHTMLの公開連絡先は原典由来として区別した。
 
-初期commitのauthor情報とログのユーザー名入りローカルパスを整理した。旧commitのGitHub上での直接参照が残るため、既存リポジトリをprivateの退避先へ移し、新しい`RailVelo`へ整理済み履歴を反映する準備を進めている。公開前に新リポジトリを再点検し、公開設定は利用者が行う。署名資料・実走CSV・端末ログは今後もGitへ追加しない。
+初期commitのauthor情報とログのユーザー名入りローカルパスを整理した。旧commitのGitHub上での直接参照が残るため、既存リポジトリをprivateの退避先へ移し、新しい`RailVelo`を作成した。clean root commit `2e238881f4a3428eec79a51e03f8ce178db75408`を反映し、旧commitを新リポジトリからfetchできないことを確認した。利用者が公開設定を変更したことをGitHubのリポジトリ情報で確認し、アプリソースも反映した。署名資料・実走CSV・端末ログは今後もGitへ追加しない。
+
+最終反映前の整合性確認用に`update_manifest.py`を追加した。変更をステージした後、`python scripts/update_manifest.py`でGitの正規内容からSHA-256一覧を再生成し、`python scripts/update_manifest.py --verify`で一致を確認した。作業ツリーの改行変換後の内容ではなく、ステージ済み内容が対象である。最終差分と到達可能な全履歴の公開監査でも秘密情報・個人メール入りcommit情報の検出はなかった。最終反映は文書・監査/整合性補助のみで、検証済みアプリ・エンジンのソースは変更していない。
 
 ### 再開する順序
 
-1. 整理済み履歴を新リポジトリへ反映し、秘密・個人情報・リモートの状態を再点検する。
-2. 利用者による公開設定後、macOSでSwift 25件・17シナリオ比較・iOSビルド・Simulator検証を実行する。失敗箇所を修正して成功runと対象commitを記録する。
-3. Apple登録、署名、本人用の内部TestFlight配布を進める。認証と秘密鍵の設定は利用者が安全な画面で行う。
+1. 最終反映時にステージ内容とSHA-256一覧を照合し、未検証のグラフ目視・UI全操作・VoiceOverの確認を進める。Swift29件・Python36件・17シナリオ比較・アプリビルド・Simulatorリプレイ/DB/中断復旧/ライト・ダークは成功済み。
+2. 署名資料とアップロード方法を整え、本人用の内部TestFlight配布を進める。認証と秘密鍵の設定は利用者が安全な画面で行う。
+3. 署名付きアップロード、Apple処理完了、本人用テストグループと対象buildの割当を確認する。
 4. iPhone 16へ導入し、`DEVICE_TEST_PLAN.md`に従って前面GPS、拒否・概算位置、古い速度・欠測、ロック/別アプリ、中断復旧、保存・CSV、電池を確認する。
 5. 門司港〜博多の実走ログで並走・折尾・トンネル・駅イベントを評価し、未較正の閾値と長時間性能を改善する。

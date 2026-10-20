@@ -2,7 +2,7 @@
 
 更新日: 2026-10-21。対象: 個人用RailVelo、iPhone 16、内部TestFlight配布。
 
-Apple Developer Programは利用者から登録済みと回答されている。本アプリのApple側の実際の登録・署名・配布状態とビルド結果は [検証記録](VALIDATION.md) と [作業記録](WORK_LOG.md) に記録する。本書の手順が存在することだけでは、それらを実施済みと扱わない。
+Apple Developer Programの有効な会員資格・契約同意済み状態、Explicit App ID `jp.kb-dev.railvelo`、App Store Connectアプリ「RailVelo」（ID `6824978233`）の登録完了を画面で確認済み。内部グループ「本人検証」は作成済みで、自動配信オフ・テスター0人・ビルド0件・公開リンクなし。招待・証明書/APIキー生成・署名・アップロードは未実施。本アプリの実際の登録・署名・配布状態とビルド結果は [検証記録](VALIDATION.md) と [作業記録](WORK_LOG.md) に記録する。本書の手順が存在することだけでは、それらを実施済みと扱わない。
 
 ## 1. 作業の区切り
 
@@ -23,7 +23,7 @@ Apple Developer Programは利用者から登録済みと回答されている。
 
 App Store Connectへのアップロードは2026-04-28以降、iOS 26 SDK以降でのビルドが必要。最小対応OSとビルド用SDKは別の設定である。アップロード時は正式版Xcodeの採用版、`xcodebuild -version`、`xcodebuild -showsdks`を記録し、Appleの当日の条件に合うことを確認する。[Apple SDK要件](https://developer.apple.com/news/?id=ueeok6yw)、[Xcode・SDK対応表](https://developer.apple.com/xcode/system-requirements)
 
-publicリポジトリでは標準GitHub-hosted runnerの実行は無料。公開設定は利用者が、ソース・データ・履歴に秘密や個人情報がないか確認した上で変更する。大型runnerには別料金がある。[GitHubの無料利用条件](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
+publicリポジトリでは標準GitHub-hosted runnerの実行は無料。本リポジトリは公開前点検と履歴整理の後、利用者による公開設定をGitHubのリポジトリ情報で確認した。大型runnerには別料金がある。[GitHubの無料利用条件](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
 
 privateのまま実行する場合はアカウントの含有枠を消費し、超過は有料。2026-10-20確認の標準macOSランナーの超過単価は **US$0.062/分**、10分ならUS$0.62、30分ならUS$1.86の目安。ジョブごとに分単位へ切り上げられ、成果物保存の超過料金は別途。無料枠の残量、支払設定、予算を確認し、有料利用が必要なら用途・上限を示して利用者の判断を得る。自動実行の頻度と保存期間も確認する。既に所有するMacのXcodeで実行する方法が代替になる。[GitHub料金表](https://docs.github.com/en/billing/reference/actions-runner-pricing)、[含有枠と保存料金](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
 
@@ -43,6 +43,12 @@ python scripts/replay.py data/railway.sqlite fixtures/corridor_full.jsonl --outp
 
 CIの定義は `.github/workflows/`、Xcodeプロジェクトは `ios/RailVelo.xcodeproj`、共有schemeは `RailVelo`。同梱のローカルSwift Package以外のアプリ用外部ライブラリは不要。
 
+[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39447558500) はcommit `e206e23aacaaf9dcc298c54557808fda13ce40ba`で成功。Xcode 16.4 / iOS Simulator 18.5 SDKを用い、Python36件、Swift29件、17 fixture比較、Core Location/SQLiteのiOS Simulator向けライブラリビルドに成功した。
+
+[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39453148802) はcommit `8808fdd`、`macos-26`（arm64）、Xcode 26.6（17F113）/ iOS 26.5 SDK、iPhone 16 Simulator runtime 26.5で成功。Simulator/端末向け署名なしビルド、built Info.plist/同梱リソース、リプレイDB（5観測・有効速度5件・matched3件）、中断復旧、ライト/ダーク表示を確認した。表示は背景輝度の自動検査と画像の目視で確認したが、グラフ目視・UI全操作・VoiceOverは未検証である。
+
+Swift/Python試験と17 fixture比較は`macos-15-intel`のengine CI、アプリ確認は`macos-26`のアプリCIで実施する。関連pathに絞った自動実行とブランチ単位のconcurrencyを使用する。診断は利用者の明示許可を得た合成リプレイの失敗画面・件数に限定し、artifactを1日保持する。署名・TestFlight・実機導入・実GPS・背景・電池・実走は未検証。結果は [検証記録](VALIDATION.md) に記録する。
+
 ```sh
 swift test --package-path swift
 xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generic/platform=iOS Simulator' -derivedDataPath artifacts/DerivedData CODE_SIGNING_ALLOWED=NO build
@@ -56,8 +62,8 @@ xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generi
 操作対象が正しいTeamであることを利用者が確認する。Apple Accountへのログイン、2要素認証、契約への同意は利用者が行う。パスワード、確認コード、秘密鍵をチャットやレポートへ記載しない。
 
 1. [Developer Account](https://developer.apple.com/account/)に入り、会員資格・契約の有効性、Teamを確認する。
-2. Certificates, Identifiers & Profiles → Identifiers → ＋ → App IDs → Appで、Explicit App IDを登録する。プロジェクトの初期Bundle IDは `jp.kb-dev.railvelo`。登録の可否と利用者の管理する命名に合わせ、変更する場合はXcode設定・配布設定も同時に更新する。登録済みとは推測しない。[App ID登録](https://developer.apple.com/jp/help/account/identifiers/register-an-app-id)
-3. [App Store Connect](https://appstoreconnect.apple.com/) → Apps → ＋ → New AppでiOSアプリを作成する。名称、主言語、同じBundle ID、利用者が管理するSKUを指定する。App Store ConnectのアプリIDは生成後に記録する。
+2. Certificates, Identifiers & Profiles → Identifiersで、今回のExplicit App ID `jp.kb-dev.railvelo`（Description: RailVelo）の登録完了を確認済み。今後Bundle IDを変更する場合は対象を登録し直し、Xcode設定・配布設定も同時に更新する。[App ID登録](https://developer.apple.com/jp/help/account/identifiers/register-an-app-id)
+3. [App Store Connect](https://appstoreconnect.apple.com/)のiOSアプリ「RailVelo」を作成済み。アプリID `6824978233`、主言語は日本語、SKUは`railvelo-ios`、Bundle IDは`jp.kb-dev.railvelo`である。新規アプリの作成画面で重複登録せず、今回のアプリを開いて以降の設定を行う。
 4. この実装の背景位置情報はXcodeのBackground Modes / Location updatesと用途説明で設定する。不要なPush Notifications、CloudKit、Sign in with Appleなどは有効化しない。
 5. 登録したTeamとBundle IDが、署名対象アプリおよびプロファイルに一致することを確認する。
 
@@ -86,7 +92,7 @@ APIキーは自動アップロードを採用する場合に用意する。Accou
 1. 署名付きArchiveを作成する。Bundle ID、Team、version/build番号、組み込まれたプロファイル、SDKを確認する。
 2. Xcode Organizerまたは承認したCIでApp Store Connectへアップロードする。個人配布では内部限定を選べる場合にTestFlight Internal Onlyを使用する。
 3. App Store Connectで処理の完了・利用可能状態を確認する。APIを使う場合はprocessing stateが`VALID`であることを確認する。暗号化・輸出コンプライアンスの質問は実装に照らして利用者が回答する。
-4. TestFlight → Internal Testingで本人用グループを作成し、本人のApp Store Connectユーザーと対象buildのみを追加する。他人への招待は別途明示された場合に行う。公開リンクや外部テスターは作らない。
+4. TestFlight → Internal Testingのグループ「本人検証」は作成済み。自動配信オフ、テスター0人、ビルド0件、公開リンクなしを確認した。署名・アップロード後、本人のApp Store Connectユーザーと対象buildのみを追加する。他人への招待は別途明示された場合に行う。公開リンクや外部テスターは作らない。
 5. 内部テスター数・対象build・内部テスト可能状態を画面またはAPIで確認する。内部テスターは最大100人のApp Store Connectユーザーで、buildの試験可能期間は90日。[内部テスターの追加](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)
 6. 本人のiPhone 16でTestFlightをインストールし、同じApple Accountで招待を受け、対象version/buildを導入する。アプリ起動と設定画面の版を照合する。[TestFlightの流れ](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/)
 

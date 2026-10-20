@@ -2,11 +2,11 @@
 
 JR九州・鹿児島本線の門司港〜博多を対象に、GPS速度と線路上の推定位置・駅間情報を表示するSwiftUIアプリです。既存のオフライン推定エンジンを再利用し、Core Location、Swift Charts、走行履歴SQLite、CSV共有、合成GPSリプレイを接続しています。推定に外部APIやクラウドへのGPS送信は使用しません。
 
-**Python自動試験36件は成功。Swift試験25件はソース作成済みで、Swift/iOSビルド・Simulator・iPhone実機・実走は未検証です。** 最初のmacOS CIはアカウントの支払い・利用上限に関する理由で処理開始前に失敗しました。公開準備後に再実行する段階です。最新の実行結果と未完了項目は [検証記録](docs/VALIDATION.md) を確認してください。合成GPSの評価値を実測精度として扱わないでください。
+**Python36件・Swift29件、17シナリオ比較、アプリのSimulator/端末向け署名なしビルド、Simulatorリプレイ・DB・中断復旧・ライト/ダーク表示の確認が成功しました。** [GitHubリポジトリ](https://github.com/KANABUNN/RailVelo) は公開済みです。署名・TestFlight・iPhone実GPS・背景動作・電池・実走は未検証です。グラフの目視とUI全操作・VoiceOverも受入が残ります。実行結果は [検証記録](docs/VALIDATION.md) を確認してください。合成GPSの評価値を実測精度として扱わないでください。
 
 ## アプリに接続した機能
 
-- 大きな現在速度、セッション最高速度、水平/速度精度、GPS・走行状態。無効値、古い測位、不自然な速度変化や座標跳躍を検査し、採用しない理由を保存します。
+- 大きな現在速度、セッション最高速度、水平/速度精度、GPS・走行状態。無効値、古い測位、不自然な速度変化や座標跳躍を検査し、採用しない理由を保存します。実GPSの現在表示は観測時刻から5秒で失効し、処理待ちの古い結果で戻しません。
 - 60秒・5分・全体の速度グラフ。取得時刻を横軸に使い、欠測・速度無効・一時停止の間は線を切ります。
 - 路線、方面、前後駅、次に通る駅までの線路距離、駅間進捗、推定の候補支持度。
 - 記録開始・一時停止・再開・終了。履歴の再読込、確認付き削除、UTC/WGS84/単位/有効性を明示したCSV共有。
@@ -28,6 +28,13 @@ python scripts/replay.py data/railway.sqlite fixtures/corridor_full.jsonl --outp
 ```
 
 最後のコマンドは、同梱SQLiteを読み取り専用で開き、門司港〜博多の合成走行を処理します。`replay.jsonl` の各行が1観測の結果です。JSONネットワークでも同じAPIを使えます。
+
+配布ファイルの `MANIFEST.sha256` は、Gitへステージした正規内容のSHA-256一覧です。Windowsの改行変換後の作業ファイルとは区別します。変更対象をステージした後に再生成・照合し、生成した一覧もステージしてから反映します。
+
+```powershell
+python scripts/update_manifest.py
+python scripts/update_manifest.py --verify
+```
 
 ```python
 import sys
@@ -81,7 +88,7 @@ xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generi
 xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generic/platform=iOS' -derivedDataPath artifacts/DeviceBuild CODE_SIGNING_ALLOWED=NO build
 ```
 
-署名なし端末向けビルドだけではiPhoneへのインストールはできません。個人導入は内部TestFlightを第一候補とし、App ID、App Store Connectアプリ、署名、アップロード、処理完了、本人グループへの割当、端末導入を順に確認します。Apple Developer Programの会員資格と契約同意の状態は画面確認済みです。本アプリの登録・配布の進捗は [検証記録](docs/VALIDATION.md) を確認してください。秘密鍵や証明書のパスワードはリポジトリへ保存しません。
+署名なし端末向けビルドだけではiPhoneへのインストールはできません。個人導入は内部TestFlightを第一候補とし、署名、アップロード、処理完了、本人グループへの割当、端末導入を順に確認します。Apple Developer Programの会員資格と契約同意、App ID `jp.kb-dev.railvelo` とApp Store Connectアプリ「RailVelo」（ID `6824978233`）の登録完了は画面確認済みです。内部グループ「本人検証」は自動配信オフ、テスター0人・ビルド0件・公開リンクなし。証明書/APIキーの生成、署名、アップロード、招待は未実施です。登録・配布の進捗は [検証記録](docs/VALIDATION.md) を確認してください。秘密鍵や証明書のパスワードはリポジトリへ保存しません。
 
 導入後は「リプレイ」で開始すると同梱合成GPSを再生します。「実GPS」は前面で開始し、位置情報を許可します。停止・再開・終了は画面下の操作、保存済み走行は履歴からグラフ参照・CSV共有・削除を行います。
 
@@ -94,9 +101,9 @@ swift run --package-path swift railvelo-replay --network fixtures/synthetic_netw
 python3 scripts/compare_replays.py python-normal.jsonl swift-normal.jsonl
 ```
 
-全17シナリオ比較とライブラリのSimulatorビルドは `.github/workflows/swift.yml` に定義しています。`.github/workflows/ios.yml` はXcode 26の選択、Swift試験、Simulator/端末向け署名なしビルド、リプレイ起動・DB検査・ライト/ダーク画像・中断復旧の確認を定義します。実行結果が成功するまで、これらを検証済みと扱いません。
+全17シナリオ比較、Swift29件、Python36件、ライブラリのSimulatorビルドは `.github/workflows/swift.yml` の [engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39447558500) で成功しました。`.github/workflows/ios.yml` の [アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39453148802) もcommit `8808fdd`で成功。Xcode 26.6 / iOS 26.5 SDKで2種類のビルド、同梱リソース、合成リプレイ5観測・有効速度5件・確定推定3件、中断復旧を確認しました。ライト/ダーク画像は背景輝度の自動検査と目視で切り替わりを確認しています。画面には合成速度71.7 km/h、鹿児島本線・博多方面・駅間進捗が表示されました。グラフは画面下へスクロールが必要なため、今回の画像での目視確認対象に含めていません。
 
-標準GitHub-hosted runnerはpublicリポジトリで無料、privateリポジトリでは含有枠超過時に有料です。公開前監査と履歴整理を進めており、公開設定は利用者が行います。課金の条件と代替手段は [Apple手順の費用説明](docs/APPLE_SETUP.md#2-osxcode費用) を参照してください。
+標準GitHub-hosted runnerはpublicリポジトリで無料、privateリポジトリでは含有枠超過時に有料です。公開前監査と履歴整理の後、利用者が公開設定を変更しました。公開状態はGitHubのリポジトリ情報で確認済みです。engine CIは`macos-15-intel`、アプリCIは`macos-26`（arm64）を使用し、関連ファイルの変更だけを対象にし、同じブランチの古い実行を取り消して重複を抑えます。結果は [検証記録](docs/VALIDATION.md)、課金の条件と代替手段は [Apple手順の費用説明](docs/APPLE_SETUP.md#2-osxcode費用) を参照してください。
 
 ## データの範囲と制約
 
@@ -106,7 +113,7 @@ python3 scripts/compare_replays.py python-normal.jsonl swift-normal.jsonl
 
 `next_station_id` は次に通過する地理上の駅です。次の**停車駅**・列車種別・列車ID・到着予定時刻は提供しません。`predicted` は欠測時の短時間予測、`uncertain` / `lost` / `rejected` は位置や路線を確定できない状態です。信頼度は候補内の相対支持度で、実世界の正解確率に較正した値ではありません。
 
-受入が残る項目は、Swift/iOSの実コンパイル、Python/Swift一致、Simulator操作、署名配布、iPhoneの実GPS、ロック/別アプリ中の継続、OS終了復旧、長時間性能と電池、実際の駅イベント・並走・トンネル復帰です。v0.1/v0.2設計書の本文は再取得できておらず、前工程の元SQLと設計対応記録を継承しています。全国対応、他路線への直通、営業上の停車駅判定には追加データと実証が必要です。
+受入が残る項目は、グラフ目視・UI全操作・VoiceOver、署名配布、iPhoneの実GPS、ロック/別アプリ中の継続、OS終了復旧、長時間性能と電池、実際の駅イベント・並走・トンネル復帰です。v0.1/v0.2設計書の本文は再取得できておらず、前工程の元SQLと設計対応記録を継承しています。全国対応、他路線への直通、営業上の停車駅判定には追加データと実証が必要です。
 
 ## 出典と再現
 

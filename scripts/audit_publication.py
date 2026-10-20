@@ -89,7 +89,7 @@ def audit() -> dict:
                 tables = [row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")]
                 integrity = db.execute("PRAGMA integrity_check").fetchone()[0]
                 # Only known public railway tables should be committed.
-                private_tables = [table for table in tables if re.search(r"session|samples|gps|rides|events|users|password|token|credential", table, re.I)]
+                private_tables = [table for table in tables if re.search(r"session|samples|gps|rides|match_results|events|users|password|token|credential", table, re.I)]
                 counts = {table: db.execute('SELECT COUNT(*) FROM "' + table.replace('"', '""') + '"').fetchone()[0] for table in private_tables}
                 databases.append({"path": path, "integrity": integrity, "tables": tables, "private_table_row_counts": counts})
         if path.endswith(".zip"):

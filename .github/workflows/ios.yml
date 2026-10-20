@@ -3,7 +3,9 @@ name: iOS App
 on:
   push:
     branches: [main]
+    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml']
   pull_request:
+    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml']
   workflow_dispatch:
 
 permissions:
@@ -15,7 +17,7 @@ concurrency:
 
 jobs:
   ios:
-    runs-on: macos-15
+    runs-on: macos-15-intel
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4

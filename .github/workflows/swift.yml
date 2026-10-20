@@ -1,15 +1,22 @@
 name: Swift and iOS offline engine
 on:
   push:
+    paths: ['swift/**', 'python/**', 'tests/**', 'fixtures/**', 'data/**', 'scripts/**', '.github/workflows/swift.yml']
   pull_request:
+    paths: ['swift/**', 'python/**', 'tests/**', 'fixtures/**', 'data/**', 'scripts/**', '.github/workflows/swift.yml']
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: engine-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   swift-and-parity:
-    runs-on: macos-15
+    runs-on: macos-15-intel
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

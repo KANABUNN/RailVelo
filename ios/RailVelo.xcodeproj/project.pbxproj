@@ -170,7 +170,6 @@
                 CURRENT_PROJECT_VERSION = 1;
                 GENERATE_INFOPLIST_FILE = NO;
                 INFOPLIST_FILE = RailVelo/Info.plist;
-                INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
                 IPHONEOS_DEPLOYMENT_TARGET = 16.0;
                 LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
                 MARKETING_VERSION = 0.4.0;
@@ -194,7 +193,6 @@
                 CURRENT_PROJECT_VERSION = 1;
                 GENERATE_INFOPLIST_FILE = NO;
                 INFOPLIST_FILE = RailVelo/Info.plist;
-                INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
                 IPHONEOS_DEPLOYMENT_TARGET = 16.0;
                 LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
                 MARKETING_VERSION = 0.4.0;

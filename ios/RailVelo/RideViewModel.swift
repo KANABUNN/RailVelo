@@ -55,6 +55,7 @@ private final class RideWorker {
     private var permissionPending = false
     private var lastReceipt = Date.distantPast
     private var lastObservationTime: Double?
+    private var lastDisplayedObservationTime: Double?
     private var watchdog: Timer?
     private var segment = 0
     private var previousPoint: SpeedPoint?
@@ -146,6 +147,7 @@ private final class RideWorker {
 
     private func connectSource(token: UUID) {
         lastReceipt = Date()
+        lastDisplayedObservationTime = nil
         source?.onObservations = { [weak self] observations in
             guard let self, self.generation == token, self.state == "recording" else { return }
             self.lastReceipt = Date()
@@ -163,19 +165,39 @@ private final class RideWorker {
             watchdog?.invalidate()
             watchdog = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
                 Task { @MainActor in
-                    guard let self, self.state == "recording", Date().timeIntervalSince(self.lastReceipt) >= 5 else { return }
-                    self.insertGap(token: token)
+                    guard let self, self.generation == token, self.state == "recording" else { return }
+                    let now = Date()
+                    // Input can remain current while export/database work delays its display.
+                    if let displayedAt = self.lastDisplayedObservationTime,
+                       !self.isFreshForDisplay(displayedAt, at: now.timeIntervalSince1970) {
+                        let text = now.timeIntervalSince(self.lastReceipt) >= 5
+                            ? "測位不能・速度取得なし" : "表示更新待機・速度取得なし"
+                        self.clearLiveDisplay(message: text)
+                    }
+                    // A processing backlog is not a missing GPS fix; only reception loss creates gap rows.
+                    if now.timeIntervalSince(self.lastReceipt) >= 5 { self.insertGap(token: token) }
                 }
             }
         } else { signalText = "リプレイ・合成GPS（25倍速）" }
     }
 
     private func insertGap(token: UUID) {
-        guard sourceMode == .live else { return }
+        guard sourceMode == .live, generation == token, state == "recording" else { return }
         let time = Date().timeIntervalSince1970
         if let lastObservationTime, time <= lastObservationTime { return }
-        speedKmh = nil; clearMatch(); signalText = "測位不能・速度取得なし"
+        clearLiveDisplay(message: "測位不能・速度取得なし")
         ingest(Observation(timestamp: time, lat: nil, lon: nil, horizontalAccuracyM: -1), token: token)
+    }
+
+    private func isFreshForDisplay(_ timestamp: Double, at now: Double) -> Bool {
+        timestamp.isFinite && now.isFinite && now - timestamp < 5 && timestamp - now <= 5
+    }
+
+    private func clearLiveDisplay(message text: String) {
+        guard sourceMode == .live else { return }
+        lastDisplayedObservationTime = nil
+        speedKmh = nil; horizontalAccuracyM = nil; speedAccuracyMps = nil
+        clearMatch(); signalText = text
     }
 
     private func ingest(_ observation: Observation, token: UUID) {
@@ -200,7 +222,12 @@ private final class RideWorker {
             case .success(let value):
                 let (sample, maximum, route, previous, next) = value
                 self.maximumSpeedKmh = maximum
-                if self.state == "recording" {
+                let freshForDisplay = self.sourceMode != .live || self.isFreshForDisplay(observation.timestamp, at: Date().timeIntervalSince1970)
+                if self.state == "recording" && !freshForDisplay {
+                    self.clearLiveDisplay(message: "観測が古いため現在値なし")
+                }
+                if self.state == "recording" && freshForDisplay {
+                    if self.sourceMode == .live { self.lastDisplayedObservationTime = observation.timestamp }
                     self.speedKmh = sample.speedKmh
                     self.horizontalAccuracyM = observation.horizontalAccuracyM.isFinite && observation.horizontalAccuracyM >= 0 ? observation.horizontalAccuracyM : nil
                     self.speedAccuracyMps = observation.speedAccuracyMps.flatMap { $0.isFinite && $0 >= 0 ? $0 : nil }

@@ -42,10 +42,12 @@ jobs:
           xcodebuild -showsdks
       - name: Select iPhone 16 simulator
         id: simulator
+        timeout-minutes: 5
         run: |
           python3 - <<'PY'
           import json, os, pathlib, platform, subprocess
-          devices = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'devices', 'available', '--json'], timeout=60))['devices']
+          # CoreSimulator service startup exceeded 60 seconds on a fresh hosted runner.
+          devices = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'devices', 'available', '--json'], timeout=180))['devices']
           available = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', 'runtimes', '--json'], timeout=60))['runtimes']
           ios = [r for r in available if '.iOS-' in r['identifier'] and r.get('isAvailable')]
           if not ios:
@@ -71,6 +73,14 @@ jobs:
             -configuration Debug -destination 'id=${{ steps.simulator.outputs.id }}' \
             -derivedDataPath .build/ios-simulator CODE_SIGNING_ALLOWED=NO build \
             | tee artifacts/ios-simulator-build.log
+          python3 - <<'PY'
+          import pathlib, plistlib
+          app = pathlib.Path('.build/ios-simulator/Build/Products/Debug-iphonesimulator/RailVelo.app')
+          info = plistlib.loads((app / 'Info.plist').read_bytes())
+          assert 'UIApplicationSceneManifest' in info, 'SwiftUI application scene manifest is required.'
+          assert info['UIApplicationSceneManifest']['UIApplicationSupportsMultipleScenes'] is False
+          assert (app / 'railway.sqlite').is_file() and (app / 'corridor_full.jsonl').is_file()
+          PY
       - name: Build iPhone application without signing
         run: |
           set -o pipefail
@@ -124,6 +134,7 @@ jobs:
           xcrun simctl status_bar "$DEVICE" override --time '9:41' --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
           xcrun simctl install "$DEVICE" .build/ios-simulator/Build/Products/Debug-iphonesimulator/RailVelo.app
       - name: Launch replay and capture light and dark screenshots
+        id: replay
         timeout-minutes: 4
         run: |
           set -x
@@ -184,6 +195,34 @@ jobs:
           pathlib.Path('artifacts/recovery-smoke.txt').write_text('Terminated replay recovered as interrupted with an end timestamp.\n')
           PY
           xcrun simctl terminate "$DEVICE" jp.kb-dev.railvelo
+      # User approved public diagnostics limited to synthetic replay on this disposable CI device.
+      - name: Capture failed synthetic replay check
+        if: failure() && steps.replay.outcome == 'failure'
+        timeout-minutes: 2
+        env:
+          SIMULATOR_ID: ${{ steps.simulator.outputs.id }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, sqlite3, subprocess
+          device = os.environ['SIMULATOR_ID']
+          folder = pathlib.Path('artifacts')
+          folder.mkdir(exist_ok=True)
+          try:
+              data = subprocess.check_output(['xcrun', 'simctl', 'get_app_container', device, 'jp.kb-dev.railvelo', 'data'], text=True, timeout=15).strip()
+              database = pathlib.Path(data) / 'Library/Application Support/RailVelo/rides.sqlite'
+              summary = {'database_exists': database.exists()}
+              if database.exists():
+                  with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
+                      sessions = connection.execute('SELECT mode,status FROM sessions').fetchall()
+                      assert all(mode == 'replay' for mode, _ in sessions), 'Diagnostic capture requires replay-only sessions.'
+                      summary['sessions'] = sessions
+                      summary['samples'] = connection.execute('SELECT COUNT(*),COUNT(speed_kmh) FROM samples').fetchone()
+                      summary['exclusions'] = connection.execute('SELECT exclusion_reason,COUNT(*) FROM samples GROUP BY exclusion_reason').fetchall()
+              (folder / 'failed-replay-summary.json').write_text(json.dumps(summary, indent=2))
+              subprocess.run(['xcrun', 'simctl', 'io', device, 'screenshot', str(folder / 'failed-replay.png')], timeout=25, check=False)
+          except (subprocess.SubprocessError, OSError, sqlite3.Error) as error:
+              (folder / 'failed-replay-diagnostic.txt').write_text(str(error) + '\n')
+          PY
       - name: Upload build evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -191,4 +230,4 @@ jobs:
           name: ios-build-evidence
           path: artifacts/
           if-no-files-found: warn
-          retention-days: 7
+          retention-days: 1

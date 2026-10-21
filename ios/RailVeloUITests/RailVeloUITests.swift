@@ -79,7 +79,8 @@ final class RailVeloUITests: XCTestCase {
         attach("07-resumed")
 
         app.buttons["ride.finish"].tap()
-        let confirmFinish = app.buttons["記録を終了"]
+        // A confirmationDialog action has nested Button nodes in iOS 26.
+        let confirmFinish = app.buttons.matching(identifier: "ride.confirmFinish").firstMatch
         XCTAssertTrue(confirmFinish.waitForExistence(timeout: 10))
         confirmFinish.tap()
         waitUntil("Session finish is durably stored") { start.exists && start.isEnabled }
@@ -118,7 +119,7 @@ final class RailVeloUITests: XCTestCase {
         completedRow.swipeLeft()
         let delete = app.buttons[createdRowID.replacingOccurrences(of: "history.row.", with: "history.delete.")]
         if delete.exists && delete.isHittable { delete.tap() }
-        let confirmDelete = app.buttons["位置情報と走行履歴を削除"]
+        let confirmDelete = app.buttons.matching(identifier: "history.confirmDelete").firstMatch
         XCTAssertTrue(confirmDelete.waitForExistence(timeout: 10))
         attach("11-delete-confirmation")
         confirmDelete.tap()

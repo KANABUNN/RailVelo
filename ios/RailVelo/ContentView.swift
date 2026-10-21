@@ -164,8 +164,7 @@ struct ContentView: View {
             }
             VStack(spacing: 7) {
                 ProgressView(value: min(1, max(0, model.progress ?? 0)))
-                    .accessibilityLabel("駅間進捗")
-                    .accessibilityValue(model.progress.map { String(format: "%.0f パーセント", $0 * 100) } ?? "判定中")
+                    .accessibilityHidden(true)
                 HStack {
                     Text(model.progress.map { String(format: "駅間進捗 %.0f%%", $0 * 100) } ?? "駅間進捗 判定中")
                     Spacer()
@@ -174,6 +173,11 @@ struct ContentView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             }
+            .frame(minHeight: 44)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("駅間進捗")
+            .accessibilityValue(progressAccessibilityValue)
+            .accessibilityIdentifier("ride.progress")
             if !model.lastSectionText.isEmpty {
                 Text(model.lastSectionText).font(.subheadline).foregroundStyle(.secondary)
             }
@@ -240,6 +244,12 @@ struct ContentView: View {
     private var versionText: String {
         let info = Bundle.main.infoDictionary ?? [:]
         return "RailVelo \(info["CFBundleShortVersionString"] as? String ?? "—")（\(info["CFBundleVersion"] as? String ?? "—")）"
+    }
+
+    private var progressAccessibilityValue: String {
+        let percentage = model.progress.map { String(format: "%.0f パーセント", $0 * 100) } ?? "判定中"
+        let distance = model.distanceToNextM.map { "次駅まで \(distanceText($0))" } ?? "次駅までの距離は判定中"
+        return "\(percentage)、\(distance)"
     }
 
     private func metric(_ name: String, value: String) -> some View {

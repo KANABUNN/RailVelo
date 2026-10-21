@@ -2,9 +2,11 @@
 
 ## v0.5の追加確認（2026-10-21）
 
+[run 39535387592](https://github.com/KANABUNN/RailVelo/actions/runs/39535387592)の承認済み暗号化Archive診断を取得し、artifact SHA-256 `a26fd198f5915966e87899c3fa0b612158bb5a5af05b6be4b18289242136eccc`と期待source/build/run/attemptを照合して、本人PCの非公開領域へ復号した。Xcodeは指定profileを見つけられていなかった。Apple profileのUUIDは小文字だがhelperが大文字へ変換しており、CLIとエラーの識別子は元のUUIDと表記だけが不一致だった。UUIDの構文検査を維持しながら元の表記を保持し、profile配置・Archive・export・cleanupへ一貫して渡す修正を行い、回帰試験と独立レビューに成功した。実Archiveで解消するかは再実行で確認する。プロファイルや証明書の再発行、信頼設定、アプリソースは変更しない。値・ログ本文は公開しない。
+
 [run 39534452207](https://github.com/KANABUNN/RailVelo/actions/runs/39534452207)は`500.4.1`のArchiveで同じ終了コード65となり、固定診断は未分類2件で原因未確定。暗号化した失敗Archive出力の一時保存を利用者が個別承認した。新しい本人PC用の復号鍵はWindows DPAPIと限定ACLで保護し、公開鍵だけをリポジトリへ追加する。単一Archiveの暗号化・合成データの復号往復・改ざん拒否・既定オフ・スコープ検査を実試験し、独立レビューを通過した。まだ実ログの回収・原因特定・署名付きArchive成功を確認したものではない。
 
-配布診断の追加後、オフライン境界試験44件・全Python96件（暗号依存を含むbundled Python、skipなし）がローカルで成功した。公開状態JSONはschema 2へ更新し、固定ラベルの複数タグ、厳格な既知コマンド名、未分類エラー行の数だけを追加した。原文・path・アカウント・証明書情報は含めない。独立レビューでも公開範囲・非出力・通常の進捗を誤認しないことを確認した。署名設定とアプリソースは変更していない。
+配布診断の追加後、オフライン境界試験47件・全Python99件（暗号依存を含むbundled Python、skipなし）がローカルで成功した。公開状態JSONはschema 2へ更新し、固定ラベルの複数タグ、厳格な既知コマンド名、未分類エラー行の数だけを追加した。原文・path・アカウント・証明書情報は含めない。独立レビューでも公開範囲・非出力・通常の進捗を誤認しないことを確認した。署名設定とアプリソースは変更していない。
 
 **最終配布候補:** `afd55bb73ac919feed936a943899da115a6cd2b5`。[engine run 39531707938](https://github.com/KANABUNN/RailVelo/actions/runs/39531707938)はPython76件・Swift32件・17 fixture比較・Swift CSV相互運用・iOSライブラリが成功。[app run 39531634651](https://github.com/KANABUNN/RailVelo/actions/runs/39531634651)もSimulator/端末向け署名なしビルド、smoke/中断復旧、3件のUI試験が成功した。グラフ3期間・拡大文字・Darkの実画像で時刻目盛の重なり解消を確認した。[UI検証証跡](SIMULATOR_UI_VALIDATION.md)
 

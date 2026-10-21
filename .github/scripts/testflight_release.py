@@ -30,6 +30,7 @@ VERSION = "0.5.0"
 ARCHIVE_DIAGNOSTIC_SCHEMA = "railvelo.failed-archive.v1"
 MAX_ARCHIVE_DIAGNOSTIC_RAW_BYTES = 20_000_000
 MAX_ARCHIVE_DIAGNOSTIC_FILE_BYTES = 30_000_000
+PROFILE_UUID_PATTERN = re.compile(r"[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}\Z")
 SECRET_NAMES = (
     "RAILVELO_TEAM_ID", "DISTRIBUTION_P12_BASE64", "DISTRIBUTION_P12_PASSWORD",
     "PROVISIONING_PROFILE_BASE64", "ASC_API_KEY_P8_BASE64", "ASC_KEY_ID", "ASC_ISSUER_ID",
@@ -139,7 +140,7 @@ def private_command_diagnostics(output):
                                  "no private key", "does not have a private key")),
         ("keychain_access_denied", ("user interaction is not allowed", "errsecinteractionnotallowed",
                                     "cssmerr_csp_no_user_interaction", "errsecauthfailed")),
-        ("profile_missing", ("no profiles for", "requires a provisioning profile", "provisioning profile not found",
+        ("profile_missing", ("no profiles for", "no profile for team", "requires a provisioning profile", "provisioning profile not found",
                               "no provisioning profile")),
         ("signing_identity_missing", ("no signing certificate", "no applicable signing identities", "no identity found")),
         ("certificate_expired_or_revoked", ("certificate has either expired or has been revoked",)),
@@ -389,10 +390,13 @@ def validate_profile(profile, team, certificate_der, now=None):
     require(entitlements.get("beta-reports-active") is True, "app_store_profile_required")
     certificates = profile.get("DeveloperCertificates", [])
     require(isinstance(certificates, list) and certificate_der in certificates, "profile_certificate_mismatch")
+    profile_uuid = profile.get("UUID")
+    require(type(profile_uuid) is str and PROFILE_UUID_PATTERN.fullmatch(profile_uuid) is not None, "invalid_profile_uuid")
     try:
-        profile_uuid = str(uuid.UUID(profile.get("UUID", ""))).upper()
+        uuid.UUID(profile_uuid)
     except (ValueError, TypeError, AttributeError) as error:
         raise ReleaseError("invalid_profile_uuid") from error
+    # Xcode receives the identifier exactly as Apple wrote it in the profile.
     return profile_uuid
 
 
@@ -536,7 +540,8 @@ def cleanup():
         path, backup = pathlib.Path(profile["path"]), pathlib.Path(profile["backup"])
         permitted = (pathlib.Path.home() / "Library/MobileDevice/Provisioning Profiles",
                      pathlib.Path.home() / "Library/Developer/Xcode/UserData/Provisioning Profiles")
-        require(path.parent in permitted and re.fullmatch(r"[0-9A-F-]{36}\.mobileprovision", path.name), "cleanup_profile_path_invalid")
+        require(path.parent in permitted and path.suffix == ".mobileprovision"
+                and PROFILE_UUID_PATTERN.fullmatch(path.stem) is not None, "cleanup_profile_path_invalid")
         require(backup.parent == folder, "cleanup_backup_path_invalid")
         try:
             if profile["existed"]:

@@ -30,7 +30,7 @@ TestFlightはインストール済みと本人から回答を得た。RailVelo�
 
 ### v0.5のTestFlight導入前チェック
 
-利用者は新規発行・Secrets保管・本人限定uploadとグループ割当を承認済み。新しいDistribution証明書/p12、専用profile、Developer Team APIキー、main限定・本人承認の配布Environmentと7種類のSecretsは準備済み。手動配布CIとオフライン境界試験44件を確認済みだが、本人端末へのRailVelo導入・起動は未検証。署名・Apple側の処理・本人割当の最新状態は[Apple手順](APPLE_SETUP.md#v05-distribution-status)に記録し、version `0.5.0` / build `500.<run番号>.<attempt>`と上記の40桁commitを照合する。Simulatorのbuild `500.0.1`を、配布されたbuild番号の確認に代用しない。
+利用者は新規発行・Secrets保管・本人限定uploadとグループ割当を承認済み。新しいDistribution証明書/p12、専用profile、Developer Team APIキー、main限定・本人承認の配布Environmentと7種類のSecretsは準備済み。手動配布CIとオフライン境界試験47件を確認済みだが、本人端末へのRailVelo導入・起動は未検証。署名・Apple側の処理・本人割当の最新状態は[Apple手順](APPLE_SETUP.md#v05-distribution-status)に記録し、version `0.5.0` / build `500.<run番号>.<attempt>`と上記の40桁commitを照合する。Simulatorのbuild `500.0.1`を、配布されたbuild番号の確認に代用しない。
 
 | ID | 確認 | 合格条件 | 初期状態 |
 | --- | --- | --- | --- |

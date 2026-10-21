@@ -104,6 +104,20 @@ class SigningBoundaries(unittest.TestCase):
     def test_matching_unexpired_app_store_profile_passes(self):
         self.assertEqual(release.validate_profile(profile(), TEAM, DER, NOW), profile()["UUID"])
 
+    def test_original_lower_upper_and_mixed_profile_uuid_case_is_preserved(self):
+        lower = "a1b2c3d4-e5f6-4abc-8def-0123456789ab"
+        for native in [lower, lower.upper(), "a1B2c3D4-E5f6-4aBc-8DeF-0123456789aB"]:
+            with self.subTest(native_case="synthetic"):
+                value = release.validate_profile({**profile(), "UUID": native}, TEAM, DER, NOW)
+                self.assertEqual(value, native)
+
+    def test_unsafe_or_noncanonical_profile_uuid_spelling_is_rejected(self):
+        native = "a1b2c3d4-e5f6-4abc-8def-0123456789ab"
+        for bad in ["{" + native + "}", "urn:uuid:" + native, native.replace("-", ""), " " + native,
+                    native + "\n", "../" + native, "-" * 36, native.replace("a", "g"), None, 123]:
+            with self.subTest(kind=type(bad).__name__), self.assertRaisesRegex(release.ReleaseError, "invalid_profile_uuid"):
+                release.validate_profile({**profile(), "UUID": bad}, TEAM, DER, NOW)
+
     def test_apple_ios_compatible_platforms_pass_but_other_or_unknown_platforms_fail(self):
         for platforms in [["iOS"], ["iOS", "xrOS", "visionOS"], ["iOS", "visionOS"], ["xrOS", "iOS"]]:
             with self.subTest(platforms=platforms):
@@ -178,6 +192,7 @@ class SigningBoundaries(unittest.TestCase):
         private = b" PRIVATE_SYNTHETIC_KEY=not-a-real-key /private/person/Profile-UUID "
         cases = [(b"No profiles for 'private.bundle' were found", "missing_profile"),
                  (b"No signing certificate 'private name' found", "signing_identity"),
+                 (b"No profile for team PRIVATE_TEAM matching PRIVATE_UUID found", "missing_profile"),
                  (b"Authentication failed for private account", "authentication"),
                  (b'SDK "private-sdk-name" cannot be located.', "sdk"),
                  (b"Unable to find a destination matching the provided destination specifier", "sdk"),
@@ -559,6 +574,31 @@ class AppleReadback(unittest.TestCase):
 
 
 class CleanupBoundaries(unittest.TestCase):
+    def test_native_case_profile_snapshot_is_restored_and_new_file_removed(self):
+        for native in ["a1b2c3d4-e5f6-4abc-8def-0123456789ab", "A1B2C3D4-E5F6-4ABC-8DEF-0123456789AB",
+                       "a1B2c3D4-E5f6-4aBc-8DeF-0123456789aB"]:
+            with tempfile.TemporaryDirectory() as location:
+                root = pathlib.Path(location)
+                private = root / "railvelo-testflight-private"; private.mkdir()
+                directory = root / "Library/MobileDevice/Provisioning Profiles"; directory.mkdir(parents=True)
+                target = directory / (native + ".mobileprovision")
+                backup = private / "backup"; backup.write_bytes(b"original-profile")
+                target.write_bytes(b"temporary-profile")
+                added = directory / "abcdef01-2345-6789-abcd-ef0123456789.mobileprovision"
+                added.write_bytes(b"added-profile")
+                state = root / "state.json"
+                state.write_text(json.dumps({"folder": str(private), "search_list": ["original-search"],
+                    "default_keychain": "original-default", "profiles": [
+                        {"path": str(target), "backup": str(backup), "existed": True, "mode": 0o600},
+                        {"path": str(added), "backup": str(private / "unused"), "existed": False, "mode": 0o600}]}))
+                with mock.patch.object(release, "runtime_paths", return_value=(root, private, state)), \
+                     mock.patch.object(release.pathlib.Path, "home", return_value=root), \
+                     mock.patch.object(release.subprocess, "run", return_value=subprocess.CompletedProcess(["synthetic"], 0)):
+                    self.assertTrue(release.cleanup())
+                self.assertEqual(target.read_bytes(), b"original-profile")
+                self.assertFalse(added.exists())
+                self.assertFalse(private.exists())
+
     def test_failed_snapshot_update_preserves_previous_restoration_state(self):
         with tempfile.TemporaryDirectory() as location:
             path = pathlib.Path(location) / "state.json"

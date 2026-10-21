@@ -80,4 +80,6 @@
 
 - 診断run `39533409609`も同じ検証済みsource `afd55bb`を指定し、Archive段階・終了コード65で停止した。固定分類はunknownであり、profile適用先不一致や証明書チェーンを真因と確定しない。状態JSONのSHA-256照合でupload未実行・cleanup成功を確認し、具体的な固定エラー区分と失敗コマンド名だけを追加する。iPhone 16 / iOS 27.0.1とTestFlight導入済みの本人申告を試験計画へ反映した。RailVelo導入・実GPSは未実施のまま維持する。
 
+- 利用者承認後、単一Archive失敗ログだけの暗号化回収を実行した。公式runのartifactハッシュとsource/build/run/attemptを照合し、本人PCのDPAPI保護鍵で非公開復号した。Xcodeのprofile未検出と、元UUIDが小文字なのにhelperの大文字化でCLI表記が異なることを、識別子を表示せず比較確認した。厳密なUUID検査は維持して原表記を保持し、cleanupも両caseを安全に扱う。配布47件・全Python99件と独立レビューが成功し、同じ署名資料で再試験する。アプリ本体、CA信頼設定、既存証明書は変更しない。
+
 最新のCI・配布・実機結果は`VALIDATION.md`へ追記する。実走ログは未取得で、実走精度の評価値は確定していない。

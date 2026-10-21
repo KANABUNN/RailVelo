@@ -68,9 +68,13 @@ runner上の鍵・p12・profileは権限制限した一時領域と一時keychai
 
 Archiveを検査後、`method=app-store-connect`、`destination=upload`、`signingStyle=manual`、`testFlightInternalTestingOnly=true`でXcodeから直接送信する。実行に使うXcode 26.6の`xcodebuild -help`に必要キー・型とmethodが存在しなければ停止する。Xcode 26.6でCLIの対応確認は成功した。署名付きArchiveの作成は失敗しており、送信は未実施。送信後は読み取りAPIで`VALID`かつ`buildAudienceType=INTERNAL_ONLY`まで確認し、20分以内に確認できなければ失敗として記録する。本人のテスター追加・割当は自動化しない。[Appleの配布設定](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases)、[CLI設定確認](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)、[内部限定属性](https://developer.apple.com/documentation/appstoreconnectapi/buildaudiencetype)
 
-補助コードのオフライン境界試験34件が成功した。対象SHA/試験照合、profile/署名属性、内部限定API応答、ログ非出力、後処理復元、復元snapshotの原子的更新を合成データで確認した結果であり、単独では実署名・送信の成功を意味しない。実材料の解析・API認証は配布runで別に成功を確認した。ASC readbackでは関連アプリを明示取得し、ID・Bundle ID・一意性を照合する。失敗時は固定分類と整数の終了コードだけを公開し、生ログから秘密・名前・pathを転記しない試験も含む。Python依存はES256とp12/証明書解析に必要な`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定した。2026-10-21時点の安定版を公式変更履歴で確認し、arm64 runnerを使用する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
+補助コードのオフライン境界試験44件が成功した。対象SHA/試験照合、profile/署名属性、内部限定API応答、ログ非出力、後処理復元、復元snapshotの原子的更新を合成データで確認した結果であり、単独では実署名・送信の成功を意味しない。実材料の解析・API認証は配布runで別に成功を確認した。ASC readbackでは関連アプリを明示取得し、ID・Bundle ID・一意性を照合する。失敗時は固定分類と整数の終了コードだけを公開し、生ログから秘密・名前・pathを転記しない試験も含む。Python依存はES256とp12/証明書解析に必要な`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定した。2026-10-21時点の安定版を公式変更履歴で確認し、arm64 runnerを使用する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
 
 ## 5. version/buildと監査記録
+
+Archive失敗の固定分類だけで原因を特定できない場合に限り、利用者の個別承認を得た暗号化診断を使う。手動入力`encrypted_archive_diagnostics`は既定オフ。失敗した単一Archiveの出力だけをgzip後にAES-256-GCMで暗号化し、セッション鍵を本人用RSA-4096公開鍵のOAEP-SHA256で包む。source/build/run/attemptをAADとOAEP labelへ結び付け、平文fallbackは設けない。通常のsecurity/API処理を含む結合ログは対象外。
+
+公開artifactは暗号文だけを1日保持する。1日はGitHub側の保存期限であり、第三者が保存した暗号文のコピーまで削除できる保証ではない。復号鍵は本人PCのWindows CurrentUser-DPAPIとowner/SYSTEM限定ACLで保護し、Git/CIへ送らない。回収後の平文も同じ非公開領域で扱い、本文や個人識別子を公開報告へ転記しない。鍵と公開鍵の一致、合成ログでの実往復を本人PCで確認した。
 
 現プロジェクト設定は`0.5.0 (500.0.1)`。配布workflowはversionを`0.5.0`、buildを`500.<GITHUB_RUN_NUMBER>.<GITHUB_RUN_ATTEMPT>`へ上書きする。例は`500.12.3`。再実行で変わらないrun番号に、増加するattemptを組み合わせる。送信前には同じASCアプリ・version・buildが存在しないことを読み取りで確認し、衝突時は送信しない。workflowの移行や手動配布で採番規則が変わる場合は、既存最大値とAppleの受理を改めて確認する。[Apple build string](https://developer.apple.com/help/glossary/build-string/)、[GitHub run変数](https://docs.github.com/en/actions/reference/workflows-and-actions/variables)
 

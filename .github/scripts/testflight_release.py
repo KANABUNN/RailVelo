@@ -6,6 +6,7 @@ except the explicitly requested xcodebuild export/upload. No provisioning APIs.
 """
 import base64
 import datetime as dt
+import gzip
 import json
 import os
 import pathlib
@@ -26,6 +27,9 @@ import uuid
 BUNDLE_ID = "jp.kb-dev.railvelo"
 APP_ID = "6824978233"
 VERSION = "0.5.0"
+ARCHIVE_DIAGNOSTIC_SCHEMA = "railvelo.failed-archive.v1"
+MAX_ARCHIVE_DIAGNOSTIC_RAW_BYTES = 20_000_000
+MAX_ARCHIVE_DIAGNOSTIC_FILE_BYTES = 30_000_000
 SECRET_NAMES = (
     "RAILVELO_TEAM_ID", "DISTRIBUTION_P12_BASE64", "DISTRIBUTION_P12_PASSWORD",
     "PROVISIONING_PROFILE_BASE64", "ASC_API_KEY_P8_BASE64", "ASC_KEY_ID", "ASC_ISSUER_ID",
@@ -250,6 +254,103 @@ def private_write(path, data):
     os.chmod(path, 0o600)
 
 
+def base64url(data):
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
+
+
+def archive_diagnostic_context(sha, number, run_id, attempt):
+    require(bool(re.fullmatch(r"[0-9a-f]{40}", sha)), "invalid_archive_diagnostic_context")
+    require(bool(re.fullmatch(r"500\.[1-9][0-9]{0,8}\.[1-9][0-9]{0,8}", number)), "invalid_archive_diagnostic_context")
+    require(bool(re.fullmatch(r"[1-9][0-9]{0,17}", run_id or "")), "invalid_archive_diagnostic_context")
+    require(bool(re.fullmatch(r"[1-9][0-9]{0,8}", attempt or "")) and number.rsplit(".", 1)[1] == attempt,
+            "invalid_archive_diagnostic_context")
+    return {"schema": ARCHIVE_DIAGNOSTIC_SCHEMA, "source_sha": sha, "build": number,
+            "run_id": run_id, "run_attempt": attempt}
+
+
+def archive_diagnostic_aad(context):
+    return json.dumps(context, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("ascii")
+
+
+def load_archive_diagnostic_public_key(path):
+    """Only a task-specific public RSA JWK is accepted; never read a private key."""
+    try:
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        require(path.is_file() and not path.is_symlink() and path.stat().st_size <= 8192,
+                "invalid_archive_diagnostic_public_key")
+        jwk = json.loads(path.read_bytes())
+        require(isinstance(jwk, dict) and {"kty", "n", "e"} <= set(jwk)
+                and set(jwk) <= {"kty", "n", "e", "alg", "use"}, "invalid_archive_diagnostic_public_key")
+        require(jwk["kty"] == "RSA" and jwk.get("alg", "RSA-OAEP-256") == "RSA-OAEP-256"
+                and jwk.get("use", "enc") == "enc", "invalid_archive_diagnostic_public_key")
+        numbers = []
+        for name in ("n", "e"):
+            value = jwk[name]
+            require(type(value) is str and bool(re.fullmatch(r"[A-Za-z0-9_-]+", value)),
+                    "invalid_archive_diagnostic_public_key")
+            decoded = base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+            require(base64url(decoded) == value, "invalid_archive_diagnostic_public_key")
+            numbers.append(int.from_bytes(decoded, "big"))
+        modulus, exponent = numbers
+        require(modulus.bit_length() == 4096 and exponent == 65537, "invalid_archive_diagnostic_public_key")
+        key = rsa.RSAPublicNumbers(exponent, modulus).public_key()
+        require(key.key_size == 4096, "invalid_archive_diagnostic_public_key")
+        return key
+    except Exception:
+        raise ReleaseError("invalid_archive_diagnostic_public_key") from None
+
+
+def encrypt_failed_archive_output(output, public_key, context, destination):
+    """Encrypt one failed archive's output; no combined log or plaintext fallback."""
+    temporary = None
+    try:
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import padding, rsa
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        require(type(output) is bytes and len(output) <= MAX_ARCHIVE_DIAGNOSTIC_RAW_BYTES,
+                "archive_diagnostic_output_too_large")
+        require(isinstance(public_key, rsa.RSAPublicKey) and public_key.key_size == 4096,
+                "invalid_archive_diagnostic_public_key")
+        require(context == archive_diagnostic_context(context["source_sha"], context["build"],
+                                                       context["run_id"], context["run_attempt"]),
+                "invalid_archive_diagnostic_context")
+        require(not destination.exists() and not destination.parent.is_symlink(), "archive_diagnostic_destination_rejected")
+        compressed = gzip.compress(output, mtime=0)
+        require(len(compressed) <= MAX_ARCHIVE_DIAGNOSTIC_RAW_BYTES + 100_000, "archive_diagnostic_output_too_large")
+        aad, key, nonce = archive_diagnostic_aad(context), secrets.token_bytes(32), secrets.token_bytes(12)
+        envelope = {"context": context, "key_algorithm": "RSA-OAEP-256", "content_algorithm": "A256GCM",
+                    "compression": "gzip", "nonce": base64url(nonce),
+                    "wrapped_key": base64url(public_key.encrypt(key, padding.OAEP(
+                        mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=aad))),
+                    "ciphertext": base64url(AESGCM(key).encrypt(nonce, compressed, aad))}
+        payload = json.dumps(envelope, separators=(",", ":"), ensure_ascii=True).encode("ascii")
+        require(len(payload) < MAX_ARCHIVE_DIAGNOSTIC_FILE_BYTES, "archive_diagnostic_output_too_large")
+        destination.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        descriptor, name = tempfile.mkstemp(prefix="failed-archive.", dir=destination.parent)
+        temporary = pathlib.Path(name)
+        with os.fdopen(descriptor, "wb") as result:
+            result.write(payload)
+            result.flush()
+            os.fsync(result.fileno())
+        os.chmod(temporary, 0o600)
+        os.replace(temporary, destination)
+    except Exception:
+        raise ReleaseError("archive_diagnostic_encryption_failed") from None
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def prepare_archive_failure_recorder(sha, number, run_id, attempt, public_key_path, destination):
+    enabled = os.environ.get("ENCRYPTED_ARCHIVE_DIAGNOSTICS", "false")
+    require(enabled in ("false", "true"), "invalid_encrypted_archive_diagnostics_flag")
+    if enabled == "false":
+        return None
+    context = archive_diagnostic_context(sha, number, run_id, attempt)
+    public_key = load_archive_diagnostic_public_key(public_key_path)
+    return lambda output: encrypt_failed_archive_output(output, public_key, context, destination)
+
+
 def decode_secret(value):
     try:
         result = base64.b64decode("".join(value.split()), validate=True)
@@ -367,19 +468,27 @@ class PrivateRunner:
         self.log = folder / "commands.log"
         self.environment = {key: value for key, value in os.environ.items() if key not in SECRET_NAMES and key != "GH_TOKEN"}
 
-    def call(self, arguments, timeout=300, accepted=(0,)):
+    def call(self, arguments, timeout=300, accepted=(0,), archive_failure_recorder=None):
+        require(archive_failure_recorder is None or (arguments[0] == "/usr/bin/xcodebuild"
+                and arguments[-1] == "archive" and "-exportArchive" not in arguments),
+                "encrypted_archive_diagnostics_scope_rejected")
         with open(self.log, "ab") as log:
             os.chmod(self.log, 0o600)
             try:
                 result = subprocess.run(arguments, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         env=self.environment, timeout=timeout, check=False)
             except subprocess.TimeoutExpired as error:
+                if archive_failure_recorder is not None and type(error.output) is bytes:
+                    log.write(error.output)
+                    archive_failure_recorder(error.output)
                 raise PrivateCommandError("timeout") from error
             except OSError as error:
                 raise PrivateCommandError("execution") from error
             log.write(result.stdout)
         if result.returncode not in accepted:
             diagnostics = private_command_diagnostics(result.stdout)
+            if archive_failure_recorder is not None:
+                archive_failure_recorder(result.stdout)
             raise PrivateCommandError(diagnostics["category"], result.returncode, diagnostics)
         return result.stdout
 
@@ -498,6 +607,10 @@ def release():
     cleanup_ok = True
     try:
         require_export_support(runner.call(["/usr/bin/xcodebuild", "-help"]).decode(errors="replace"))
+        archive_failure_recorder = prepare_archive_failure_recorder(
+            sha, number, os.environ.get("GITHUB_RUN_ID"), os.environ.get("GITHUB_RUN_ATTEMPT"),
+            pathlib.Path(__file__).resolve().parents[1] / "archive_diagnostics_public.json",
+            temp / "railvelo-testflight-encrypted" / "failed-archive.json")
         source = pathlib.Path(os.environ["GITHUB_WORKSPACE"]).resolve() / "source"
         require((source / "ios/RailVelo.xcodeproj").is_dir(), "source_project_missing")
         for name in SECRET_NAMES:
@@ -573,7 +686,8 @@ def release():
                      "-configuration", "Release", "-destination", "generic/platform=iOS", "-archivePath", str(archive),
                      "-derivedDataPath", str(folder / "DerivedData"), "CODE_SIGN_STYLE=Manual", "DEVELOPMENT_TEAM=" + team,
                      "CODE_SIGN_IDENTITY=" + identity, "PROVISIONING_PROFILE_SPECIFIER=" + profile_uuid,
-                     "MARKETING_VERSION=" + VERSION, "CURRENT_PROJECT_VERSION=" + number, "archive"], timeout=1200)
+                     "MARKETING_VERSION=" + VERSION, "CURRENT_PROJECT_VERSION=" + number, "archive"], timeout=1200,
+                    archive_failure_recorder=archive_failure_recorder)
         phase = "verify"
         application = archive / "Products/Applications/RailVelo.app"
         info = plistlib.loads((application / "Info.plist").read_bytes())

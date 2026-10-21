@@ -345,6 +345,163 @@ class ExpandedPrivateDiagnostics(unittest.TestCase):
             self.assertEqual(str(captured.exception), "private_command_failed:category=signing_configuration:returncode=65")
 
 
+class EncryptedArchiveScope(unittest.TestCase):
+    def test_default_disabled_does_not_read_key_or_create_artifact(self):
+        with tempfile.TemporaryDirectory() as folder, mock.patch.dict(release.os.environ, {}, clear=True):
+            root = pathlib.Path(folder)
+            with mock.patch.object(release, "load_archive_diagnostic_public_key") as key:
+                self.assertIsNone(release.prepare_archive_failure_recorder(
+                    SHA, "500.1.1", None, None, root / "missing-key.json", root / "cipher/failed-archive.json"))
+                key.assert_not_called()
+            self.assertEqual(list(root.iterdir()), [])
+
+    def test_invalid_opt_in_and_missing_key_fail_closed_without_artifact(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            for enabled in ("yes", "TRUE", "true"):
+                with mock.patch.dict(release.os.environ, {"ENCRYPTED_ARCHIVE_DIAGNOSTICS": enabled}), \
+                     self.assertRaises(release.ReleaseError):
+                    release.prepare_archive_failure_recorder(SHA, "500.1.1", "123", "1",
+                        root / "missing-key.json", root / "cipher/failed-archive.json")
+            self.assertFalse((root / "cipher").exists())
+
+    def test_nonarchive_failure_cannot_receive_archive_recorder(self):
+        with tempfile.TemporaryDirectory() as folder:
+            runner = release.PrivateRunner(pathlib.Path(folder))
+            recorder = mock.Mock()
+            for arguments in [["/usr/bin/security", "cms"], ["/usr/bin/xcodebuild", "-exportArchive"],
+                              ["/usr/bin/xcodebuild", "build"]]:
+                with self.assertRaisesRegex(release.ReleaseError, "encrypted_archive_diagnostics_scope_rejected"):
+                    runner.call(arguments, archive_failure_recorder=recorder)
+            recorder.assert_not_called()
+            self.assertEqual(list(pathlib.Path(folder).iterdir()), [])
+
+    def test_context_rejects_nonpublic_fields_and_attempt_mismatch(self):
+        self.assertEqual(release.archive_diagnostic_context(SHA, "500.1.2", "123", "2")["run_attempt"], "2")
+        for sha, number, run_id, attempt in [(SHA, "500.1.2", "123", "1"), (SHA, "500.1.1", "PRIVATE", "1"),
+                                            ("PRIVATE", "500.1.1", "123", "1")]:
+            with self.assertRaises(release.ReleaseError):
+                release.archive_diagnostic_context(sha, number, run_id, attempt)
+
+
+@unittest.skipUnless(importlib.util.find_spec("cryptography") is not None, "Use bundled Python with cryptography for encryption tests")
+class EncryptedArchiveRoundtrip(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        cls.key = rsa.generate_private_key(public_exponent=65537, key_size=4096)
+        numbers = cls.key.public_key().public_numbers()
+        cls.jwk = {"kty": "RSA", "n": release.base64url(numbers.n.to_bytes(512, "big")),
+                   "e": release.base64url(numbers.e.to_bytes(3, "big"))}
+
+    def recorder(self, root):
+        path = root / "public.json"
+        path.write_text(json.dumps(self.jwk))
+        output = root / "railvelo-testflight-encrypted/failed-archive.json"
+        with mock.patch.dict(release.os.environ, {"ENCRYPTED_ARCHIVE_DIAGNOSTICS": "true"}):
+            return release.prepare_archive_failure_recorder(SHA, "500.1.1", "123", "1", path, output), output
+
+    def decrypt(self, envelope):
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import padding
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        decode = lambda value: release.base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+        aad = release.archive_diagnostic_aad(envelope["context"])
+        key = self.key.decrypt(decode(envelope["wrapped_key"]), padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=aad))
+        compressed = AESGCM(key).decrypt(decode(envelope["nonce"]), decode(envelope["ciphertext"]), aad)
+        self.assertEqual(compressed[4:8], b"\0\0\0\0")
+        return release.gzip.decompress(compressed)
+
+    def test_only_single_failed_archive_output_roundtrips_without_combined_log(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            private = root / "railvelo-testflight-private"; private.mkdir()
+            runner = release.PrivateRunner(private)
+            recorder, destination = self.recorder(root)
+            raw = b"PRIVATE_ARCHIVE_ERROR /private/person/synthetic.swift"
+            responses = [subprocess.CompletedProcess(["synthetic"], 0, b"PRIVATE_SECURITY_AND_API_LOG"),
+                         subprocess.CompletedProcess(["synthetic"], 65, raw)]
+            public = io.StringIO()
+            with mock.patch.object(release.subprocess, "run", side_effect=responses), \
+                 contextlib.redirect_stdout(public), contextlib.redirect_stderr(public):
+                runner.call(["/usr/bin/security", "synthetic"])
+                with self.assertRaises(release.PrivateCommandError):
+                    runner.call(["/usr/bin/xcodebuild", "-project", "synthetic", "archive"], archive_failure_recorder=recorder)
+            self.assertEqual(public.getvalue(), "")
+            envelope = json.loads(destination.read_bytes())
+            self.assertEqual(set(envelope), {"context", "key_algorithm", "content_algorithm", "compression", "nonce", "wrapped_key", "ciphertext"})
+            self.assertEqual(envelope["context"], release.archive_diagnostic_context(SHA, "500.1.1", "123", "1"))
+            self.assertEqual(self.decrypt(envelope), raw)
+            self.assertNotIn("PRIVATE", destination.read_text())
+            self.assertLess(destination.stat().st_size, release.MAX_ARCHIVE_DIAGNOSTIC_FILE_BYTES)
+            self.assertEqual(len(release.base64.urlsafe_b64decode(envelope["nonce"] + "=" * (-len(envelope["nonce"]) % 4))), 12)
+
+    def test_successful_archive_and_other_command_failure_produce_no_ciphertext(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            runner = release.PrivateRunner(root)
+            recorder, destination = self.recorder(root)
+            with mock.patch.object(release.subprocess, "run", return_value=subprocess.CompletedProcess(["synthetic"], 0, b"PRIVATE_SUCCESS")):
+                runner.call(["/usr/bin/xcodebuild", "archive"], archive_failure_recorder=recorder)
+            with mock.patch.object(release.subprocess, "run", return_value=subprocess.CompletedProcess(["synthetic"], 1, b"PRIVATE_SECURITY")), \
+                 self.assertRaises(release.PrivateCommandError):
+                runner.call(["/usr/bin/security", "synthetic"])
+            self.assertFalse(destination.exists())
+
+    def test_aead_tampering_and_changed_context_cannot_decrypt(self):
+        from cryptography.exceptions import InvalidTag
+        with tempfile.TemporaryDirectory() as folder:
+            recorder, destination = self.recorder(pathlib.Path(folder))
+            recorder(b"PRIVATE_SYNTHETIC_ARCHIVE")
+            envelope = json.loads(destination.read_bytes())
+            tampered = json.loads(json.dumps(envelope))
+            cipher = bytearray(release.base64.urlsafe_b64decode(tampered["ciphertext"] + "=" * (-len(tampered["ciphertext"]) % 4)))
+            cipher[-1] ^= 1
+            tampered["ciphertext"] = release.base64url(bytes(cipher))
+            with self.assertRaises(InvalidTag):
+                self.decrypt(tampered)
+            changed = json.loads(json.dumps(envelope)); changed["context"]["build"] = "500.2.1"
+            with self.assertRaises(ValueError):
+                self.decrypt(changed)
+
+    def test_invalid_or_private_jwk_fields_fail_closed(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            for change in [{"d": "PRIVATE"}, {"p": "PRIVATE"}, {"kid": "PRIVATE"}, {"kty": "oct"},
+                           {"e": "Aw"}, {"n": "AQAB"}, {"alg": "RSA1_5"}, {"use": "sig"}, {"n": self.jwk["n"] + "="}]:
+                path = root / "bad.json"; path.write_text(json.dumps({**self.jwk, **change}))
+                with mock.patch.dict(release.os.environ, {"ENCRYPTED_ARCHIVE_DIAGNOSTICS": "true"}), \
+                     self.assertRaisesRegex(release.ReleaseError, "invalid_archive_diagnostic_public_key"):
+                    release.prepare_archive_failure_recorder(SHA, "500.1.1", "123", "1", path, root / "cipher/failed-archive.json")
+            self.assertFalse((root / "cipher").exists())
+
+    def test_size_limits_fail_closed_and_never_print_raw_output(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            recorder, destination = self.recorder(root)
+            public = io.StringIO()
+            for limit, value in [("MAX_ARCHIVE_DIAGNOSTIC_RAW_BYTES", 8), ("MAX_ARCHIVE_DIAGNOSTIC_FILE_BYTES", 32)]:
+                with mock.patch.object(release, limit, value), contextlib.redirect_stdout(public), \
+                     contextlib.redirect_stderr(public), self.assertRaisesRegex(release.ReleaseError, "archive_diagnostic_encryption_failed"):
+                    recorder(b"PRIVATE_SYNTHETIC_ARCHIVE_ERROR")
+                self.assertFalse(destination.exists())
+            self.assertEqual(public.getvalue(), "")
+
+    def test_cleanup_removes_raw_private_files_and_preserves_only_ciphertext(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = pathlib.Path(folder)
+            private = root / "railvelo-testflight-private"; private.mkdir()
+            (private / "commands.log").write_bytes(b"PRIVATE_COMBINED_LOG")
+            recorder, destination = self.recorder(root)
+            recorder(b"PRIVATE_ARCHIVE_ONLY")
+            with mock.patch.object(release, "runtime_paths", return_value=(root, private, root / "missing-state.json")):
+                self.assertTrue(release.cleanup())
+            self.assertFalse(private.exists())
+            self.assertTrue(destination.is_file())
+            self.assertEqual(self.decrypt(json.loads(destination.read_bytes())), b"PRIVATE_ARCHIVE_ONLY")
+
+
 class AppleReadback(unittest.TestCase):
     def document(self, state="VALID", audience="INTERNAL_ONLY"):
         return {"data": [{"id": "test-build", "attributes": {"version": "500.1.1", "processingState": state,

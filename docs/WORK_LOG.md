@@ -78,4 +78,6 @@
 - source `afd55bb`でengineとapp CIが両方成功。3件のUI試験と実画像の目視でグラフ目盛を確認した。ZIPのSHA-256を照合し、共有・削除・Darkの画像も確認した。同sourceを指定した内部配布run `39532617433`はgateに成功し、事前に承認された本人限定配布としてEnvironmentを承認した。ビルド予定は`0.5.0 (500.2.1)`で、署名・Apple処理の結果を確認する。
 - 初回配布はArchive段階で停止した。実API認証・材料照合・keychain導入は成功し、uploadは未実行、cleanupは成功。通常のSwiftCompile活動表示を根拠にcompileと分類していたため、実エラー句に限定し、profile適用先不一致・証明書チェーンを優先する固定分類を追加した。推測でprojectを変更せず、診断を再確認する。配布境界26件・Python78件がローカルで成功した。
 
+- 診断run `39533409609`も同じ検証済みsource `afd55bb`を指定し、Archive段階・終了コード65で停止した。固定分類はunknownであり、profile適用先不一致や証明書チェーンを真因と確定しない。状態JSONのSHA-256照合でupload未実行・cleanup成功を確認し、具体的な固定エラー区分と失敗コマンド名だけを追加する。iPhone 16 / iOS 27.0.1とTestFlight導入済みの本人申告を試験計画へ反映した。RailVelo導入・実GPSは未実施のまま維持する。
+
 最新のCI・配布・実機結果は`VALIDATION.md`へ追記する。実走ログは未取得で、実走精度の評価値は確定していない。

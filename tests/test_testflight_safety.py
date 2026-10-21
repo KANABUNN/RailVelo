@@ -231,6 +231,120 @@ class SigningBoundaries(unittest.TestCase):
                 self.assertNotIn("PRIVATE_SYNTHETIC", str(error.exception))
 
 
+class ExpandedPrivateDiagnostics(unittest.TestCase):
+    def test_signing_conflict_tags_preserve_multiple_fixed_symptoms(self):
+        raw = (b"error: PRIVATE_APP has conflicting provisioning settings.\n"
+               b"error: PRIVATE_APP is automatically signed for development, but a profile was manually specified.\n"
+               b"error: Signing PRIVATE_APP requires a development team.\n"
+               b"error: The private key is not installed for PRIVATE_CERT.\n")
+        details = release.private_command_diagnostics(raw)
+        self.assertEqual(details["category"], "signing_configuration")
+        self.assertTrue({"provisioning_settings_conflict", "development_signing_conflict",
+                         "development_team_required", "private_key_missing"} <= set(details["tags"]))
+        self.assertEqual(details["unknown_error_lines"], 0)
+        self.assertNotIn("PRIVATE", json.dumps(details))
+
+    def test_fixed_error_families_cover_archive_dependencies_resources_and_linking(self):
+        cases = [
+            (b"error: Provisioning profile PRIVATE does not match the bundle identifier PRIVATE", "profile_entitlements_mismatch", "signing_configuration"),
+            (b"error: Code signing entitlements file was modified during the build PRIVATE", "entitlements_packaging_failed", "signing_configuration"),
+            (b"error: Failed to register bundle identifier PRIVATE", "bundle_registration_failed", "signing_configuration"),
+            (b"certificate has either expired or has been revoked PRIVATE", "certificate_expired_or_revoked", "signing_identity"),
+            (b"User interaction is not allowed PRIVATE", "keychain_access_denied", "private_key"),
+            (b"Undefined symbols for architecture arm64 PRIVATE", "linker_undefined_symbols", "link"),
+            (b"error: duplicate symbol PRIVATE", "linker_duplicate_symbols", "link"),
+            (b"ld: library not found for PRIVATE", "linker_library_missing", "link"),
+            (b"error: building for iOS, but linking in object built for PRIVATE", "linker_platform_mismatch", "link"),
+            (b"error: Build input file cannot be found: /private/PRIVATE", "input_file_missing", "resource"),
+            (b"error: Unable to load contents of file list PRIVATE", "input_file_list_unreadable", "resource"),
+            (b"error: Could not parse input file as a property list PRIVATE", "plist_invalid", "resource"),
+            (b"error: None of the input catalogs contained a matching app icon set PRIVATE", "asset_catalog_app_icon_missing", "asset_catalog"),
+            (b"/private/PRIVATE.xcassets: error: synthetic failure", "asset_catalog_failed", "asset_catalog"),
+            (b"error: Could not resolve package dependencies PRIVATE", "package_resolution_failed", "package"),
+            (b"error: Missing package product PRIVATE", "package_product_missing", "package"),
+            (b"error: Failed downloading binary PRIVATE", "package_download_failed", "package"),
+            (b"error: SDK PRIVATE cannot be located", "sdk_unavailable", "sdk"),
+            (b"error: Not a valid archive PRIVATE", "archive_invalid", "archive"),
+        ]
+        for raw, tag, category in cases:
+            with self.subTest(tag=tag):
+                details = release.private_command_diagnostics(raw)
+                self.assertIn(tag, details["tags"])
+                self.assertEqual(details["category"], category)
+                self.assertNotIn("PRIVATE", json.dumps(details))
+
+    def test_explicit_failed_commands_use_only_canonical_allowlisted_names(self):
+        for command in release.FAILED_COMMAND_TAGS:
+            with self.subTest(command=command):
+                raw = ("Command " + command + " failed with a nonzero exit code /private/PRIVATE").encode()
+                details = release.private_command_diagnostics(raw)
+                self.assertEqual(details["failed_commands"], [command])
+                self.assertIn(release.FAILED_COMMAND_TAGS[command], details["tags"])
+                self.assertNotIn("PRIVATE", json.dumps(details))
+
+    def test_failed_summary_requires_exact_first_token_and_stops_at_footer(self):
+        raw = (b"CodeSign /private/PRIVATE_SUCCESS\n"
+               b"The following build commands failed:\n"
+               b"    ProcessProductPackaging /private/PRIVATE_ENTITLEMENTS\n"
+               b"    ValidateEmbeddedBinary /private/PRIVATE_BINARY\n"
+               b"    CodeSignExtra /private/PRIVATE_UNKNOWN\n"
+               b"    CodeSign:PRIVATE_ACCOUNT /private/PRIVATE_UNKNOWN\n"
+               b"(4 failures)\n"
+               b"SwiftCompile normal arm64 /private/PRIVATE_AFTER\n")
+        details = release.private_command_diagnostics(raw)
+        self.assertEqual(set(details["failed_commands"]), {"ProcessProductPackaging", "ValidateEmbeddedBinary"})
+        self.assertIn("unrecognized_failed_command", details["tags"])
+        self.assertEqual(details["unknown_error_lines"], 2)
+        self.assertNotIn("PRIVATE", json.dumps(details))
+
+    def test_progress_and_generic_footers_remain_unknown_and_undisclosed(self):
+        raw = b"CodeSign /private/PRIVATE\nProcessProductPackaging PRIVATE\nSwiftCompile normal arm64 PRIVATE\n** ARCHIVE FAILED **"
+        self.assertEqual(release.private_command_diagnostics(raw),
+            {"category": "unknown", "tags": [], "failed_commands": [], "unknown_error_lines": 0})
+
+    def test_unclassified_error_lines_and_commands_are_counted_without_copying(self):
+        raw = (b"error: PRIVATE_NEW_ERROR person@private.invalid\n"
+               b"Error Domain=PRIVATE_SECRET Code=999\n"
+               b"Command PRIVATE_NEW_COMMAND failed with a non-zero exit code\n"
+               b"** ARCHIVE FAILED **\n")
+        details = release.private_command_diagnostics(raw)
+        self.assertEqual(details["category"], "unknown")
+        self.assertEqual(details["tags"], ["unrecognized_failed_command"])
+        self.assertEqual(details["failed_commands"], [])
+        self.assertEqual(details["unknown_error_lines"], 3)
+        self.assertNotIn("PRIVATE", json.dumps(details))
+
+    def test_safe_evidence_revalidates_diagnostics_and_rejects_metadata_injection(self):
+        details = release.private_command_diagnostics(b"Command CodeSign failed with a nonzero exit code PRIVATE")
+        error = release.PrivateCommandError(details["category"], 65, details)
+        evidence = release.safe_evidence(SHA, "500.1.1", "archive", False, False, False, True, error.diagnostics)
+        self.assertEqual(evidence["schema_version"], 2)
+        self.assertEqual(evidence["command_diagnostics"]["failed_commands"], ["CodeSign"])
+        self.assertNotIn("PRIVATE", json.dumps(evidence))
+        for change in [{"category": "PRIVATE_ACCOUNT"}, {"tags": ["PRIVATE_PROFILE"]},
+                       {"failed_commands": ["PRIVATE_COMMAND"]}, {"unknown_error_lines": "PRIVATE"},
+                       {"unknown_error_lines": True}, {"unknown_error_lines": -1},
+                       {"unknown_error_lines": 1_000_001}, {"returncode": "PRIVATE_KEY"}, {"raw": "PRIVATE_TEXT"}]:
+            with self.subTest(fields=list(change)), self.assertRaisesRegex(release.ReleaseError, "invalid_command_diagnostics"):
+                release.safe_evidence(SHA, "500.1.1", "archive", False, False, False, True, {**error.diagnostics, **change})
+
+    def test_runner_keeps_raw_output_private_and_attaches_only_safe_diagnostics(self):
+        raw = b"error: PRIVATE_APP has conflicting provisioning settings\nCommand ProcessProductPackagingDER failed with a nonzero exit code\nPRIVATE_KEY"
+        with tempfile.TemporaryDirectory() as folder:
+            runner = release.PrivateRunner(pathlib.Path(folder))
+            process = subprocess.CompletedProcess(["PRIVATE_COMMAND"], 65, raw)
+            public = io.StringIO()
+            with mock.patch.object(release.subprocess, "run", return_value=process), \
+                 contextlib.redirect_stdout(public), contextlib.redirect_stderr(public), \
+                 self.assertRaises(release.PrivateCommandError) as captured:
+                runner.call(["PRIVATE_COMMAND"])
+            self.assertEqual(public.getvalue(), "")
+            self.assertEqual(runner.log.read_bytes(), raw)
+            self.assertEqual(captured.exception.diagnostics["failed_commands"], ["ProcessProductPackagingDER"])
+            self.assertNotIn("PRIVATE", json.dumps(captured.exception.diagnostics))
+            self.assertEqual(str(captured.exception), "private_command_failed:category=signing_configuration:returncode=65")
+
+
 class AppleReadback(unittest.TestCase):
     def document(self, state="VALID", audience="INTERNAL_ONLY"):
         return {"data": [{"id": "test-build", "attributes": {"version": "500.1.1", "processingState": state,
@@ -281,7 +395,8 @@ class AppleReadback(unittest.TestCase):
         self.assertFalse(evidence["processing_valid_internal_only"])
         self.assertEqual(set(evidence), {"schema_version", "repository", "source_sha", "bundle_id", "app_id", "version", "build",
             "phase", "success", "upload_completed", "processing_valid_internal_only", "cleanup_ok", "testers_modified",
-            "profiles_generated", "certificates_generated", "device_acceptance"})
+            "profiles_generated", "certificates_generated", "device_acceptance", "command_diagnostics"})
+        self.assertIsNone(evidence["command_diagnostics"])
         with self.assertRaises(release.ReleaseError):
             release.safe_evidence(SHA, "500.1.1", "raw-secret-output", False, False, False, True)
 

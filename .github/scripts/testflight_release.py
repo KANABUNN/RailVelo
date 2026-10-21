@@ -36,52 +36,200 @@ class ReleaseError(Exception):
     """Messages are fixed codes, never raw subprocess/HTTP/credential text."""
 
 
+CATEGORY_PRIORITY = (
+    "profile_target_mismatch", "certificate_chain", "signing_configuration", "private_key",
+    "missing_profile", "signing_identity", "authentication", "network", "sdk", "package",
+    "asset_catalog", "resource", "link", "compile", "signing", "build_phase", "archive", "upload",
+    "timeout", "execution", "unknown",
+)
+TAG_CATEGORIES = {
+    "profile_target_mismatch": "profile_target_mismatch",
+    "provisioning_settings_conflict": "signing_configuration",
+    "development_signing_conflict": "signing_configuration",
+    "development_team_required": "signing_configuration",
+    "profile_certificate_mismatch": "signing_configuration",
+    "profile_entitlements_mismatch": "signing_configuration",
+    "entitlements_packaging_failed": "signing_configuration",
+    "bundle_registration_failed": "signing_configuration",
+    "certificate_chain_untrusted": "certificate_chain",
+    "private_key_missing": "private_key",
+    "keychain_access_denied": "private_key",
+    "profile_missing": "missing_profile",
+    "signing_identity_missing": "signing_identity",
+    "certificate_expired_or_revoked": "signing_identity",
+    "codesign_internal_error": "signing",
+    "codesign_failed": "signing",
+    "authentication_failed": "authentication",
+    "network_failed": "network",
+    "sdk_unavailable": "sdk",
+    "package_resolution_failed": "package",
+    "package_product_missing": "package",
+    "package_download_failed": "package",
+    "asset_catalog_app_icon_missing": "asset_catalog",
+    "asset_catalog_failed": "asset_catalog",
+    "input_file_missing": "resource",
+    "input_file_list_unreadable": "resource",
+    "plist_invalid": "resource",
+    "resource_processing_failed": "resource",
+    "linker_undefined_symbols": "link",
+    "linker_duplicate_symbols": "link",
+    "linker_library_missing": "link",
+    "linker_platform_mismatch": "link",
+    "linker_failed": "link",
+    "compiler_error": "compile",
+    "build_phase_failed": "build_phase",
+    "archive_invalid": "archive",
+    "archive_processing_failed": "archive",
+    "upload_failed": "upload",
+    "unrecognized_failed_command": "unknown",
+}
+# Names come only from this table, never from an arbitrary captured command.
+FAILED_COMMAND_TAGS = {
+    "CodeSign": "codesign_failed", "SwiftCompile": "compiler_error",
+    "ProcessProductPackaging": "entitlements_packaging_failed",
+    "ProcessProductPackagingDER": "entitlements_packaging_failed",
+    "SwiftEmitModule": "compiler_error", "SwiftDriver": "compiler_error",
+    "CompileSwiftSources": "compiler_error", "CompileC": "compiler_error",
+    "PrecompileSwiftBridgingHeader": "compiler_error", "Ld": "linker_failed",
+    "CreateUniversalBinary": "linker_failed", "Strip": "linker_failed",
+    "CompileAssetCatalog": "asset_catalog_failed", "CompileAssetCatalogVariant": "asset_catalog_failed",
+    "LinkAssetCatalog": "asset_catalog_failed", "GenerateAssetSymbols": "asset_catalog_failed",
+    "CpResource": "resource_processing_failed", "Copy": "resource_processing_failed",
+    "CopySwiftLibs": "resource_processing_failed", "CopyPlistFile": "resource_processing_failed",
+    "ProcessInfoPlistFile": "resource_processing_failed", "MkDir": "resource_processing_failed",
+    "PhaseScriptExecution": "build_phase_failed", "ResolvePackageDependencies": "package_resolution_failed",
+    "Validate": "archive_processing_failed", "GenerateDSYMFile": "archive_processing_failed",
+    "RegisterExecutionPolicyException": "archive_processing_failed",
+    "ProcessXCFramework": "resource_processing_failed", "ValidateEmbeddedBinary": "archive_processing_failed",
+}
+
+
 class PrivateCommandError(ReleaseError):
     """Only a fixed category and numeric exit status may leave the private log."""
-    def __init__(self, category, returncode=None):
-        categories = {"profile_target_mismatch", "certificate_chain", "missing_profile", "signing_identity", "authentication", "sdk", "compile",
-                      "upload", "network", "timeout", "execution", "unknown"}
-        if category not in categories:
+    def __init__(self, category, returncode=None, diagnostics=None):
+        if category not in CATEGORY_PRIORITY:
             category = "unknown"
         self.category = category
         self.returncode = returncode if type(returncode) is int else None
+        detail = diagnostics or {"category": category, "tags": [], "failed_commands": [], "unknown_error_lines": 0}
+        self.diagnostics = validate_command_diagnostics({**detail, "returncode": self.returncode})
+        require(self.diagnostics["category"] == category, "invalid_command_diagnostics")
         code = str(self.returncode) if self.returncode is not None else "unknown"
         super().__init__("private_command_failed:category=" + category + ":returncode=" + code)
 
 
-def private_failure_category(output):
-    """Match known diagnostic phrases; never copy any log text into the result."""
-    text = output.lower()
+def private_command_diagnostics(output):
+    """Reduce private output to fixed tags/command names and a numeric count."""
+    text = output.decode("utf-8", "replace").lower()
     phrases = (
-        ("profile_target_mismatch", (b"does not support provisioning profiles",)),
-        ("certificate_chain", (b"unable to build chain to self-signed root", b"cssmerr_tp_not_trusted",
-                               b"cssmerr_tp_invalid_cert_anchor", b"errsecnottrusted")),
-        ("missing_profile", (b"no profiles for", b"requires a provisioning profile", b"provisioning profile not found",
-                             b"no provisioning profile", b"doesn't include the selected signing certificate")),
-        ("signing_identity", (b"no signing certificate", b"no applicable signing identities", b"errsecinternalcomponent",
-                              b"code signing is required", b"codesign failed", b"no identity found",
-                              b"code object is not signed at all")),
-        ("authentication", (b"failed to authenticate", b"authentication credentials", b"authentication failed",
-                            b"unable to authenticate", b"not authorized", b"unauthorized", b"invalid jwt", b"invalid credentials")),
-        ("network", (b"could not resolve host", b"network connection was lost", b"not connected to the internet",
-                     b"connection timed out", b"could not connect to the server", b"ssl connection error")),
-        ("sdk", (b"sdk cannot be located", b"unable to find a destination matching", b"sdk is not supported",
-                 b"unable to find an sdk", b"unable to find a specification for sdk")),
-        ("upload", (b"upload failed", b"error uploading", b"asset validation failed", b"validation failed",
-                    b"app store connect operation failed", b"transporter", b"itms-")),
-        ("compile", (b"swift compiler error", b"compile failed", b"compilation failed",
-                     b"error: emit-module command failed", b"error: compile command failed",
-                     b"error: swiftc command failed", b"error: no such module", b"error: missing required module")),
+        ("profile_target_mismatch", ("does not support provisioning profiles",)),
+        ("provisioning_settings_conflict", ("conflicting provisioning settings",)),
+        ("development_signing_conflict", ("automatically signed for development, but",)),
+        ("development_team_required", ("requires a development team", "select a development team in the signing")),
+        ("profile_certificate_mismatch", ("doesn't include the selected signing certificate",)),
+        ("entitlements_packaging_failed", ("code signing entitlements file was modified",)),
+        ("bundle_registration_failed", ("failed to register bundle identifier",)),
+        ("certificate_chain_untrusted", ("unable to build chain to self-signed root", "cssmerr_tp_not_trusted",
+                                         "cssmerr_tp_invalid_cert_anchor", "errsecnottrusted")),
+        ("private_key_missing", ("private key is not installed", "private key is missing", "missing private key",
+                                 "no private key", "does not have a private key")),
+        ("keychain_access_denied", ("user interaction is not allowed", "errsecinteractionnotallowed",
+                                    "cssmerr_csp_no_user_interaction", "errsecauthfailed")),
+        ("profile_missing", ("no profiles for", "requires a provisioning profile", "provisioning profile not found",
+                              "no provisioning profile")),
+        ("signing_identity_missing", ("no signing certificate", "no applicable signing identities", "no identity found")),
+        ("certificate_expired_or_revoked", ("certificate has either expired or has been revoked",)),
+        ("codesign_internal_error", ("errsecinternalcomponent",)),
+        ("codesign_failed", ("code signing is required", "codesign failed", "code object is not signed at all")),
+        ("authentication_failed", ("failed to authenticate", "authentication credentials", "authentication failed",
+                                    "unable to authenticate", "not authorized", "unauthorized", "invalid jwt", "invalid credentials")),
+        ("network_failed", ("could not resolve host", "network connection was lost", "not connected to the internet",
+                             "connection timed out", "could not connect to the server", "ssl connection error")),
+        ("sdk_unavailable", ("sdk cannot be located", "unable to find a destination matching", "sdk is not supported",
+                              "unable to find an sdk", "unable to find a specification for sdk")),
+        ("package_resolution_failed", ("could not resolve package dependencies", "failed to resolve package dependencies")),
+        ("package_product_missing", ("missing package product", "package product not found")),
+        ("package_download_failed", ("failed downloading binary", "failed to download binary")),
+        ("asset_catalog_app_icon_missing", ("none of the input catalogs contained a matching app icon set",)),
+        ("input_file_missing", ("build input file cannot be found", "input file cannot be found", "no such file or directory")),
+        ("input_file_list_unreadable", ("unable to load contents of file list", "unable to read file list")),
+        ("plist_invalid", ("could not parse input file as a property list", "unable to read property list", "malformed property list")),
+        ("linker_undefined_symbols", ("undefined symbols for architecture", "undefined symbol:")),
+        ("linker_duplicate_symbols", ("duplicate symbol",)),
+        ("linker_library_missing", ("library not found for", "framework not found")),
+        ("linker_failed", ("linker command failed",)),
+        ("compiler_error", ("swift compiler error", "compile failed", "compilation failed",
+                             "error: emit-module command failed", "error: compile command failed",
+                             "error: swiftc command failed", "error: no such module", "error: missing required module")),
+        ("archive_invalid", ("not a valid archive", "archive is malformed", "archive not found")),
+        ("upload_failed", ("upload failed", "error uploading", "asset validation failed", "validation failed",
+                            "app store connect operation failed", "itms-")),
     )
-    for category, needles in phrases:
-        sdk_missing = category == "sdk" and re.search(rb"\bsdk\b[^\r\n]{0,160}\bcannot be located\b", text)
-        if sdk_missing or any(needle in text for needle in needles):
-            return category
-    # Compiler progress and a generic ARCHIVE FAILED footer are not root causes.
-    # Match an actual source diagnostic without exposing its file name or text.
-    if re.search(rb"\.(?:swift|c|cc|cpp|m|mm|h|hpp):[0-9]+(?::[0-9]+)?:\s*(?:fatal\s+)?error:", text):
-        return "compile"
-    return "unknown"
+    found, commands, unknown, summary_remaining = set(), set(), 0, 0
+    for line in text.splitlines():
+        if "the following build commands failed:" in line:
+            summary_remaining = 30
+            continue
+        line_tags = {tag for tag, needles in phrases if any(needle in line for needle in needles)}
+        error_line = re.search(r"\b(?:fatal\s+)?error\s*:|\berror domain\s*=|^\s*error\b", line) is not None
+        if re.search(r"\bsdk\b[^\r\n]{0,160}\bcannot be located\b", line):
+            line_tags.add("sdk_unavailable")
+        if re.search(r"\.(?:swift|c|cc|cpp|m|mm|h|hpp):[0-9]+(?::[0-9]+)?:\s*(?:fatal\s+)?error:", line):
+            line_tags.add("compiler_error")
+        if error_line and (".xcassets:" in line or "actool" in line):
+            line_tags.add("asset_catalog_failed")
+        if error_line and ("building for" in line and "linking" in line or "file was built for" in line):
+            line_tags.add("linker_platform_mismatch")
+        if "provisioning profile" in line and any(phrase in line for phrase in (
+                "does not match the bundle identifier", "doesn't match the entitlements", "doesn't support the")):
+            line_tags.add("profile_entitlements_mismatch")
+        command_failure = re.search(r"\bcommand\s+.+?\s+failed with (?:a\s+)?non[- ]?zero exit code\b", line) is not None
+        first_token = line.split(maxsplit=1)[0] if line.strip() else ""
+        known_command = False
+        for command, tag in FAILED_COMMAND_TAGS.items():
+            escaped = re.escape(command.lower())
+            explicit = re.search(r"\bcommand\s+" + escaped + r"\s+failed with (?:a\s+)?non[- ]?zero exit code\b", line)
+            summary = summary_remaining > 0 and first_token == command.lower()
+            if explicit or summary:
+                known_command = True
+                commands.add(command)
+                line_tags.add(tag)
+        unknown_summary_command = (summary_remaining > 0 and bool(first_token) and not known_command
+                                   and not first_token.startswith(("(", "**", "note:", "warning:")))
+        if (command_failure and not known_command) or unknown_summary_command:
+            line_tags.add("unrecognized_failed_command")
+        if summary_remaining:
+            summary_remaining -= 1
+            if not line.strip() or re.match(r"\s*\([0-9]+ failures?\)", line):
+                summary_remaining = 0
+        if (error_line or command_failure or unknown_summary_command) and not line_tags - {"unrecognized_failed_command"}:
+            unknown = min(unknown + 1, 1_000_000)
+        found.update(line_tags)
+    categories = {TAG_CATEGORIES[tag] for tag in found}
+    category = next((value for value in CATEGORY_PRIORITY if value in categories), "unknown")
+    return {"category": category, "tags": [tag for tag in TAG_CATEGORIES if tag in found],
+            "failed_commands": [name for name in FAILED_COMMAND_TAGS if name in commands],
+            "unknown_error_lines": unknown}
+
+
+def private_failure_category(output):
+    """Compatibility wrapper; all detailed diagnostics remain allowlisted."""
+    return private_command_diagnostics(output)["category"]
+
+
+def validate_command_diagnostics(value):
+    require(isinstance(value, dict) and set(value) == {"category", "returncode", "tags", "failed_commands", "unknown_error_lines"},
+            "invalid_command_diagnostics")
+    require(value["category"] in CATEGORY_PRIORITY, "invalid_command_diagnostics")
+    require(value["returncode"] is None or type(value["returncode"]) is int, "invalid_command_diagnostics")
+    for key, allowed in (("tags", TAG_CATEGORIES), ("failed_commands", FAILED_COMMAND_TAGS)):
+        require(isinstance(value[key], list) and all(type(item) is str and item in allowed for item in value[key]),
+                "invalid_command_diagnostics")
+        require(len(value[key]) == len(set(value[key])), "invalid_command_diagnostics")
+    require(type(value["unknown_error_lines"]) is int and 0 <= value["unknown_error_lines"] <= 1_000_000,
+            "invalid_command_diagnostics")
+    return {"category": value["category"], "returncode": value["returncode"], "tags": list(value["tags"]),
+            "failed_commands": list(value["failed_commands"]), "unknown_error_lines": value["unknown_error_lines"]}
 
 
 def require(condition, code):
@@ -194,17 +342,18 @@ def evaluate_build(document, number):
     return state
 
 
-def safe_evidence(sha, number, phase, success, uploaded, valid, cleanup_ok):
+def safe_evidence(sha, number, phase, success, uploaded, valid, cleanup_ok, command_diagnostics=None):
     require(bool(re.fullmatch(r"[0-9a-f]{40}", sha)), "invalid_evidence_sha")
     require(bool(re.fullmatch(r"500\.[1-9][0-9]{0,8}\.[1-9][0-9]{0,8}", number)), "invalid_evidence_build")
     require(phase in {"preflight", "materials", "keychain", "archive", "verify", "upload", "processing", "complete"},
             "invalid_evidence_phase")
-    return {"schema_version": 1, "repository": "KANABUNN/RailVelo", "source_sha": sha,
+    diagnostics = validate_command_diagnostics(command_diagnostics) if command_diagnostics is not None else None
+    return {"schema_version": 2, "repository": "KANABUNN/RailVelo", "source_sha": sha,
             "bundle_id": BUNDLE_ID, "app_id": APP_ID, "version": VERSION, "build": number,
             "phase": phase, "success": bool(success), "upload_completed": bool(uploaded),
             "processing_valid_internal_only": bool(valid), "cleanup_ok": bool(cleanup_ok),
             "testers_modified": False, "profiles_generated": False, "certificates_generated": False,
-            "device_acceptance": "not_verified"}
+            "device_acceptance": "not_verified", "command_diagnostics": diagnostics}
 
 
 def runtime_paths():
@@ -230,7 +379,8 @@ class PrivateRunner:
                 raise PrivateCommandError("execution") from error
             log.write(result.stdout)
         if result.returncode not in accepted:
-            raise PrivateCommandError(private_failure_category(result.stdout), result.returncode)
+            diagnostics = private_command_diagnostics(result.stdout)
+            raise PrivateCommandError(diagnostics["category"], result.returncode, diagnostics)
         return result.stdout
 
 
@@ -344,6 +494,7 @@ def release():
     phase, uploaded, valid, success = "preflight", False, False, False
     state = None
     failure = None
+    command_diagnostics = None
     cleanup_ok = True
     try:
         require_export_support(runner.call(["/usr/bin/xcodebuild", "-help"]).decode(errors="replace"))
@@ -458,6 +609,8 @@ def release():
         phase, success = "complete", True
     except BaseException as error:
         failure = str(error) if isinstance(error, ReleaseError) else "unexpected_private_failure"
+        if isinstance(error, PrivateCommandError):
+            command_diagnostics = error.diagnostics
     finally:
         try:
             cleanup_ok = cleanup() if state_path.exists() else True
@@ -465,7 +618,8 @@ def release():
                 shutil.rmtree(folder)
         except BaseException:
             cleanup_ok = False
-        private_write(evidence_path, (json.dumps(safe_evidence(sha, number, phase, success and cleanup_ok, uploaded, valid, cleanup_ok), indent=2) + "\n").encode())
+        private_write(evidence_path, (json.dumps(safe_evidence(sha, number, phase, success and cleanup_ok, uploaded, valid,
+                                                            cleanup_ok, command_diagnostics), indent=2) + "\n").encode())
     if failure or not cleanup_ok:
         print("TestFlight draft stopped: " + (failure or "cleanup_failed"), file=sys.stderr)
         return 1

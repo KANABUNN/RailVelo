@@ -2,21 +2,23 @@
 
 ## v0.5の追加確認（2026-10-21）
 
+配布診断の追加後、オフライン境界試験34件・全Python86件がローカルで成功した。公開状態JSONはschema 2へ更新し、固定ラベルの複数タグ、厳格な既知コマンド名、未分類エラー行の数だけを追加した。原文・path・アカウント・証明書情報は含めない。独立レビューでも公開範囲・非出力・通常の進捗を誤認しないことを確認した。署名設定とアプリソースは変更していない。
+
 **最終配布候補:** `afd55bb73ac919feed936a943899da115a6cd2b5`。[engine run 39531707938](https://github.com/KANABUNN/RailVelo/actions/runs/39531707938)はPython76件・Swift32件・17 fixture比較・Swift CSV相互運用・iOSライブラリが成功。[app run 39531634651](https://github.com/KANABUNN/RailVelo/actions/runs/39531634651)もSimulator/端末向け署名なしビルド、smoke/中断復旧、3件のUI試験が成功した。グラフ3期間・拡大文字・Darkの実画像で時刻目盛の重なり解消を確認した。[UI検証証跡](SIMULATOR_UI_VALIDATION.md)
 
-同じsourceを指定した[内部配布run 39532617433](https://github.com/KANABUNN/RailVelo/actions/runs/39532617433)を手動起動した。gateとXcode ExportOptions確認、署名資料検査、実Apple API認証・アプリ照合、keychain導入まで成功したが、`0.5.0 (500.2.1)`のArchive作成で停止した。safe-status JSONをハッシュ照合して取得し、`phase=archive`、`upload_completed=false`、`cleanup_ok=true`を確認した。Appleへのアップロードは実行されていない。秘密を含まない固定分類を強化し、真因を再確認する。26件の配布境界試験を含むPython78件がローカルで成功した。
+同じsourceを指定した[内部配布run 39532617433](https://github.com/KANABUNN/RailVelo/actions/runs/39532617433)を手動起動した。gateとXcode ExportOptions確認、署名資料検査、実Apple API認証・アプリ照合、keychain導入まで成功したが、`0.5.0 (500.2.1)`のArchive作成で停止した。固定分類を強化した[run 39533409609](https://github.com/KANABUNN/RailVelo/actions/runs/39533409609)も`500.3.1`のArchive段階で停止し、終了コード65、分類unknownで原因は未確定。両runのsafe-status JSONをハッシュ照合して取得し、`phase=archive`、`upload_completed=false`、`cleanup_ok=true`を確認した。Appleへのアップロードは実行されていない。run3のartifact SHA-256は`cdaf4c72bc3f7cb371ffd9477742b6c7bfc2255abfc7dac7767dc8506ca7daf1`。26件の配布境界試験を含むPython78件がローカルで成功した。
 
-**engine CI成功:** [run 39530105805](https://github.com/KANABUNN/RailVelo/actions/runs/39530105805)、対象commit `52464c9f58d1b2435a425a32dad7c6251699e066`。Python76件、Swift32件（Core/SQLite12＋Recording20）、Swift生成の実39列人工CSV→Python解析、17 fixture比較、iOS向けライブラリが成功した。同commitの[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39529981900)でも両ビルド・smoke・中断復旧、Light全操作/LargeText、Dark監査/スクロールの各stepが成功した。グラフの時刻ラベル短縮を追加修正し、最終版の試験を行う。[UI詳細](SIMULATOR_UI_VALIDATION.md)
+**engine CI成功:** [run 39530105805](https://github.com/KANABUNN/RailVelo/actions/runs/39530105805)、対象commit `52464c9f58d1b2435a425a32dad7c6251699e066`。Python76件、Swift32件（Core/SQLite12＋Recording20）、Swift生成の実39列人工CSV→Python解析、17 fixture比較、iOS向けライブラリが成功した。同commitの[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39529981900)でも両ビルド・smoke・中断復旧、Light全操作/LargeText、Dark監査/スクロールの各stepが成功した。グラフの時刻ラベル短縮を追加修正し、上記最終版で再試験した。[UI詳細](SIMULATOR_UI_VALIDATION.md)
 
 先行する`512ea03`の[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39528724495)は、大きい文字の監査、3期間グラフ、一時停止・履歴保護・再開まで成功したが、終了確認の親子Button重複とDarkの細い駅間進捗領域で失敗した。確認ボタンを明示IDで操作し、進捗を割合・次駅距離を含む高さ44pt以上の1要素へ修正し、上記で再試験した。Light/Darkの実画面添付の書き出しは成功した。
 
-先行するcommit `3619ecc`の[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39526756727)は両ビルド・既存smoke・修正済み中断復旧まで成功した。新規UI試験はグラフ3期間の描画まで通ったが、大きい文字の速度表示と履歴スワイプ後の画面遷移で失敗した。速度文字へDynamic Type対応を追加し、リプレイを早めに一時停止して履歴画面を確認する手順へ修正した。再実行の合格を確認するまで、UI全操作・配布の受入は未完了とする。
+先行するcommit `3619ecc`の[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39526756727)は両ビルド・既存smoke・修正済み中断復旧まで成功した。新規UI試験はグラフ3期間の描画まで通ったが、大きい文字の速度表示と履歴スワイプ後の画面遷移で失敗した。速度文字へDynamic Type対応を追加し、リプレイを早めに一時停止して履歴画面を確認する手順へ修正した。UI全操作は上記最終版で合格した。配布・実機の受入は別に確認する。
 
-既存v0.4の成功結果を下に保存する。v0.5では実リプレイを使用したXCUITest（グラフ描画・3期間切替・スクロール・記録操作・履歴/削除・CSV共有画面・大きい文字/明暗Accessibility Audit）を追加し、CIで実行する。実行前の項目を成功と扱わない。VoiceOverの実際の読み上げ、TestFlight配布、iPhone 16の実GPS・背景・電池、実走評価は未実施。
+既存v0.4の成功結果を下に保存する。v0.5では実リプレイを使用したXCUITest（グラフ描画・3期間切替・スクロール・記録操作・履歴/削除・CSV共有画面・大きい文字/明暗Accessibility Audit）を追加し、最終候補のCIで成功した。VoiceOverの実際の読み上げ、TestFlight配布、iPhone 16の実GPS・背景・電池、実走評価は未実施。
 
 実走ログは既存CSVの先頭36列を維持し、受信時刻・保存処理開始時刻・診断JSONを末尾へ追加した39列へ拡張した。GPSエラー、権限、アプリ状態を端末内に記録する。保存処理開始までの経過はSQL/commit時間やCPU使用率ではない。個人の位置情報を含むファイルは`recordings/`に保存し、公開CIでは人工データだけを使う。[実走解析と記録様式](RIDE_EVALUATION.md)
 
-署名付き配布は手動起動・内部テスト限定のワークフローを作成済み。利用者の明示許可を得て新しいDistribution証明書と生成鍵の一致、専用App Store profileの対象・期限・証明書一致、API鍵形式を実ファイルで確認した。GitHubはmainのみ・本人reviewer必須・admin bypass無効のEnvironmentに7 Secretsを登録済み。秘密値は記録しない。登録中だけの一時的な読取権限は別途明示許可を得て設定し、登録後に削除・確認した。実署名・Apple認証・アップロード成功・処理完了・本人グループへの割当・実機導入はまだ未確認。
+署名付き配布は手動起動・内部テスト限定のワークフローを作成済み。利用者の明示許可を得て新しいDistribution証明書と生成鍵の一致、専用App Store profileの対象・期限・証明書一致、API鍵形式を実ファイルで確認した。GitHubはmainのみ・本人reviewer必須・admin bypass無効のEnvironmentに7 Secretsを登録済み。秘密値は記録しない。登録中だけの一時的な読取権限は別途明示許可を得て設定し、登録後に削除・確認した。Apple API認証は成功し、署名付きArchive・アップロード成功・処理完了・本人グループへの割当・実機導入はまだ未確認。
 
 本人の申告による実機条件はiPhone 16 / iOS 27.0.1、TestFlightインストール済み。RailVeloの導入・実GPSの合格とは扱わない。
 

@@ -1,6 +1,6 @@
 # RailVelo 技術設計 v0.5 — 内部配布準備・実機受入
 
-更新日: 2026-10-21。状態: **本人限定配布の利用者承認済み・署名資料とSecrets準備済み**。本書はv0.4の実装・検証を継承し、署名から本人用TestFlight、iPhone実機受入へ進む条件を記録する。実署名・API認証・アップロード・本人グループへの追加・iPhone導入は未実施。
+更新日: 2026-10-21。状態: **Simulator UI検証成功・本人限定配布のArchive失敗を調査中**。本書はv0.4の実装・検証を継承し、署名から本人用TestFlight、iPhone実機受入へ進む条件を記録する。Apple API認証・署名資料照合・keychain導入まで成功し、署名付きArchive・アップロード・本人グループへの追加・iPhone導入は未完了。
 
 ## 1. 継承するものと現在位置
 
@@ -13,14 +13,14 @@ GPS取得、RideProcessor/MapMatcher、履歴SQLite、CSV、SwiftUI/Charts、リ
 | 内部グループ | 「本人検証」、自動配信オフ、テスター0人、ビルド0件、公開リンクなし |
 | 署名資料 | 新しいDistribution証明書（2027-10-21まで）、自前秘密鍵との一致を確認したp12、RailVelo専用App Store Connectプロファイルを生成済み。既存アプリの秘密情報は流用していない |
 | API/CI | 新しいDeveloper Teamキーを発行済み。Environment `railvelo-testflight`はmainのみ・tag 0件・本人required reviewer・admin bypass無効、7種類のSecrets名を確認済み |
-| 署名/配布 | 利用者が新規発行・Secrets保管・本人限定uploadとグループ割当を承認済み。実署名・認証・upload・本人追加は未実施 |
-| 実機 | 導入・GPS・背景・電池・実走は未検証 |
+| 署名/配布 | 利用者が新規発行・Secrets保管・本人限定uploadとグループ割当を承認済み。実API認証成功。Archive作成で停止し、upload・本人追加は未実施 |
+| 実機 | iPhone 16 / iOS 27.0.1、TestFlight導入済み（本人申告）。RailVelo導入・GPS・背景・電池・実走は未検証 |
 
 本人のApple Account、Team ID、APIキー識別情報、秘密鍵、端末UDID、実走位置を設計書へ転記しない。v0.1/v0.2設計書本文の未取得制約も継承する。
 
 Distribution秘密鍵とp12はパスワードで暗号化している。APIのp8は平文の鍵形式で、署名資料とともに所有者/SYSTEMだけのACLで保管する。Secrets登録時の一時的なエージェント読取権限は利用者の明示許可後に追加し、登録後に削除したことを確認済み。保管先や秘密識別子は公開記録へ転記しない。
 
-先行するsource `083e`では[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39524933942)がPython52件・Swift32件・interop・17 fixture比較に成功。アプリCIはSimulator/端末向け署名なしビルドとsmokeが成功したが、復旧試験はfixtureの自然終了によって前提を満たさず失敗した。試験前提を修正し、`3619ecc`の再実行では復旧まで成功した。追加UI試験の修正を含む最新版の結果は[検証記録](VALIDATION.md)を参照する。
+最終アプリ候補`afd55bb73ac919feed936a943899da115a6cd2b5`の[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39531707938)はPython76件・Swift32件・interop・17 fixture比較に成功。[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39531634651)はSimulator/端末向け署名なしビルド・smoke/復旧・3件のUI試験に成功し、グラフ3期間・大きい文字・Darkの実画像も確認した。25秒間隔の合成fixtureによる点描画であり、連続線・実GPS・実際のVoiceOver読み上げは実機へ引き継ぐ。[検証記録](VALIDATION.md)
 
 ## 2. 推奨する署名・認証の分離
 
@@ -66,9 +66,9 @@ flowchart LR
 
 runner上の鍵・p12・profileは権限制限した一時領域と一時keychainに保存し、元のkeychain検索設定と既存profileを退避・復元する。Apple側の新規発行APIを呼ばず、Team/Bundle、App Store用属性、有効期限、p12との証明書一致を送信前に検査する。証明書名・Team ID・profile UUIDをmaskし、コマンドの生出力は非公開の一時ファイルだけへ保存する。公開artifactは許可した項目だけのstatus JSONを1日間保存し、IPA・Archive・profile・生ログを含めない。
 
-Archiveを検査後、`method=app-store-connect`、`destination=upload`、`signingStyle=manual`、`testFlightInternalTestingOnly=true`でXcodeから直接送信する。実行に使うXcode 26.6の`xcodebuild -help`に必要キー・型とmethodが存在しなければ停止する。このCLI確認と署名付き実行は未検証。送信後は読み取りAPIで`VALID`かつ`buildAudienceType=INTERNAL_ONLY`まで確認し、20分以内に確認できなければ失敗として記録する。本人のテスター追加・割当は自動化しない。[Appleの配布設定](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases)、[CLI設定確認](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)、[内部限定属性](https://developer.apple.com/documentation/appstoreconnectapi/buildaudiencetype)
+Archiveを検査後、`method=app-store-connect`、`destination=upload`、`signingStyle=manual`、`testFlightInternalTestingOnly=true`でXcodeから直接送信する。実行に使うXcode 26.6の`xcodebuild -help`に必要キー・型とmethodが存在しなければ停止する。Xcode 26.6でCLIの対応確認は成功した。署名付きArchiveの作成は失敗しており、送信は未実施。送信後は読み取りAPIで`VALID`かつ`buildAudienceType=INTERNAL_ONLY`まで確認し、20分以内に確認できなければ失敗として記録する。本人のテスター追加・割当は自動化しない。[Appleの配布設定](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases)、[CLI設定確認](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)、[内部限定属性](https://developer.apple.com/documentation/appstoreconnectapi/buildaudiencetype)
 
-補助コードのオフライン境界試験24件が成功した。対象SHA/試験照合、profile/署名属性、内部限定API応答、ログ非出力、後処理復元、復元snapshotの原子的更新を合成データで確認した結果であり、実際のp12解析・署名・API認証・送信の成功を意味しない。ASC readbackでは関連アプリを明示取得し、ID・Bundle ID・一意性を照合する。失敗時は固定分類と整数の終了コードだけを公開し、生ログから秘密・名前・pathを転記しない試験も含む。Python依存はES256とp12/証明書解析に必要な`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定した。2026-10-21時点の安定版を公式変更履歴で確認し、arm64 runnerを使用する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
+補助コードのオフライン境界試験34件が成功した。対象SHA/試験照合、profile/署名属性、内部限定API応答、ログ非出力、後処理復元、復元snapshotの原子的更新を合成データで確認した結果であり、単独では実署名・送信の成功を意味しない。実材料の解析・API認証は配布runで別に成功を確認した。ASC readbackでは関連アプリを明示取得し、ID・Bundle ID・一意性を照合する。失敗時は固定分類と整数の終了コードだけを公開し、生ログから秘密・名前・pathを転記しない試験も含む。Python依存はES256とp12/証明書解析に必要な`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定した。2026-10-21時点の安定版を公式変更履歴で確認し、arm64 runnerを使用する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
 
 ## 5. version/buildと監査記録
 

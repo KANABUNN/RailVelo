@@ -2,7 +2,7 @@
 
 更新日: 2026-10-21。対象: 個人用RailVelo、iPhone 16、内部TestFlight配布。
 
-Apple Developer Programの有効な会員資格・契約同意済み状態、Explicit App ID `jp.kb-dev.railvelo`、App Store Connectアプリ「RailVelo」（ID `6824978233`）の登録完了を画面で確認済み。内部グループ「本人検証」は作成済みで、自動配信オフ・テスター0人・ビルド0件・公開リンクなし。利用者承認後、新しいDistribution証明書/p12・専用プロファイル・Developer Team APIキーを生成し、保護した配布Environmentへ7種類のSecretsを登録済み。実署名・API認証・アップロード・本人追加・実機導入は未実施。本アプリの実際の登録・署名・配布状態とビルド結果は [検証記録](VALIDATION.md) と [作業記録](WORK_LOG.md) に記録する。
+Apple Developer Programの有効な会員資格・契約同意済み状態、Explicit App ID `jp.kb-dev.railvelo`、App Store Connectアプリ「RailVelo」（ID `6824978233`）の登録完了を画面で確認済み。内部グループ「本人検証」は作成済みで、自動配信オフ・テスター0人・ビルド0件・公開リンクなし。利用者承認後、新しいDistribution証明書/p12・専用プロファイル・Developer Team APIキーを生成し、保護した配布Environmentへ7種類のSecretsを登録済み。実API認証・アプリ照合・keychain導入は成功し、Archive作成で停止している。アップロード・本人追加・実機導入は未実施。本アプリの実際の登録・署名・配布状態とビルド結果は [検証記録](VALIDATION.md) と [作業記録](WORK_LOG.md) に記録する。
 
 ## 1. 作業の区切り
 
@@ -40,6 +40,8 @@ python scripts/replay.py data/railway.sqlite fixtures/corridor_full.jsonl --outp
 実走GPS、生成したCSV、Apple認証情報はリポジトリへ追加しない。`.gitignore`で除外されていることと、追加対象の差分を確認する。線路データの出典は [データ出典](data-provenance.md) に記録している。
 
 ## 4. macOSでの署名なし検証
+
+v0.5の最終候補`afd55bb`は[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39531707938)と[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39531634651)が成功した。グラフ3期間・記録操作・履歴/削除・CSV共有画面・明暗/大きい文字の監査と実画像確認を完了した。連続した実GPSの線と実際のVoiceOverは実機へ引き継ぐ。以下の旧runはv0.4の実施記録であり、現在の結果は[検証記録](VALIDATION.md)を参照する。
 
 CIの定義は `.github/workflows/`、Xcodeプロジェクトは `ios/RailVelo.xcodeproj`、共有schemeは `RailVelo`。同梱のローカルSwift Package以外のアプリ用外部ライブラリは不要。
 
@@ -127,7 +129,7 @@ GPS履歴は端末内に保存し、利用者がCSV共有操作を行った場�
 
 ## 11. v0.5 配布方式・承認と準備状況
 
-以下は2026-10-21にApple/GitHubの一次情報を確認した配布設計と現在の準備結果。利用者は新しい署名資料/APIキーの発行、Secrets保管、本人限定uploadとグループ割当を承認済み。実署名・認証・アップロードは未実施。対象は`jp.kb-dev.railvelo` / App Store Connect `6824978233`、内部グループは「本人検証」で、テスター0人・ビルド0件・自動配信オフ・公開リンクなしである。
+以下は2026-10-21にApple/GitHubの一次情報を確認した配布設計と現在の準備結果。利用者は新しい署名資料/APIキーの発行、Secrets保管、本人限定uploadとグループ割当を承認済み。実API認証は成功し、Archiveで停止、アップロードは未実施。対象は`jp.kb-dev.railvelo` / App Store Connect `6824978233`、内部グループは「本人検証」で、テスター0人・ビルド0件・自動配信オフ・公開リンクなしである。
 
 ### 推奨: 署名とアップロードの権限を分ける
 
@@ -180,11 +182,11 @@ Individual keyはProvisioning APIを使えない。cloud signingには`CLOUD_MAN
 
 p12・パスワード・プロファイル・API秘密鍵は承認した配布ジョブにだけ渡す。下書きはTeam/Bundle、有効期限、App Store用属性、証明書の一致を照合し、権限制限した一時ファイルと一時keychainを使う。終了時は元のkeychain検索設定・既存profileを復元して一時資料を削除する。証明書名・Team ID・profile UUIDをmaskし、コマンドの生出力は非公開の一時ログだけに保存する。失敗時の公開診断は固定分類（profile/署名/認証/SDK/コンパイル/送信/通信/timeout等）と終了コードだけで、生ログを抜粋しない。公開artifactは許可した項目だけのstatus JSON（1日保存）で、IPA・Archive・profile・生ログを含めない。Base64は保存形式で、暗号化ではない。
 
-オフライン境界試験24件が成功した。ローカルのp12生成と自前鍵の一致は確認したが、CIでの実署名・Apple認証・送信は未実施。復元snapshotは同じ一時領域で完全書込み後に原子的に置き換え、更新中断時も前の復元情報を残す。依存はES256認証とp12/証明書検査用の`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定し、2026-10-21時点の公式安定版変更履歴を確認した。macos-26 arm64/Xcode 26.6を指定する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
+オフライン境界試験34件が成功した。CIでもp12とprofileの解析・自前鍵の一致・Apple API認証・keychain導入が成功した。署名付きArchiveは失敗し、送信は未実施。復元snapshotは同じ一時領域で完全書込み後に原子的に置き換え、更新中断時も前の復元情報を残す。依存はES256認証とp12/証明書検査用の`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定し、2026-10-21時点の公式安定版変更履歴を確認した。macos-26 arm64/Xcode 26.6を指定する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
 
 ### 内部限定exportとbuild番号
 
-下書きは署名Archiveの識別子・profile・証明書・entitlementsを検査してから、`method=app-store-connect`、`destination=upload`、`signingStyle=manual`、`testFlightInternalTestingOnly=true`でXcodeから直接送信する。これらの正確なキー・型・methodの対応は **実行に使うXcode 26.6の`xcodebuild -help`で確認するまで未検証** であり、必要項目が存在しなければ停止する。AppleはExportOptionsの一覧を同コマンドで確認するよう案内している。Internal Onlyは内部テスターへ配布し、外部TestFlightやApp Store提出へ使えない配布方法である。[Appleの配布方式](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases)、[ExportOptionsの確認方法](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)
+下書きは署名Archiveの識別子・profile・証明書・entitlementsを検査してから、`method=app-store-connect`、`destination=upload`、`signingStyle=manual`、`testFlightInternalTestingOnly=true`でXcodeから直接送信する。これらの正確なキー・型・methodの対応は実行に使うXcode 26.6の`xcodebuild -help`で確認済み。将来も必要項目が存在しなければ停止する。AppleはExportOptionsの一覧を同コマンドで確認するよう案内している。Internal Onlyは内部テスターへ配布し、外部TestFlightやApp Store提出へ使えない配布方法である。[Appleの配布方式](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases)、[ExportOptionsの確認方法](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)
 
 現在のプロジェクト設定は`0.5.0 (500.0.1)`。配布workflowは **version `0.5.0` / build `500.<GITHUB_RUN_NUMBER>.<GITHUB_RUN_ATTEMPT>`** へ上書きする。例は`500.12.3`。再実行で変わらないrun番号に増加するattemptを組み合わせ、送信前に同じアプリ・version・buildが存在しないことを確認する。workflow移行や手動配布で採番規則が変わる場合は、既存最大値とAppleの受理を再確認する。[Apple build string](https://developer.apple.com/help/glossary/build-string/)、[GitHub変数](https://docs.github.com/en/actions/reference/workflows-and-actions/variables)
 

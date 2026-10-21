@@ -2,7 +2,7 @@
 
 JR九州・鹿児島本線の門司港〜博多を対象に、GPS速度と線路上の推定位置・駅間情報を表示するSwiftUIアプリです。既存のオフライン推定エンジンを再利用し、Core Location、Swift Charts、走行履歴SQLite、CSV共有、合成GPSリプレイを接続しています。推定に外部APIやクラウドへのGPS送信は使用しません。
 
-**v0.5のSimulator UI検証と本人用TestFlight配布を進めています。** Python76件がローカルで成功し、先行するv0.5 engine CIではSwift32件・17シナリオ比較・Swift出力CSVの解析も成功しました。v0.4の署名なしアプリビルド・限定したSimulator検証を継承しています。署名資料とGitHubの保護設定は準備済みですが、実署名・TestFlight・iPhone実GPS・背景動作・電池・実走は未検証です。最新の対象commitと結果は [検証記録](docs/VALIDATION.md) を確認してください。合成GPSの評価値を実測精度として扱わないでください。
+**v0.5のSimulator UI検証は完了し、本人用TestFlight配布を進めています。** 最終アプリ候補のCIでPython76件・Swift32件・17シナリオ比較・Swift出力CSVの解析、Simulator/端末向け署名なしビルド、3件のUI試験が成功しました。グラフ3期間・記録操作・履歴/削除・CSV共有画面・明暗と大きい文字を実画像でも確認しています。署名資料とGitHubの保護設定、Apple API認証は確認済みですが、署名付きArchiveの作成で停止しており、TestFlight配布・iPhone実GPS・背景動作・電池・実走は未検証です。最新の対象commitと結果は [検証記録](docs/VALIDATION.md) を確認してください。合成GPSの評価値を実測精度として扱わないでください。
 
 ## アプリに接続した機能
 

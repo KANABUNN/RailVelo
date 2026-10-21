@@ -104,6 +104,16 @@ class SigningBoundaries(unittest.TestCase):
     def test_matching_unexpired_app_store_profile_passes(self):
         self.assertEqual(release.validate_profile(profile(), TEAM, DER, NOW), profile()["UUID"])
 
+    def test_apple_ios_compatible_platforms_pass_but_other_or_unknown_platforms_fail(self):
+        for platforms in [["iOS"], ["iOS", "xrOS", "visionOS"], ["iOS", "visionOS"], ["xrOS", "iOS"]]:
+            with self.subTest(platforms=platforms):
+                self.assertEqual(release.validate_profile({**profile(), "Platform": platforms}, TEAM, DER, NOW),
+                                 profile()["UUID"])
+        for platforms in [["OSX"], ["tvOS"], ["xrOS", "visionOS"], ["iOS", "OSX"], ["iOS", "tvOS"],
+                          ["iOS", "futureOS"], ["iOS", None], [], "iOS", None]:
+            with self.subTest(platforms=platforms), self.assertRaises(release.ReleaseError):
+                release.validate_profile({**profile(), "Platform": platforms}, TEAM, DER, NOW)
+
     def test_ad_hoc_enterprise_debug_or_nonbeta_profile_rejected(self):
         changes = [{"ProvisionedDevices": []}, {"ProvisionedDevices": ["synthetic-device"]},
                    {"ProvisionsAllDevices": True}, {"Platform": ["OSX"]}]

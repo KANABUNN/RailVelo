@@ -1,4 +1,4 @@
-name: TestFlight internal (manual signing draft)
+name: TestFlight internal
 
 # This workflow is intentionally manual. Creating credentials, registering its
 # Environment/Secrets, running it, and adding testers require the user's approval.
@@ -81,7 +81,8 @@ jobs:
         # on 2026-10-21. ES256 JWT and PKCS#12/certificate parsing require them.
         # https://pyjwt.readthedocs.io/en/stable/changelog.html
         # https://cryptography.io/en/latest/changelog/
-        run: python3 -m pip install --only-binary=:all: 'PyJWT[crypto]==2.15.1' 'cryptography==50.0.2'
+        run: |
+          python3 -m pip install --only-binary=:all: 'PyJWT[crypto]==2.15.1' 'cryptography==50.0.2'
       - name: Manual sign, upload Internal Only, and read Apple processing state
         env:
           SOURCE_SHA: ${{ needs.prerequisites.outputs.source_sha }}

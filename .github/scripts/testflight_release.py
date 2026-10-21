@@ -118,7 +118,10 @@ def validate_profile(profile, team, certificate_der, now=None):
     now = now or dt.datetime.now(dt.timezone.utc)
     require(isinstance(profile, dict), "invalid_profile")
     require(profile.get("TeamIdentifier") == [team], "profile_team_mismatch")
-    require(profile.get("Platform") == ["iOS"], "profile_platform_mismatch")
+    platforms = profile.get("Platform")
+    # Apple iOS App Store profiles may also list its compatible vision platforms.
+    require(isinstance(platforms, list) and all(isinstance(value, str) for value in platforms)
+            and "iOS" in platforms and set(platforms) <= {"iOS", "xrOS", "visionOS"}, "profile_platform_mismatch")
     require("ProvisionedDevices" not in profile, "device_profile_rejected")
     require(profile.get("ProvisionsAllDevices", False) is False, "enterprise_profile_rejected")
     require(utc(profile.get("ExpirationDate")) > now, "profile_expired")

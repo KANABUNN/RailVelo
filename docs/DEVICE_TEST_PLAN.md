@@ -6,6 +6,8 @@
 
 Simulatorでは [アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39453148802) が成功した。commit `8808fdd`、macos-26 arm64 / Xcode 26.6 / iOS 26.5 SDK・runtime / iPhone 16で、2種類のビルド、Info.plist/同梱リソース、合成リプレイ5観測・有効速度5件・matched3件、中断復旧、ライト/ダーク画像の切替を確認済み。速度・路線・方面・駅間進捗は画像で確認した。グラフはスクロール下にあるため今回の画像では目視できておらず、UI全操作・VoiceOverも未検証である。本書のiPhone実機試験は全て引き続き未検証とする。
 
+v0.5のsource `083e`は[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39524933942)でPython52件・Swift32件・interop・17 fixture比較が成功。アプリCIの署名なし2ビルドとsmokeは成功したが、復旧試験はfixtureの自然終了で前提を満たさず失敗した。試験前提を修正済みで、次commitの再実行待ち。これはiPhone実機の結果ではない。
+
 ## 1. 試験前に記録する情報
 
 | 項目 | 記録欄 |
@@ -21,6 +23,20 @@ Simulatorでは [アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/
 | 実走時の路線・乗車区間・進行方向 | 個人用の非公開記録へ記入 |
 
 TestFlightの対象buildと端末に導入されたbuildを照合する。位置情報を含むCSV・画面は公開のGitHub issueやCI成果物へ添付しない。実走は乗客として周囲に配慮し、操作のために危険な場所へ移動しない。
+
+### v0.5のTestFlight導入前チェック
+
+利用者は新規発行・Secrets保管・本人限定uploadとグループ割当を承認済み。新しいDistribution証明書/p12、専用profile、Developer Team APIキー、main限定・本人承認の配布Environmentと7種類のSecretsは準備済み。手動配布CIの下書きとオフライン境界試験22件を確認したが、実署名・認証・送信・本人追加・実機導入は未実施。[Apple手順](APPLE_SETUP.md#v05-distribution-status)に従い、version `0.5.0` / build `500.<run番号>.<attempt>`と承認した40桁commitを照合する。
+
+| ID | 確認 | 合格条件 | 初期状態 |
+| --- | --- | --- | --- |
+| T01 | アプリ・版・配布対象 | `jp.kb-dev.railvelo` / ASC `6824978233`、承認したcommit・version/buildが一致 | 未検証 |
+| T02 | Appleの処理状態 | `VALID`かつ`buildAudienceType=INTERNAL_ONLY`で、利用に必要なコンプライアンス回答が済んでいる。送信終了だけでは合格にしない | 未検証 |
+| T03 | 本人用割当 | 「本人検証」の対象buildと本人テスターのみ。公開リンクなし、自動配信オフ | 未検証 |
+| T04 | iPhoneへの導入 | 本人のTestFlightで導入し、端末上のversion/buildがT01と一致して起動する | 未検証 |
+| T05 | 最初の入力 | 合成リプレイで基本表示を確認後、前面で実GPS開始と許可を確認する | 未検証 |
+
+グループは現在テスター0人・ビルド0件。本人の追加とbuild割当は別の操作で、招待メールが発生し得るため事前に説明する。公開記録へメールアドレス・Team ID・鍵・端末UDIDを載せない。アップロード成功、Apple処理、割当、端末導入、実GPSをそれぞれ記録する。
 
 ## 2. 導入と基本表示
 

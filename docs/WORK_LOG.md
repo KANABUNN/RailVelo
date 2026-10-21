@@ -69,11 +69,13 @@
 - 手動起動・main祖先の完全SHA・同一SHAのengine/app成功を要求するTestFlight内部限定配布処理を作成。秘密を非公開一時領域へ閉じ込め、署名資料・署名後アプリを照合し、直接アップロード後に`VALID`/`INTERNAL_ONLY`を読み取り確認する。公開成果物は許可項目のみの状態JSONを1日保持する。
 - 配布の独立レビューで復元snapshotの更新中断に対応。固定分類/終了コード以外の失敗内容を公開しない。Apple実発行profileのiOS/xrOS/visionOS互換区分に対応し、YAML plain scalar中のcolonを複数行形式へ修正した。ローカルPython74件が成功、GitHubに配布workflowが有効として登録された。
 - 利用者が新しい署名資料/APIキー発行・GitHub Secrets保管・本人限定upload/割当を許可。新Distribution証明書（2027-10-21まで）と生成鍵の一致、専用App Store profileの対象/期限/証明書一致、API鍵の形式をローカルで確認した。既存アプリの秘密情報は流用していない。
-- Environment `railvelo-testflight`をmainブランチのみ・tag 0件・本人reviewer必須・admin bypass無効とし、7 Secretsを登録して名前を確認した。値はソース・公開ログ・画面証跡に記載していない。鍵は暗号化しowner/SYSTEM ACLで保管。登録中だけのCodex読取権限は追加の明示許可後に付与し、登録後に削除を確認した。
+- Environment `railvelo-testflight`をmainブランチのみ・tag 0件・本人reviewer必須・admin bypass無効とし、7 Secretsを登録して名前を確認した。値はソース・公開ログ・画面証跡に記載していない。Distribution秘密鍵とp12は暗号化し、平文形式のAPI p8も含めて署名資料をowner/SYSTEM ACLで保管した。登録中だけのCodex読取権限は追加の明示許可後に付与し、登録後に削除を確認した。
 - 本人端末はiPhone 16 / iOS 27.0.1、TestFlight導入済みという回答を得た。RailVeloの署名・Apple認証・アップロード・本人割当・端末導入・実GPS・背景・電池・実走の成功とは区別する。
 - source `3619ecc`のengine CIはPython74件・Swift32件・相互運用・17 fixture・iOSライブラリが成功。アプリCIは両ビルド・smoke・中断復旧が成功し、新UI試験でグラフ3期間の画素を確認したが、速度表示のDynamic Typeと履歴の画面遷移で失敗した。ScaledMetric、早期pause、同一履歴IDの保護確認へ修正し、Dark試験の独立実行とPNG添付の書き出しを追加した。実アプリの暗号機能はOSに依存し、独自/第三者暗号を含まないため免除宣言を設定した。
 - 配布前の追加レビューでASC応答の関連アプリ省略を考慮し、readback queryへアプリの明示取得を加えた。ID・Bundle ID・一意性の不足/不一致を拒否する。配布境界試験24件・全Python76件がローカルで成功し、独立した差分レビューで重大な問題の指摘はなかった。実機の最初の10分の手順と返信様式も追加した。
 - source `512ea03`はengine CI成功。アプリの文字拡大監査・3期間グラフ・一時停止・履歴保護・再開は成功した。終了確認の親子Button重複と、Darkでの駅間進捗の読み上げ領域不足を実ログで確認し修正した。監査を省略せず、44pt以上の進捗要素へ割合・残距離をまとめて読み上げる。確認ダイアログは明示IDで操作する。
 - source `52464c9`の全UI試験stepは成功し、終了・履歴・CSV共有画面・削除とDark監査まで通過した。先行版の実画像で時刻ラベルの重なりを確認したため、24時間の短い表記、通常3/大きい文字2の目盛、両端の内寄せを追加した。データの計算と連続性は変更しない。25秒間隔の同梱fixtureの点描画を、連続線や実GPSの受入へ拡張しない。一時的なCodex署名読取権限がフォルダーと8ファイルの全9オブジェクトに残っていないこと、秘密・成果物・実走フォルダーがGitへ入っていないことも確認した。
+- source `afd55bb`でengineとapp CIが両方成功。3件のUI試験と実画像の目視でグラフ目盛を確認した。ZIPのSHA-256を照合し、共有・削除・Darkの画像も確認した。同sourceを指定した内部配布run `39532617433`はgateに成功し、事前に承認された本人限定配布としてEnvironmentを承認した。ビルド予定は`0.5.0 (500.2.1)`で、署名・Apple処理の結果を確認する。
+- 初回配布はArchive段階で停止した。実API認証・材料照合・keychain導入は成功し、uploadは未実行、cleanupは成功。通常のSwiftCompile活動表示を根拠にcompileと分類していたため、実エラー句に限定し、profile適用先不一致・証明書チェーンを優先する固定分類を追加した。推測でprojectを変更せず、診断を再確認する。配布境界26件・Python78件がローカルで成功した。
 
 最新のCI・配布・実機結果は`VALIDATION.md`へ追記する。実走ログは未取得で、実走精度の評価値は確定していない。

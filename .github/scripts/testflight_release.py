@@ -39,7 +39,7 @@ class ReleaseError(Exception):
 class PrivateCommandError(ReleaseError):
     """Only a fixed category and numeric exit status may leave the private log."""
     def __init__(self, category, returncode=None):
-        categories = {"missing_profile", "signing_identity", "authentication", "sdk", "compile",
+        categories = {"profile_target_mismatch", "certificate_chain", "missing_profile", "signing_identity", "authentication", "sdk", "compile",
                       "upload", "network", "timeout", "execution", "unknown"}
         if category not in categories:
             category = "unknown"
@@ -53,6 +53,9 @@ def private_failure_category(output):
     """Match known diagnostic phrases; never copy any log text into the result."""
     text = output.lower()
     phrases = (
+        ("profile_target_mismatch", (b"does not support provisioning profiles",)),
+        ("certificate_chain", (b"unable to build chain to self-signed root", b"cssmerr_tp_not_trusted",
+                               b"cssmerr_tp_invalid_cert_anchor", b"errsecnottrusted")),
         ("missing_profile", (b"no profiles for", b"requires a provisioning profile", b"provisioning profile not found",
                              b"no provisioning profile", b"doesn't include the selected signing certificate")),
         ("signing_identity", (b"no signing certificate", b"no applicable signing identities", b"errsecinternalcomponent",
@@ -66,13 +69,18 @@ def private_failure_category(output):
                  b"unable to find an sdk", b"unable to find a specification for sdk")),
         ("upload", (b"upload failed", b"error uploading", b"asset validation failed", b"validation failed",
                     b"app store connect operation failed", b"transporter", b"itms-")),
-        ("compile", (b"swift compiler error", b"compile failed", b"swiftcompile", b"compilec ",
-                     b"** build failed **", b"** archive failed **")),
+        ("compile", (b"swift compiler error", b"compile failed", b"compilation failed",
+                     b"error: emit-module command failed", b"error: compile command failed",
+                     b"error: swiftc command failed", b"error: no such module", b"error: missing required module")),
     )
     for category, needles in phrases:
         sdk_missing = category == "sdk" and re.search(rb"\bsdk\b[^\r\n]{0,160}\bcannot be located\b", text)
         if sdk_missing or any(needle in text for needle in needles):
             return category
+    # Compiler progress and a generic ARCHIVE FAILED footer are not root causes.
+    # Match an actual source diagnostic without exposing its file name or text.
+    if re.search(rb"\.(?:swift|c|cc|cpp|m|mm|h|hpp):[0-9]+(?::[0-9]+)?:\s*(?:fatal\s+)?error:", text):
+        return "compile"
     return "unknown"
 
 

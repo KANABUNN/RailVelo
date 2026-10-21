@@ -18,7 +18,7 @@ GPS取得、RideProcessor/MapMatcher、履歴SQLite、CSV、SwiftUI/Charts、リ
 
 本人のApple Account、Team ID、APIキー識別情報、秘密鍵、端末UDID、実走位置を設計書へ転記しない。v0.1/v0.2設計書本文の未取得制約も継承する。
 
-ローカル秘密鍵は暗号化し、所有者/SYSTEMに限定したACLで保管している。Secrets登録時の一時的なエージェント読取権限は利用者の明示許可後に追加し、登録後に削除したことを確認済み。保管先や秘密識別子は公開記録へ転記しない。
+Distribution秘密鍵とp12はパスワードで暗号化している。APIのp8は平文の鍵形式で、署名資料とともに所有者/SYSTEMだけのACLで保管する。Secrets登録時の一時的なエージェント読取権限は利用者の明示許可後に追加し、登録後に削除したことを確認済み。保管先や秘密識別子は公開記録へ転記しない。
 
 先行するsource `083e`では[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39524933942)がPython52件・Swift32件・interop・17 fixture比較に成功。アプリCIはSimulator/端末向け署名なしビルドとsmokeが成功したが、復旧試験はfixtureの自然終了によって前提を満たさず失敗した。試験前提を修正し、`3619ecc`の再実行では復旧まで成功した。追加UI試験の修正を含む最新版の結果は[検証記録](VALIDATION.md)を参照する。
 

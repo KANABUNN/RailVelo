@@ -2,6 +2,10 @@
 
 ## v0.5の追加確認（2026-10-21）
 
+**最終配布候補:** `afd55bb73ac919feed936a943899da115a6cd2b5`。[engine run 39531707938](https://github.com/KANABUNN/RailVelo/actions/runs/39531707938)はPython76件・Swift32件・17 fixture比較・Swift CSV相互運用・iOSライブラリが成功。[app run 39531634651](https://github.com/KANABUNN/RailVelo/actions/runs/39531634651)もSimulator/端末向け署名なしビルド、smoke/中断復旧、3件のUI試験が成功した。グラフ3期間・拡大文字・Darkの実画像で時刻目盛の重なり解消を確認した。[UI検証証跡](SIMULATOR_UI_VALIDATION.md)
+
+同じsourceを指定した[内部配布run 39532617433](https://github.com/KANABUNN/RailVelo/actions/runs/39532617433)を手動起動した。gateとXcode ExportOptions確認、署名資料検査、実Apple API認証・アプリ照合、keychain導入まで成功したが、`0.5.0 (500.2.1)`のArchive作成で停止した。safe-status JSONをハッシュ照合して取得し、`phase=archive`、`upload_completed=false`、`cleanup_ok=true`を確認した。Appleへのアップロードは実行されていない。秘密を含まない固定分類を強化し、真因を再確認する。26件の配布境界試験を含むPython78件がローカルで成功した。
+
 **engine CI成功:** [run 39530105805](https://github.com/KANABUNN/RailVelo/actions/runs/39530105805)、対象commit `52464c9f58d1b2435a425a32dad7c6251699e066`。Python76件、Swift32件（Core/SQLite12＋Recording20）、Swift生成の実39列人工CSV→Python解析、17 fixture比較、iOS向けライブラリが成功した。同commitの[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39529981900)でも両ビルド・smoke・中断復旧、Light全操作/LargeText、Dark監査/スクロールの各stepが成功した。グラフの時刻ラベル短縮を追加修正し、最終版の試験を行う。[UI詳細](SIMULATOR_UI_VALIDATION.md)
 
 先行する`512ea03`の[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39528724495)は、大きい文字の監査、3期間グラフ、一時停止・履歴保護・再開まで成功したが、終了確認の親子Button重複とDarkの細い駅間進捗領域で失敗した。確認ボタンを明示IDで操作し、進捗を割合・次駅距離を含む高さ44pt以上の1要素へ修正し、上記で再試験した。Light/Darkの実画面添付の書き出しは成功した。

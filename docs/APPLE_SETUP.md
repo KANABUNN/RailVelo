@@ -135,7 +135,7 @@ GPS履歴は端末内に保存し、利用者がCSV共有操作を行った場�
 
 利用者承認後、**新しいDistribution秘密鍵/CSR・証明書（2027-10-21まで有効）・p12と、RailVelo専用App Store Connectプロファイルを生成済み**。p12の証明書と自前秘密鍵の一致を確認し、新しいDeveloper Team APIキーも発行済み。この構成ではCIに証明書・App ID・プロファイルを自動作成する権限を必須にしない。[GitHubのp12/プロファイル導入手順](https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications)
 
-ローカル秘密鍵は暗号化し、所有者/SYSTEMだけに限定したACLで保管している。登録時の一時的なエージェント読取権限は利用者の明示許可後に追加し、登録後の削除を確認済み。保管先・Team ID・APIキー識別子・秘密値は公開記録へ記載しない。
+Distribution秘密鍵とp12はパスワードで暗号化している。Appleから取得するAPIのp8は平文の鍵形式であり、所有者/SYSTEMだけに限定したACLで保管する。署名資料フォルダー全体にも同じアクセス制限を設定している。登録時の一時的なエージェント読取権限は利用者の明示許可後に追加し、登録後の削除を確認済み。保管先・Team ID・APIキー識別子・秘密値は公開記録へ記載しない。
 
 | 方式 | 必要なもの・権限 | 今回の判断 |
 | --- | --- | --- |

@@ -181,7 +181,12 @@ class SigningBoundaries(unittest.TestCase):
                  (b"Authentication failed for private account", "authentication"),
                  (b'SDK "private-sdk-name" cannot be located.', "sdk"),
                  (b"Unable to find a destination matching the provided destination specifier", "sdk"),
-                 (b"SwiftCompile normal arm64", "compile"), (b"Asset validation failed (private value)", "upload"),
+                 (b"SwiftCompile normal arm64", "unknown"), (b"Swift compiler error", "compile"),
+                 (b"/private/person/source.swift:12:4: error: synthetic compiler diagnostic", "compile"),
+                 (b"private-target does not support provisioning profiles", "profile_target_mismatch"),
+                 (b"unable to build chain to self-signed root for private certificate", "certificate_chain"),
+                 (b"CSSMERR_TP_NOT_TRUSTED private certificate", "certificate_chain"),
+                 (b"Asset validation failed (private value)", "upload"),
                  (b"Could not resolve host: private.example", "network"), (b"unrecognized private error", "unknown")]
         with tempfile.TemporaryDirectory() as folder:
             runner = release.PrivateRunner(pathlib.Path(folder))
@@ -198,6 +203,19 @@ class SigningBoundaries(unittest.TestCase):
                     self.assertEqual(public.getvalue(), "")
                     self.assertNotIn("PRIVATE_SYNTHETIC_KEY", str(error.exception))
                     self.assertNotIn("private", error.exception.category)
+
+    def test_signing_specific_failures_take_priority_over_generic_error_terms(self):
+        for raw, expected in [
+                (b"PRIVATE_TARGET does not support provisioning profiles. No profiles for PRIVATE_BUNDLE. Swift compiler error", "profile_target_mismatch"),
+                (b"PRIVATE_CERT unable to build chain to self-signed root. No signing certificate. Swift compiler error", "certificate_chain"),
+                (b"CSSMERR_TP_NOT_TRUSTED PRIVATE_CERT No signing certificate", "certificate_chain")]:
+            self.assertEqual(release.private_failure_category(raw), expected)
+
+    def test_compiler_activity_and_generic_failure_footers_do_not_invent_compile_errors(self):
+        for raw in [b"SwiftCompile normal arm64 PRIVATE_FILE.swift", b"CompileC PRIVATE_FILE.o PRIVATE_FILE.c",
+                    b"SwiftCompile normal arm64\n** ARCHIVE FAILED **", b"** BUILD FAILED **",
+                    b"PRIVATE_UNKNOWN_FAILURE ** ARCHIVE FAILED **"]:
+            self.assertEqual(release.private_failure_category(raw), "unknown")
 
     def test_timeout_and_execution_failures_do_not_copy_exception_secrets(self):
         with tempfile.TemporaryDirectory() as folder:

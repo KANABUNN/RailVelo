@@ -2,7 +2,7 @@
 
 JR九州・鹿児島本線の門司港〜博多を対象に、GPS速度と線路上の推定位置・駅間情報を表示するSwiftUIアプリです。既存のオフライン推定エンジンを再利用し、Core Location、Swift Charts、走行履歴SQLite、CSV共有、合成GPSリプレイを接続しています。推定に外部APIやクラウドへのGPS送信は使用しません。
 
-**v0.5のSimulator UI検証は完了し、本人用TestFlight配布を進めています。** 最終アプリ候補のCIでPython76件・Swift32件・17シナリオ比較・Swift出力CSVの解析、Simulator/端末向け署名なしビルド、3件のUI試験が成功しました。グラフ3期間・記録操作・履歴/削除・CSV共有画面・明暗と大きい文字を実画像でも確認しています。署名資料とGitHubの保護設定、Apple API認証は確認済みですが、署名付きArchiveの作成で停止しており、TestFlight配布・iPhone実GPS・背景動作・電池・実走は未検証です。最新の対象commitと結果は [検証記録](docs/VALIDATION.md) を確認してください。合成GPSの評価値を実測精度として扱わないでください。
+**v0.5のSimulator UI検証と本人限定のTestFlight配布が成功しました。** 配布版は`0.5.0 (500.7.1)`。本人からiPhone 16へのインストール・起動成功の回答を得ており、実GPSの短時間試験は結果待ちです。同じアプリsourceのCIでPython76件・Swift32件・17シナリオ比較、両署名なしビルド、3件のUI試験が成功。配布処理も実署名・証明書検査・Appleの`VALID`/`INTERNAL_ONLY`確認まで成功しました。背景・長時間/電池・実走評価は未検証です。最新の証跡と未完了項目は[検証記録](docs/VALIDATION.md)を確認してください。
 
 ## アプリに接続した機能
 
@@ -93,7 +93,7 @@ xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generi
 xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generic/platform=iOS' -derivedDataPath artifacts/DeviceBuild CODE_SIGNING_ALLOWED=NO build
 ```
 
-署名なし端末向けビルドだけではiPhoneへのインストールはできません。個人導入は内部TestFlightを第一候補とし、署名、アップロード、処理完了、本人グループへの割当、端末導入を順に確認します。Apple Developer Programの会員資格と契約同意、App ID `jp.kb-dev.railvelo` とApp Store Connectアプリ「RailVelo」（ID `6824978233`）の登録完了は画面確認済みです。内部グループ「本人検証」は自動配信オフ、テスター0人・ビルド0件・公開リンクなし。証明書/APIキーの生成、署名、アップロード、招待は未実施です。登録・配布の進捗は [検証記録](docs/VALIDATION.md) を確認してください。秘密鍵や証明書のパスワードはリポジトリへ保存しません。
+署名付きの個人導入は内部TestFlightで実施しました。App IDは`jp.kb-dev.railvelo`、App Store Connectアプリは「RailVelo」（ID `6824978233`）です。内部グループ「本人検証」は本人1人・`0.5.0 (500.7.1)`のビルド1件、自動配信オフ・公開リンクなし。署名・アップロード・Apple処理と本人への割当が成功し、本人から端末への導入・起動成功の回答を得ています。証跡と実機試験の範囲は[検証記録](docs/VALIDATION.md)を確認してください。秘密鍵や証明書のパスワードはリポジトリへ保存しません。
 
 導入後は「リプレイ」で開始すると同梱合成GPSを再生します。「実GPS」は前面で開始し、位置情報を許可します。停止・再開・終了は画面下の操作、保存済み走行は履歴からグラフ参照・CSV共有・削除を行います。
 
@@ -106,7 +106,7 @@ swift run --package-path swift railvelo-replay --network fixtures/synthetic_netw
 python3 scripts/compare_replays.py python-normal.jsonl swift-normal.jsonl
 ```
 
-全17シナリオ比較、Swift29件、Python36件、ライブラリのSimulatorビルドは `.github/workflows/swift.yml` の [engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39447558500) で成功しました。`.github/workflows/ios.yml` の [アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39453148802) もcommit `8808fdd`で成功。Xcode 26.6 / iOS 26.5 SDKで2種類のビルド、同梱リソース、合成リプレイ5観測・有効速度5件・確定推定3件、中断復旧を確認しました。ライト/ダーク画像は背景輝度の自動検査と目視で切り替わりを確認しています。画面には合成速度71.7 km/h、鹿児島本線・博多方面・駅間進捗が表示されました。グラフは画面下へスクロールが必要なため、今回の画像での目視確認対象に含めていません。
+配布したアプリsource `afd55bb`の[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39531707938)で、全17シナリオ比較、Swift32件、Python76件、Swift生成CSVのPython解析、iOS向けライブラリのビルドが成功しました。同じsourceの[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39531634651)もXcode 26.6 / iOS 26.5 SDKで両ビルド・合成リプレイ・中断復旧・3件のUI試験が成功し、グラフ3期間・記録操作・履歴/削除・共有画面・明暗/大きい文字を実画像で確認しました。25秒間隔の合成入力による点描画と、実GPSの連続線・実際のVoiceOverは区別します。[Simulatorの詳細](docs/SIMULATOR_UI_VALIDATION.md)
 
 標準GitHub-hosted runnerはpublicリポジトリで無料、privateリポジトリでは含有枠超過時に有料です。公開前監査と履歴整理の後、利用者が公開設定を変更しました。公開状態はGitHubのリポジトリ情報で確認済みです。engine CIは`macos-15-intel`、アプリCIは`macos-26`（arm64）を使用し、関連ファイルの変更だけを対象にし、同じブランチの古い実行を取り消して重複を抑えます。結果は [検証記録](docs/VALIDATION.md)、課金の条件と代替手段は [Apple手順の費用説明](docs/APPLE_SETUP.md#2-osxcode費用) を参照してください。
 
@@ -118,7 +118,7 @@ python3 scripts/compare_replays.py python-normal.jsonl swift-normal.jsonl
 
 `next_station_id` は次に通過する地理上の駅です。次の**停車駅**・列車種別・列車ID・到着予定時刻は提供しません。`predicted` は欠測時の短時間予測、`uncertain` / `lost` / `rejected` は位置や路線を確定できない状態です。信頼度は候補内の相対支持度で、実世界の正解確率に較正した値ではありません。
 
-受入が残る項目は、グラフ目視・UI全操作・VoiceOver、署名配布、iPhoneの実GPS、ロック/別アプリ中の継続、OS終了復旧、長時間性能と電池、実際の駅イベント・並走・トンネル復帰です。v0.1/v0.2設計書の本文は再取得できておらず、前工程の元SQLと設計対応記録を継承しています。全国対応、他路線への直通、営業上の停車駅判定には追加データと実証が必要です。
+受入が残る項目は、iPhoneの実GPSと連続線・実際のVoiceOver、ロック/別アプリ中の継続、端末上の履歴/CSV共有先・OS終了復旧、長時間性能と電池、実際の駅イベント・並走・トンネル復帰です。実走ログは未取得で、合成データの評価値から実走精度を確定していません。v0.1/v0.2設計書の本文は再取得できておらず、前工程の元SQLと設計対応記録を継承しています。全国対応、他路線への直通、営業上の停車駅判定には追加データと実証が必要です。
 
 ## 出典と再現
 

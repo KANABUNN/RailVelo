@@ -1,20 +1,20 @@
-# RailVelo 技術設計 v0.5 — 内部配布準備・実機受入
+# RailVelo 技術設計 v0.5 — 内部配布・実機受入
 
-更新日: 2026-10-21。状態: **Simulator UI検証成功・本人限定配布のArchive失敗を調査中**。本書はv0.4の実装・検証を継承し、署名から本人用TestFlight、iPhone実機受入へ進む条件を記録する。Apple API認証・署名資料照合・keychain導入まで成功し、署名付きArchive・アップロード・本人グループへの追加・iPhone導入は未完了。
+更新日: 2026-10-21。状態: **Simulator UI検証・内部限定配布が成功し、本人申告でiPhoneへの導入・起動を確認**。[配布run 39536734020](https://github.com/KANABUNN/RailVelo/actions/runs/39536734020)で`0.5.0 (500.7.1)`を送信し、読み取りAPIで`VALID`・`INTERNAL_ONLY`、後処理成功を確認した。その後「本人検証」へ本人1名・対象build1個を手動割当した。本書はv0.4の実装・検証を継承し、実GPS等の実機受入へ進む条件を記録する。導入・起動は本人申告であり、端末の直接観測ではない。実GPS・連続線・実VoiceOver・背景・電池・実走は未検証。
 
 ## 1. 継承するものと現在位置
 
-GPS取得、RideProcessor/MapMatcher、履歴SQLite、CSV、SwiftUI/Charts、リプレイ、背景位置情報の構成は [v0.4](TECHNICAL_DESIGN_v0.4.md) を継承する。Python36件、Swift29件、17 fixture比較、署名なしアプリビルド、限定したSimulatorリプレイ・DB・復旧・ライト/ダークの実施結果は [検証記録](VALIDATION.md) を正とする。全国データ、列車特定・営業上の停車駅・時刻表・遅延はこの設計で追加しない。
+GPS取得、RideProcessor/MapMatcher、履歴SQLite、CSV、SwiftUI/Charts、リプレイ、背景位置情報の構成は [v0.4](TECHNICAL_DESIGN_v0.4.md) を継承する。最終アプリ候補のengine/app CI、署名付き配布、過去版の実施結果と修正経緯は [検証記録](VALIDATION.md) を正とする。全国データ、列車特定・営業上の停車駅・時刻表・遅延はこの設計で追加しない。
 
 | 対象 | 確認済みの状態 |
 | --- | --- |
 | Bundle ID | `jp.kb-dev.railvelo` |
 | App Store Connect | RailVelo / `6824978233` |
-| 内部グループ | 「本人検証」、自動配信オフ、テスター0人、ビルド0件、公開リンクなし |
+| 内部グループ | 「本人検証」へ本人1名のみ・対象build1個を手動割当済み。「招待済み」「テスト中」は配布状態。Xcodeビルドは手動配信、外部グループ・公開リンクなし |
 | 署名資料 | 新しいDistribution証明書（2027-10-21まで）、自前秘密鍵との一致を確認したp12、RailVelo専用App Store Connectプロファイルを生成済み。既存アプリの秘密情報は流用していない |
 | API/CI | 新しいDeveloper Teamキーを発行済み。Environment `railvelo-testflight`はmainのみ・tag 0件・本人required reviewer・admin bypass無効、7種類のSecrets名を確認済み |
-| 署名/配布 | 利用者が新規発行・Secrets保管・本人限定uploadとグループ割当を承認済み。実API認証成功。Archive作成で停止し、upload・本人追加は未実施 |
-| 実機 | iPhone 16 / iOS 27.0.1、TestFlight導入済み（本人申告）。RailVelo導入・GPS・背景・電池・実走は未検証 |
+| 署名/配布 | 利用者が新規発行・Secrets保管・本人限定uploadとグループ割当を承認済み。`0.5.0 (500.7.1)`のArchive・署名検査・upload・`VALID`/`INTERNAL_ONLY`確認・cleanup、本人への割当が成功。App Store審査へは提出していない |
+| 実機 | iPhone 16 / iOS 27.0.1で対象版のTestFlightからのインストール・起動を本人申告で確認。直接端末観測なし。実GPS・実機リプレイ・背景・電池・実走は未検証 |
 
 本人のApple Account、Team ID、APIキー識別情報、秘密鍵、端末UDID、実走位置を設計書へ転記しない。v0.1/v0.2設計書本文の未取得制約も継承する。
 
@@ -28,7 +28,7 @@ Distribution秘密鍵とp12はパスワードで暗号化している。APIのp8
 
 必要な資料がない場合は新規発行を自動的に始めず、種類・用途・影響・保管先を利用者へ提示する。証明書はTeamの署名資格情報であり、p12自体がRailVeloに限定されるわけではない。プロファイルとworkflowは本アプリを対象とし、既存アプリ用の証明書を失効しない。[GitHubの署名資料導入](https://docs.github.com/en/actions/how-tos/deploy/deploy-to-third-party-platforms/sign-xcode-applications)、[Appleのプロファイル作成](https://developer.apple.com/help/account/provisioning-profiles/create-an-app-store-provisioning-profile)
 
-APIはupload/internal TestFlightに必要なDeveloper roleを基本とする。今回のCI下書きはIssuer IDを持つTeamキーだけに対応し、**TeamキーはDeveloperでも全アプリが範囲となり、RailVeloだけへ制限できない**ことを承認時に明示する。Individual keyはユーザーの役割・アプリ範囲を継承するが、Account Holderなら本人の広い権限を継承する。Individual方式へ変更する場合は認証実装も見直し、キー名だけから権限を判断しない。[Appleの権限説明](https://developer.apple.com/videos/play/wwdc2026/8010/)
+APIはupload/internal TestFlightに必要なDeveloper roleを基本とする。今回のCIはIssuer IDを持つTeamキーだけに対応し、**TeamキーはDeveloperでも全アプリが範囲となり、RailVeloだけへ制限できない**ことを説明して承認を得た。Individual keyはユーザーの役割・アプリ範囲を継承するが、Account Holderなら本人の広い権限を継承する。Individual方式へ変更する場合は認証実装も見直し、キー名だけから権限を判断しない。[Appleの権限説明](https://developer.apple.com/videos/play/wwdc2026/8010/)
 
 Individual keyはProvisioning APIを利用できない。自動署名/cloud signingを選択する場合は、キー種別に加えてCertificates, Identifiers & Profilesとcloud-managed Distributionの権限を確認する。新規証明書の自動作成が起こる場合も確認対象とし、Adminへの昇格を最初の解決策にしない。[キー制約](https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api)、[cloud signing権限](https://developer.apple.com/documentation/appstoreconnectapi/userrole)
 
@@ -47,7 +47,7 @@ Individual keyはProvisioning APIを利用できない。自動署名/cloud sign
 
 確認前は資格情報の値を開かず、メタデータ・有効期限・用途の確認、文書・workflow案作成まで進める。秘密情報をチャットへ貼り付けるよう依頼しない。契約同意と認証は本人が行う。既存資料の利用許可を他アプリのキー共用や失効許可へ拡張しない。
 
-## 4. 配布パイプライン案
+## 4. 配布パイプライン
 
 ```mermaid
 flowchart LR
@@ -62,17 +62,19 @@ flowchart LR
     Phone --> Acceptance[実機・実走受入]
 ```
 
-通常のPR/Simulator CIへ署名Secretsを渡さない。[配布workflow下書き](../.github/workflows/testflight.yml)は手動起動だけを受け付け、公式リポジトリのmainからのみ実行する。40桁の対象SHAがmainの祖先で、同じSHAの`swift.yml`と`ios.yml`が両方成功したことをGitHub APIで確認する。`GITHUB_TOKEN`は`contents: read`と`actions: read`だけにする。署名用Environment `railvelo-testflight`はmain限定・本人required reviewer・admin bypass無効とし、7種類のSecrets登録を確認済み。[GitHub Environment保護](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)
+通常のPR/Simulator CIへ署名Secretsを渡さない。[配布workflow](../.github/workflows/testflight.yml)は手動起動だけを受け付け、公式リポジトリのmainからのみ実行する。40桁の対象SHAがmainの祖先で、同じSHAの`swift.yml`と`ios.yml`が両方成功したことをGitHub APIで確認する。`GITHUB_TOKEN`は`contents: read`と`actions: read`だけにする。署名用Environment `railvelo-testflight`はmain限定・本人required reviewer・admin bypass無効とし、7種類のSecrets登録を確認済み。[GitHub Environment保護](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)
 
 runner上の鍵・p12・profileは権限制限した一時領域と一時keychainに保存し、元のkeychain検索設定と既存profileを退避・復元する。Apple側の新規発行APIを呼ばず、Team/Bundle、App Store用属性、有効期限、p12との証明書一致を送信前に検査する。証明書名・Team ID・profile UUIDをmaskし、コマンドの生出力は非公開の一時ファイルだけへ保存する。公開artifactは許可した項目だけのstatus JSONを1日間保存し、IPA・Archive・profile・生ログを含めない。
 
-Archiveを検査後、`method=app-store-connect`、`destination=upload`、`signingStyle=manual`、`testFlightInternalTestingOnly=true`でXcodeから直接送信する。実行に使うXcode 26.6の`xcodebuild -help`に必要キー・型とmethodが存在しなければ停止する。Xcode 26.6でCLIの対応確認は成功した。署名付きArchiveの作成は失敗しており、送信は未実施。送信後は読み取りAPIで`VALID`かつ`buildAudienceType=INTERNAL_ONLY`まで確認し、20分以内に確認できなければ失敗として記録する。本人のテスター追加・割当は自動化しない。[Appleの配布設定](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases)、[CLI設定確認](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)、[内部限定属性](https://developer.apple.com/documentation/appstoreconnectapi/buildaudiencetype)
+Archiveを検査後、`method=app-store-connect`、`destination=upload`、`signingStyle=manual`、`testFlightInternalTestingOnly=true`でXcodeから直接送信する。実行に使うXcode 26.6の`xcodebuild -help`に必要キー・型とmethodが存在しなければ停止する。送信後は読み取りAPIで`VALID`かつ`buildAudienceType=INTERNAL_ONLY`まで確認し、20分以内に確認できなければ失敗として記録する。制御commit `1ac3489cac9029ae8a63e62125eed75f1248d98b`のrun 39536734020では、アプリsource `afd55bb73ac919feed936a943899da115a6cd2b5`について全段階が成功した。既存の手動署名資料とAPI認証で送信し、`-allowProvisioningUpdates`は使用していない。本人のテスター追加・割当は自動化せず、CI完了後に手動で実施した。[Appleの配布設定](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases)、[CLI設定確認](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)、[内部限定属性](https://developer.apple.com/documentation/appstoreconnectapi/buildaudiencetype)
 
-補助コードのオフライン境界試験49件が成功した。対象SHA/試験照合、profile/署名属性、内部限定API応答、ログ非出力、後処理復元、復元snapshotの原子的更新を合成データで確認した結果であり、単独では実署名・送信の成功を意味しない。実材料の解析・API認証は配布runで別に成功を確認した。ASC readbackでは関連アプリを明示取得し、ID・Bundle ID・一意性を照合する。失敗時は固定分類と整数の終了コードだけを公開し、生ログから秘密・名前・pathを転記しない試験も含む。Python依存はES256とp12/証明書解析に必要な`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定した。2026-10-21時点の安定版を公式変更履歴で確認し、arm64 runnerを使用する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
+補助コードのオフライン境界試験49件・全Python101件が、暗号依存を含むbundled Pythonでskipなし成功した。対象SHA/試験照合、profile/署名属性、内部限定API応答、ログ非出力、後処理復元、復元snapshotの原子的更新を合成データで確認し、実材料の解析・API認証・署名・送信は配布runで別に成功を確認した。ASC readbackでは関連アプリを明示取得し、ID・Bundle ID・一意性を照合する。失敗時は固定分類・既知コマンド名・整数の件数/終了コード・固定処理段階だけを公開し、生ログから秘密・名前・pathを転記しない試験も含む。Python依存はES256とp12/証明書解析に必要な`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定した。2026-10-21時点の安定版を公式変更履歴で確認し、arm64 runnerを使用する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
+
+実運用で必要だった補正は、プロファイルUUIDの原表記を大文字・小文字も含めて保持することと、証明書抽出を`codesign --extract-certificates=<prefix>`の単一引数にすること。元のApp Store属性・署名・entitlements・証明書DER一致の検査を維持した。確認段階は`verify`、`verify_signature`、`verify_entitlements`、`verify_certificate`の固定値で区別し、平文ログの公開範囲は広げない。過去の失敗と再試験は[検証記録](VALIDATION.md)へ残す。[Appleの証明書抽出例](https://developer.apple.com/cn/documentation/devicemanagement/allowing-and-denying-apps-and-binaries)
 
 ## 5. version/buildと監査記録
 
-Archive失敗の固定分類だけで原因を特定できない場合に限り、利用者の個別承認を得た暗号化診断を使う。手動入力`encrypted_archive_diagnostics`は既定オフ。失敗した単一Archiveの出力だけをgzip後にAES-256-GCMで暗号化し、セッション鍵を本人用RSA-4096公開鍵のOAEP-SHA256で包む。source/build/run/attemptをAADとOAEP labelへ結び付け、平文fallbackは設けない。通常のsecurity/API処理を含む結合ログは対象外。
+Archive失敗の固定分類だけで原因を特定できない場合に限り、利用者の個別承認を得た暗号化診断を使う。手動入力`encrypted_archive_diagnostics`は既定オフ。今回の回収・復号は承認後に実施し、最終成功runは入力オフで実行した。失敗した単一Archiveの出力だけをgzip後にAES-256-GCMで暗号化し、セッション鍵を本人用RSA-4096公開鍵のOAEP-SHA256で包む。source/build/run/attemptをAADとOAEP labelへ結び付け、平文fallbackは設けない。通常のsecurity/API処理を含む結合ログは対象外。
 
 公開artifactは暗号文だけを1日保持する。1日はGitHub側の保存期限であり、第三者が保存した暗号文のコピーまで削除できる保証ではない。復号鍵は本人PCのWindows CurrentUser-DPAPIとowner/SYSTEM限定ACLで保護し、Git/CIへ送らない。回収後の平文も同じ非公開領域で扱い、本文や個人識別子を公開報告へ転記しない。鍵と公開鍵の一致、合成ログでの実往復を本人PCで確認した。
 
@@ -87,17 +89,17 @@ Archive失敗の固定分類だけで原因を特定できない場合に限り�
 | アップロード | 対象アプリ・version/buildに一致する転送成功 |
 | Apple処理 | `processingState=VALID`。失敗/未処理/期限切れを利用可能と扱わない |
 | 内部限定 | Internal Onlyの表示または対応API属性を確認 |
-| テスト割当 | 「本人検証」の対象buildと本人テスターのみ。公開リンクなし、自動配信オフを維持 |
-| 端末 | 本人がTestFlightから導入し、版と起動を照合 |
-| 実機受入 | 実GPS・背景・欠測・履歴・CSV・電池・実走を別記録で確認 |
+| テスト割当 | 「本人検証」に本人1名・対象build1個を手動割当済み。外部グループ・公開リンクなし、自動配信オフ |
+| 端末 | 本人がTestFlightから`0.5.0 (500.7.1)`をインストール・起動できたと回答。本人申告で合格、直接端末観測なし |
+| 実機受入 | 実GPSの静止/徒歩・履歴・グラフ・CSVは依頼中、結果未回答。背景・欠測・電池・実走等も未検証 |
 
-処理完了、グループ作成、本人への割当、iPhone導入は別の状態である。招待やテスター追加は確認後に行う。`VALID`だけでは実機動作確認済みにならない。[build処理状態](https://developer.apple.com/documentation/appstoreconnectapi/build/attributes-data.dictionary)、[内部テスター](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)
+処理完了、グループ作成、本人への割当、iPhone導入は別の状態である。ASCの「招待済み」「テスト中」は配布状態で、実機受入の合格を意味しない。[CIの状態記録](evidence/testflight-500.7.1.json)の`testers_modified=false`と`device_acceptance=not_verified`はCI終了時点の確認範囲であり、後から実施した手動割当・本人申告を否定しない。`VALID`やインストール・起動だけで実GPS等を合格にはしない。[build処理状態](https://developer.apple.com/documentation/appstoreconnectapi/build/attributes-data.dictionary)、[内部テスター](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)
 
 ## 7. 実機への引継ぎ
 
 [実機試験計画](DEVICE_TEST_PLAN.md)でまず配布buildを照合し、同梱リプレイ、前面GPS、許可拒否/概算位置、5秒の表示失効、保存・CSVを確認する。続いてロック/別アプリ、終了復旧、電池・長時間を試験し、門司港〜博多の実走へ進む。グラフ目視・UI全操作・VoiceOverはv0.4から残る受入項目として確認する。
 
-実走CSV・画面・端末ログは個人用の非公開管理とし、公開の成果物には条件と集計結果を記録する。実測結果とSimulatorの合成結果を混ぜず、試験失敗を再現fixtureへ縮約して改善する。署名方式とSecrets準備は完了したが、実署名・認証・アップロード・テスター割当・iPhone導入は未完了。
+実走CSV・画面・端末ログは個人用の非公開管理とし、公開の成果物には条件と集計結果を記録する。実測結果とSimulatorの合成結果を混ぜず、試験失敗を再現fixtureへ縮約して改善する。実署名・認証・アップロード・Apple処理・本人への割当は成功し、iPhone導入・起動は本人申告で確認した。実GPS・実機リプレイ・連続線・実VoiceOver・ロック/背景・電池・実走は別途確認する。
 
 ## 8. 実走診断と解析
 

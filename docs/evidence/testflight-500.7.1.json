@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "repository": "KANABUNN/RailVelo",
+  "source_sha": "afd55bb73ac919feed936a943899da115a6cd2b5",
+  "bundle_id": "jp.kb-dev.railvelo",
+  "app_id": "6824978233",
+  "version": "0.5.0",
+  "build": "500.7.1",
+  "phase": "complete",
+  "success": true,
+  "upload_completed": true,
+  "processing_valid_internal_only": true,
+  "cleanup_ok": true,
+  "testers_modified": false,
+  "profiles_generated": false,
+  "certificates_generated": false,
+  "device_acceptance": "not_verified",
+  "command_diagnostics": null
+}

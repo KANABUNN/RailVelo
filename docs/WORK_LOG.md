@@ -84,4 +84,6 @@
 
 - UUID修正後のrun `39536001985`は署名付きArchive生成と版・Bundle ID・profile照合が成功した。verifyでinputfileエラーとなり、upload前に停止・cleanup成功。Appleの明示例に合わせ証明書抽出のoptional引数を単一の`--extract-certificates=<prefix>`へ修正した。3検査の固定subphaseと2件の回帰試験を追加し、配布49件・全Python101件が成功した。暗号化対象はArchiveだけのまま、次回は通常の配布処理で確認する。
 
+- run `39536734020`で`0.5.0 (500.7.1)`の署名付きArchive・全署名検査・アップロード・Apple APIのVALID/INTERNAL_ONLY確認・cleanupが成功した。sourceは両CI成功済み`afd55bb`、controlは`1ac3489`。成功JSONをハッシュ照合し、秘密を含まない証跡として保存した。本人検証へ現在ログイン中の本人だけを追加し、内部build1件を手動割当、1人/1件・招待済みを確認。個人情報を除いた配布画面をローカル保存した。利用者からiPhone 16へのインストール・起動成功の回答を得た。実GPS短時間試験は結果待ちで、背景・電池・実走は独立して未完了とする。
+
 最新のCI・配布・実機結果は`VALIDATION.md`へ追記する。実走ログは未取得で、実走精度の評価値は確定していない。

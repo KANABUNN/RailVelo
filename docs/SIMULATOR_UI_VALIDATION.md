@@ -36,4 +36,4 @@ XCUITestの各操作画像は`ui-light.xcresult` / `ui-dark.xcresult`に保存�
 
 同梱fixtureの観測間隔は25秒で、連続観測として結ぶ閾値を超えるため、今回のグラフは点として描画される。点の実画素を確認した結果を、短い取得間隔での連続線・実GPS・列車での実走の合格へ拡張しない。連続線と実際のVoiceOver読み上げはiPhoneの初期試験で確認する。合成GPSを使ったCLI/SQLite試験とは別に、端末の位置許可・ロック中の記録・共有先・電池を実機で確認する。
 
-利用者の申告端末はiPhone 16 / iOS 27.0.1、TestFlightアプリはインストール済み（2026-10-21）。RailVeloの端末への導入・起動、実GPSの連続線、実際のVoiceOver、背景・ロック中の記録、OS終了復旧、FilesへのCSV保存、長時間・電池・実走は全て未検証。SimulatorのiOS 26.5での結果と分け、[実機試験計画](DEVICE_TEST_PLAN.md)に従って受け入れる。
+利用者の申告端末はiPhone 16 / iOS 27.0.1。TestFlight版RailVelo 0.5.0（500.7.1）の導入・起動は本人申告で成功した（2026-10-21）。端末の遠隔操作・直接観測は行っていない。実GPS、連続線、実際のVoiceOver、背景・ロック中の記録、OS終了復旧、FilesへのCSV保存、長時間・電池・実走は未検証で、本人の試験結果を待つ。SimulatorのiOS 26.5での結果と分け、[実機試験計画](DEVICE_TEST_PLAN.md)に従って受け入れる。

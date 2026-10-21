@@ -1,6 +1,35 @@
-# 実行確認と受入範囲 — v0.5 作業中
+# 実行確認と受入範囲 — v0.5 内部配布完了・実GPS確認待ち
 
-## v0.5の追加確認（2026-10-21）
+## 最新状態（2026-10-21）
+
+**TestFlightの本人限定配布が成功し、利用者からiPhone 16へのインストール・起動成功の回答を得た。実GPSの短時間試験は結果待ちである。**
+
+| 項目 | 結果・証跡 |
+| --- | --- |
+| 配布アプリ | RailVelo `0.5.0 (500.7.1)` / `jp.kb-dev.railvelo` / ASC `6824978233` |
+| アプリsource | `afd55bb73ac919feed936a943899da115a6cd2b5`。engine/app CIが同じSHAで成功 |
+| 配布control | `1ac3489cac9029ae8a63e62125eed75f1248d98b` |
+| 実配布CI | [run 39536734020](https://github.com/KANABUNN/RailVelo/actions/runs/39536734020)、署名job `119015035914` がsuccess。Xcode 26.6 |
+| Archive・署名検査 | 成功。Bundle ID・版・埋め込みprofile・strict codesign・entitlements・署名leaf証明書を照合 |
+| Apple処理 | 実アップロード成功、読み取りAPIで対象buildの`VALID`・`INTERNAL_ONLY`・未期限切れを確認 |
+| 本人への割当 | 「本人検証」内部グループ、本人1人・当該build1件・招待済み。Xcodeビルドを手動配信。外部テスター・公開リンクは追加していない |
+| 後処理 | `cleanup_ok=true`。元keychain/profileを復元し、一時署名資料と生ログを削除 |
+| 成功JSON | [検証済みsafe-status](evidence/testflight-500.7.1.json)。artifact `12317731962`、ZIP SHA-256 `f3cafd3e19734ddab0900478bd163fce179332ded7df045c91452eacb0561fa0` |
+| iPhone導入 | iPhone 16 / iOS 27.0.1、案内したbuildのインストール・起動成功を本人が回答。直接端末を観測した結果ではない |
+| 実GPS・履歴・共有 | 静止/徒歩/再静止、履歴グラフ、CSVのFiles保存を依頼済み。結果待ち |
+
+safe-statusの`testers_modified=false`はCIがテスター追加を行わないことを表す。本人への招待とグループ割当はCI成功後、承認済みの別の画面操作として実施した。`device_acceptance=not_verified`もCI時点の記録であり、その後の導入・起動の本人申告は上表へ別に記録した。画面の「テスト中」は配布可能状態であり、実機GPSの合格とは区別する。本人のメール、Team/Profile/API識別子、秘密鍵、実GPS座標は公開記録へ含めない。
+
+最終アプリ候補の[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39531707938)はPython76件・Swift32件・17 fixture比較・Swift生成CSVのPython解析・iOSライブラリが成功。[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39531634651)も両署名なしビルド・smoke/中断復旧・3件のUI試験に成功した。速度グラフ3期間の点描画、記録操作、履歴/対象削除、ネイティブCSV共有画面、明暗・大きい文字を実画像で確認した。[Simulator詳細](SIMULATOR_UI_VALIDATION.md)
+
+配布controlのオフライン境界49件、全Python101件は暗号依存ありのbundled Pythonでskipなし成功し、独立レビューも通過した。実Archive・署名検査・送信・Apple処理の成功は上記実配布runで別に確認した。
+
+実GPSの連続線・精度、実際のVoiceOver、ロック/他アプリ中の記録、実機での中断復旧、CSV共有先、長時間・電池・CPU/メモリ、列車での実走評価は未検証。実走ログ未取得のため、合成値から実走精度を確定していない。[実機計画](DEVICE_TEST_PLAN.md)と[非公開ログ解析](RIDE_EVALUATION.md)で続行する。
+
+## v0.5の検証・修正経過（当時の状態）
+
+以下の未確認・停止・次回実行という記述は、その試行時点の記録。現在の配布・導入状態は上表を正とする。
+
 
 UUID修正後の[run 39536001985](https://github.com/KANABUNN/RailVelo/actions/runs/39536001985)は`0.5.0 (500.6.1)`の署名付きArchive生成が成功し、Bundle ID・version/build・埋め込みprofileの照合を通過した。その後の`verify`でinput file missing / 終了コード1となり、upload前に停止した。safe-status ZIPのSHA-256は`430aafa10cf5d4e25f682cd3e862c9bfa8a259d01e2293444c780c3db1b3a454`、cleanup成功を確認した。Archive失敗ではないため、暗号化ログartifactは生成されていない。証明書抽出のoptional引数を`--extract-certificates=<prefix>`の1引数へ修正した。現証跡ではverify内のどの呼出しが失敗したかは未確定のため、署名・entitlements・証明書検査の固定subphaseも追加し、回帰試験と独立レビューに成功した。[Appleの指定例](https://developer.apple.com/cn/documentation/devicemanagement/allowing-and-denying-apps-and-binaries)
 

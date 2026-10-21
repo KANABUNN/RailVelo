@@ -21,6 +21,7 @@ struct SpeedHistoryChart: View {
     let allPoints: [SpeedPoint]?
     let accessibilityPrefix: String
     @State private var range: ChartRange
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     init(points: [SpeedPoint], allPoints: [SpeedPoint]? = nil, initialRange: ChartRange = .minute, accessibilityPrefix: String = "ride.chart") {
         self.points = points
@@ -40,6 +41,24 @@ struct SpeedHistoryChart: View {
         let last = timestamps.max() ?? Date().timeIntervalSince1970
         let first = range.seconds.map { last - $0 } ?? timestamps.min() ?? last - 60
         return Date(timeIntervalSince1970: min(first, last - 1))...Date(timeIntervalSince1970: last)
+    }
+
+    private var axisDates: [Date] {
+        let domain = timeDomain
+        let count = dynamicTypeSize.isAccessibilitySize ? 2 : 3
+        let duration = domain.upperBound.timeIntervalSince(domain.lowerBound)
+        return (0..<count).map { domain.lowerBound.addingTimeInterval(duration * Double($0) / Double(count - 1)) }
+    }
+
+    private func axisLabelAnchor(at index: Int) -> UnitPoint {
+        if index == 0 { return .topLeading }
+        if index == axisDates.count - 1 { return .topTrailing }
+        return .top
+    }
+
+    private func axisTime(_ date: Date) -> String {
+        let components = Calendar.current.dateComponents([.hour, .minute, .second], from: date)
+        return String(format: "%02d:%02d:%02d", components.hour ?? 0, components.minute ?? 0, components.second ?? 0)
     }
 
     var body: some View {
@@ -75,9 +94,13 @@ struct SpeedHistoryChart: View {
             .chartXScale(domain: timeDomain)
             .chartYScale(domain: .automatic(includesZero: true))
             .chartXAxis {
-                AxisMarks(values: .automatic(desiredCount: 4)) { _ in
+                AxisMarks(values: axisDates) { value in
                     AxisGridLine()
-                    AxisValueLabel(format: .dateTime.hour().minute().second())
+                    if let date = value.as(Date.self) {
+                        AxisValueLabel(anchor: axisLabelAnchor(at: value.index)) {
+                            Text(axisTime(date)).monospacedDigit()
+                        }
+                    }
                 }
             }
             .chartYAxisLabel("km/h", position: .topLeading)

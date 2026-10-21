@@ -2,9 +2,9 @@
 
 ## v0.5の追加確認（2026-10-21）
 
-**配布候補のengine CI成功:** [run 39528759431](https://github.com/KANABUNN/RailVelo/actions/runs/39528759431)、対象commit `512ea0335481719a13830c2fc87477a421c58a25`。Python74件、Swift32件（Core/SQLite12＋Recording20）、Swift生成の実39列人工CSV→Python解析、17 fixture比較、iOS向けライブラリが成功した。同commitの[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39528724495)は再検証中。
+**engine CI成功:** [run 39530105805](https://github.com/KANABUNN/RailVelo/actions/runs/39530105805)、対象commit `52464c9f58d1b2435a425a32dad7c6251699e066`。Python76件、Swift32件（Core/SQLite12＋Recording20）、Swift生成の実39列人工CSV→Python解析、17 fixture比較、iOS向けライブラリが成功した。同commitの[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39529981900)でも両ビルド・smoke・中断復旧、Light全操作/LargeText、Dark監査/スクロールの各stepが成功した。グラフの時刻ラベル短縮を追加修正し、最終版の試験を行う。[UI詳細](SIMULATOR_UI_VALIDATION.md)
 
-その再検証で大きい文字の監査、3期間グラフ、一時停止・履歴保護・再開まで成功した。終了確認の親子Button重複によるテスト操作失敗と、Dark監査の細い駅間進捗の読み上げ領域不足で全体は失敗。確認ボタンを明示IDで操作し、進捗を割合・次駅距離を含む高さ44pt以上の1要素へ修正した。Light/Darkの実画面添付の書き出しは成功した。
+先行する`512ea03`の[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39528724495)は、大きい文字の監査、3期間グラフ、一時停止・履歴保護・再開まで成功したが、終了確認の親子Button重複とDarkの細い駅間進捗領域で失敗した。確認ボタンを明示IDで操作し、進捗を割合・次駅距離を含む高さ44pt以上の1要素へ修正し、上記で再試験した。Light/Darkの実画面添付の書き出しは成功した。
 
 先行するcommit `3619ecc`の[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39526756727)は両ビルド・既存smoke・修正済み中断復旧まで成功した。新規UI試験はグラフ3期間の描画まで通ったが、大きい文字の速度表示と履歴スワイプ後の画面遷移で失敗した。速度文字へDynamic Type対応を追加し、リプレイを早めに一時停止して履歴画面を確認する手順へ修正した。再実行の合格を確認するまで、UI全操作・配布の受入は未完了とする。
 

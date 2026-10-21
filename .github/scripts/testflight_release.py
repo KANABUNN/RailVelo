@@ -450,7 +450,8 @@ def evaluate_build(document, number):
 def safe_evidence(sha, number, phase, success, uploaded, valid, cleanup_ok, command_diagnostics=None):
     require(bool(re.fullmatch(r"[0-9a-f]{40}", sha)), "invalid_evidence_sha")
     require(bool(re.fullmatch(r"500\.[1-9][0-9]{0,8}\.[1-9][0-9]{0,8}", number)), "invalid_evidence_build")
-    require(phase in {"preflight", "materials", "keychain", "archive", "verify", "upload", "processing", "complete"},
+    require(phase in {"preflight", "materials", "keychain", "archive", "verify", "verify_signature",
+                      "verify_entitlements", "verify_certificate", "upload", "processing", "complete"},
             "invalid_evidence_phase")
     diagnostics = validate_command_diagnostics(command_diagnostics) if command_diagnostics is not None else None
     return {"schema_version": 2, "repository": "KANABUNN/RailVelo", "source_sha": sha,
@@ -699,13 +700,16 @@ def release():
         require((info.get("CFBundleIdentifier"), info.get("CFBundleShortVersionString"), info.get("CFBundleVersion"))
                 == (BUNDLE_ID, VERSION, number), "archive_identity_mismatch")
         require((application / "embedded.mobileprovision").read_bytes() == profile_path.read_bytes(), "archive_profile_mismatch")
+        phase = "verify_signature"
         runner.call(["/usr/bin/codesign", "--verify", "--deep", "--strict", str(application)])
+        phase = "verify_entitlements"
         output = runner.call(["/usr/bin/codesign", "-d", "--entitlements", ":-", str(application)])
         start, end = output.find(b"<?xml"), output.find(b"</plist>")
         require(start >= 0 and end >= start, "signed_entitlements_unreadable")
         validate_signed_entitlements(plistlib.loads(output[start:end + len(b"</plist>")]), team)
+        phase = "verify_certificate"
         certificate_prefix = folder / "signed-certificate-"
-        runner.call(["/usr/bin/codesign", "-d", "--extract-certificates", str(certificate_prefix), str(application)])
+        runner.call(["/usr/bin/codesign", "-d", "--extract-certificates=" + str(certificate_prefix), str(application)])
         require(pathlib.Path(str(certificate_prefix) + "0").read_bytes() == certificate_der, "archive_certificate_mismatch")
         options = {"method": "app-store-connect", "destination": "upload", "signingStyle": "manual", "teamID": team,
                    "signingCertificate": identity, "provisioningProfiles": {BUNDLE_ID: profile_uuid},

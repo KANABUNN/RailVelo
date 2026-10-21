@@ -182,7 +182,7 @@ Individual keyはProvisioning APIを使えない。cloud signingには`CLOUD_MAN
 
 p12・パスワード・プロファイル・API秘密鍵は承認した配布ジョブにだけ渡す。下書きはTeam/Bundle、有効期限、App Store用属性、証明書の一致を照合し、権限制限した一時ファイルと一時keychainを使う。終了時は元のkeychain検索設定・既存profileを復元して一時資料を削除する。証明書名・Team ID・profile UUIDをmaskし、コマンドの生出力は非公開の一時ログだけに保存する。失敗時の公開診断は固定分類（profile/署名/認証/SDK/コンパイル/送信/通信/timeout等）と終了コードだけで、生ログを抜粋しない。公開artifactは許可した項目だけのstatus JSON（1日保存）で、IPA・Archive・profile・生ログを含めない。Base64は保存形式で、暗号化ではない。
 
-オフライン境界試験47件が成功した。CIでもp12とprofileの解析・自前鍵の一致・Apple API認証・keychain導入が成功した。署名付きArchiveは失敗し、送信は未実施。復元snapshotは同じ一時領域で完全書込み後に原子的に置き換え、更新中断時も前の復元情報を残す。依存はES256認証とp12/証明書検査用の`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定し、2026-10-21時点の公式安定版変更履歴を確認した。macos-26 arm64/Xcode 26.6を指定する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
+オフライン境界試験49件が成功した。CIでもp12とprofileの解析・自前鍵の一致・Apple API認証・keychain導入が成功した。署名付きArchiveは失敗し、送信は未実施。復元snapshotは同じ一時領域で完全書込み後に原子的に置き換え、更新中断時も前の復元情報を残す。依存はES256認証とp12/証明書検査用の`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定し、2026-10-21時点の公式安定版変更履歴を確認した。macos-26 arm64/Xcode 26.6を指定する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
 
 ### 内部限定exportとbuild番号
 

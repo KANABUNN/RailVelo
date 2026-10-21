@@ -82,4 +82,6 @@
 
 - 利用者承認後、単一Archive失敗ログだけの暗号化回収を実行した。公式runのartifactハッシュとsource/build/run/attemptを照合し、本人PCのDPAPI保護鍵で非公開復号した。Xcodeのprofile未検出と、元UUIDが小文字なのにhelperの大文字化でCLI表記が異なることを、識別子を表示せず比較確認した。厳密なUUID検査は維持して原表記を保持し、cleanupも両caseを安全に扱う。配布47件・全Python99件と独立レビューが成功し、同じ署名資料で再試験する。アプリ本体、CA信頼設定、既存証明書は変更しない。
 
+- UUID修正後のrun `39536001985`は署名付きArchive生成と版・Bundle ID・profile照合が成功した。verifyでinputfileエラーとなり、upload前に停止・cleanup成功。Appleの明示例に合わせ証明書抽出のoptional引数を単一の`--extract-certificates=<prefix>`へ修正した。3検査の固定subphaseと2件の回帰試験を追加し、配布49件・全Python101件が成功した。暗号化対象はArchiveだけのまま、次回は通常の配布処理で確認する。
+
 最新のCI・配布・実機結果は`VALIDATION.md`へ追記する。実走ログは未取得で、実走精度の評価値は確定していない。

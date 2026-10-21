@@ -1,8 +1,10 @@
 """Offline security-boundary tests. No Apple credentials, signing, or network."""
+import ast
 import contextlib
 import datetime as dt
 import importlib.util
 import io
+import inspect
 import json
 import pathlib
 import subprocess
@@ -158,6 +160,23 @@ class SigningBoundaries(unittest.TestCase):
                        {"com.apple.developer.team-identifier": "OTHERTEAM1"}]:
             with self.assertRaises(release.ReleaseError):
                 release.validate_signed_entitlements({**entitlements, **change}, TEAM)
+
+    def test_certificate_extraction_optional_prefix_is_one_argument(self):
+        # Execute the actual command expression without invoking macOS or release setup.
+        tree = ast.parse(inspect.getsource(release.release))
+        calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
+                 and isinstance(node.func, ast.Attribute) and node.func.attr == "call" and node.args
+                 and isinstance(node.args[0], ast.List)
+                 and any(isinstance(part, ast.Constant) and isinstance(part.value, str)
+                         and part.value.startswith("--extract-certificates") for part in ast.walk(node.args[0]))]
+        self.assertEqual(len(calls), 1)
+        runner = mock.Mock()
+        prefix = pathlib.Path("synthetic private folder/signed-certificate-")
+        application = pathlib.Path("synthetic archive/RailVelo.app")
+        eval(compile(ast.Expression(calls[0]), "synthetic-command", "eval"),
+             {"runner": runner, "certificate_prefix": prefix, "application": application})
+        runner.call.assert_called_once_with(
+            ["/usr/bin/codesign", "-d", "--extract-certificates=" + str(prefix), str(application)])
 
     def test_internal_only_and_exact_method_must_be_exposed_by_xcode(self):
         text = "method : String\n Available options: app-store-connect\n"
@@ -571,6 +590,13 @@ class AppleReadback(unittest.TestCase):
         self.assertIsNone(evidence["command_diagnostics"])
         with self.assertRaises(release.ReleaseError):
             release.safe_evidence(SHA, "500.1.1", "raw-secret-output", False, False, False, True)
+
+    def test_verification_subphases_are_fixed_public_values(self):
+        for phase in ["verify", "verify_signature", "verify_entitlements", "verify_certificate"]:
+            self.assertEqual(release.safe_evidence(SHA, "500.1.1", phase, False, False, False, True)["phase"], phase)
+        for phase in ["verify_private_account", "verify_signature: synthetic-private-value", "verify_certificate\n"]:
+            with self.assertRaisesRegex(release.ReleaseError, "invalid_evidence_phase"):
+                release.safe_evidence(SHA, "500.1.1", phase, False, False, False, True)
 
 
 class CleanupBoundaries(unittest.TestCase):

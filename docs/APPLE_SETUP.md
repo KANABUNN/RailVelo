@@ -180,7 +180,7 @@ Individual keyはProvisioning APIを使えない。cloud signingには`CLOUD_MAN
 
 p12・パスワード・プロファイル・API秘密鍵は承認した配布ジョブにだけ渡す。下書きはTeam/Bundle、有効期限、App Store用属性、証明書の一致を照合し、権限制限した一時ファイルと一時keychainを使う。終了時は元のkeychain検索設定・既存profileを復元して一時資料を削除する。証明書名・Team ID・profile UUIDをmaskし、コマンドの生出力は非公開の一時ログだけに保存する。失敗時の公開診断は固定分類（profile/署名/認証/SDK/コンパイル/送信/通信/timeout等）と終了コードだけで、生ログを抜粋しない。公開artifactは許可した項目だけのstatus JSON（1日保存）で、IPA・Archive・profile・生ログを含めない。Base64は保存形式で、暗号化ではない。
 
-オフライン境界試験22件が成功した。ローカルのp12生成と自前鍵の一致は確認したが、CIでの実署名・Apple認証・送信は未実施。復元snapshotは同じ一時領域で完全書込み後に原子的に置き換え、更新中断時も前の復元情報を残す。依存はES256認証とp12/証明書検査用の`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定し、2026-10-21時点の公式安定版変更履歴を確認した。macos-26 arm64/Xcode 26.6を指定する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
+オフライン境界試験24件が成功した。ローカルのp12生成と自前鍵の一致は確認したが、CIでの実署名・Apple認証・送信は未実施。復元snapshotは同じ一時領域で完全書込み後に原子的に置き換え、更新中断時も前の復元情報を残す。依存はES256認証とp12/証明書検査用の`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定し、2026-10-21時点の公式安定版変更履歴を確認した。macos-26 arm64/Xcode 26.6を指定する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
 
 ### 内部限定exportとbuild番号
 
@@ -190,4 +190,4 @@ p12・パスワード・プロファイル・API秘密鍵は承認した配布�
 
 ### アップロード後の確認
 
-アップロードの終了コードだけで完了にせず、下書きは読み取りAPIでアプリ・version/buildを照合し、最大20分まで`processingState=VALID`かつ`buildAudienceType=INTERNAL_ONLY`を待つ。処理失敗・不明属性・期限切れ・確認期限超過は成功にしない。その後、利用に必要な輸出コンプライアンス、本人用グループの対象build、本人テスター、公開リンクなしを画面で確認する。テスター追加・グループ割当は自動化せず、利用者確認後の別操作とする。iPhone導入完了も別に確認し、本人のメールアドレスを公開報告へ含めない。[build処理状態](https://developer.apple.com/documentation/appstoreconnectapi/build/attributes-data.dictionary)、[内部限定属性](https://developer.apple.com/documentation/appstoreconnectapi/buildaudiencetype)、[内部グループ設定](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)
+アップロードの終了コードだけで完了にせず、下書きは読み取りAPIでアプリ・version/buildを照合し、最大20分まで`processingState=VALID`かつ`buildAudienceType=INTERNAL_ONLY`を待つ。関連アプリを`include=preReleaseVersion,app`で明示取得し、アプリIDとBundle IDも照合する。処理失敗・不明属性・期限切れ・確認期限超過は成功にしない。その後、利用に必要な輸出コンプライアンス、本人用グループの対象build、本人テスター、公開リンクなしを画面で確認する。テスター追加・グループ割当は自動化せず、利用者確認後の別操作とする。iPhone導入完了も別に確認し、本人のメールアドレスを公開報告へ含めない。[build処理状態](https://developer.apple.com/documentation/appstoreconnectapi/build/attributes-data.dictionary)、[内部限定属性](https://developer.apple.com/documentation/appstoreconnectapi/buildaudiencetype)、[内部グループ設定](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)

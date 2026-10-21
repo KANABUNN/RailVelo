@@ -2,9 +2,9 @@
 
 ## v0.5の追加確認（2026-10-21）
 
-**最新版engine CI成功:** [run 39526756758](https://github.com/KANABUNN/RailVelo/actions/runs/39526756758)、対象commit `3619eccf8d4bcb2638064ea41c387d02f96f426f`。Python74件、Swift32件（Core/SQLite12＋Recording20）が0失敗。Swiftが生成した実39列の人工CSVをPython解析へ渡す相互運用、17 fixture比較、iOS向けライブラリのビルドも成功した。
+**配布候補のengine CI成功:** [run 39528759431](https://github.com/KANABUNN/RailVelo/actions/runs/39528759431)、対象commit `512ea0335481719a13830c2fc87477a421c58a25`。Python74件、Swift32件（Core/SQLite12＋Recording20）、Swift生成の実39列人工CSV→Python解析、17 fixture比較、iOS向けライブラリが成功した。同commitの[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39528724495)は再検証中。
 
-同commitの[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39526756727)は両ビルド・既存smoke・修正済み中断復旧まで成功した。新規UI試験はグラフ3期間の描画まで通ったが、大きい文字の速度表示と履歴スワイプ後の画面遷移で失敗した。速度文字へDynamic Type対応を追加し、リプレイを早めに一時停止して履歴画面を確認する手順へ修正した。再実行の合格を確認するまで、UI全操作・配布の受入は未完了とする。
+先行するcommit `3619ecc`の[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39526756727)は両ビルド・既存smoke・修正済み中断復旧まで成功した。新規UI試験はグラフ3期間の描画まで通ったが、大きい文字の速度表示と履歴スワイプ後の画面遷移で失敗した。速度文字へDynamic Type対応を追加し、リプレイを早めに一時停止して履歴画面を確認する手順へ修正した。再実行の合格を確認するまで、UI全操作・配布の受入は未完了とする。
 
 既存v0.4の成功結果を下に保存する。v0.5では実リプレイを使用したXCUITest（グラフ描画・3期間切替・スクロール・記録操作・履歴/削除・CSV共有画面・大きい文字/明暗Accessibility Audit）を追加し、CIで実行する。実行前の項目を成功と扱わない。VoiceOverの実際の読み上げ、TestFlight配布、iPhone 16の実GPS・背景・電池、実走評価は未実施。
 

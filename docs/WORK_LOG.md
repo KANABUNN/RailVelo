@@ -72,5 +72,6 @@
 - Environment `railvelo-testflight`をmainブランチのみ・tag 0件・本人reviewer必須・admin bypass無効とし、7 Secretsを登録して名前を確認した。値はソース・公開ログ・画面証跡に記載していない。鍵は暗号化しowner/SYSTEM ACLで保管。登録中だけのCodex読取権限は追加の明示許可後に付与し、登録後に削除を確認した。
 - 本人端末はiPhone 16 / iOS 27.0.1、TestFlight導入済みという回答を得た。RailVeloの署名・Apple認証・アップロード・本人割当・端末導入・実GPS・背景・電池・実走の成功とは区別する。
 - source `3619ecc`のengine CIはPython74件・Swift32件・相互運用・17 fixture・iOSライブラリが成功。アプリCIは両ビルド・smoke・中断復旧が成功し、新UI試験でグラフ3期間の画素を確認したが、速度表示のDynamic Typeと履歴の画面遷移で失敗した。ScaledMetric、早期pause、同一履歴IDの保護確認へ修正し、Dark試験の独立実行とPNG添付の書き出しを追加した。実アプリの暗号機能はOSに依存し、独自/第三者暗号を含まないため免除宣言を設定した。
+- 配布前の追加レビューでASC応答の関連アプリ省略を考慮し、readback queryへアプリの明示取得を加えた。ID・Bundle ID・一意性の不足/不一致を拒否する。配布境界試験24件・全Python76件がローカルで成功し、独立した差分レビューで重大な問題の指摘はなかった。実機の最初の10分の手順と返信様式も追加した。
 
 最新のCI・配布・実機結果は`VALIDATION.md`へ追記する。実走ログは未取得で、実走精度の評価値は確定していない。

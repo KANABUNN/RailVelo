@@ -218,7 +218,24 @@ class AppleReadback(unittest.TestCase):
         return {"data": [{"id": "test-build", "attributes": {"version": "500.1.1", "processingState": state,
                 "buildAudienceType": audience, "expired": False}, "relationships": {
                     "app": {"data": {"id": release.APP_ID}}, "preReleaseVersion": {"data": {"id": "test-version"}}}}],
-                "included": [{"type": "preReleaseVersions", "id": "test-version", "attributes": {"version": release.VERSION}}]}
+                "included": [{"type": "preReleaseVersions", "id": "test-version", "attributes": {"version": release.VERSION}},
+                             {"type": "apps", "id": release.APP_ID, "attributes": {"bundleId": release.BUNDLE_ID}}]}
+
+    def test_build_query_explicitly_includes_the_app_identity_needed_for_readback(self):
+        query = release.urllib.parse.parse_qs(release.builds_path("500.1.1").split("?", 1)[1])
+        self.assertEqual(set(query["include"][0].split(",")), {"preReleaseVersion", "app"})
+        self.assertEqual(query["fields[apps]"], ["bundleId"])
+
+    def test_missing_wrong_or_ambiguous_included_app_cannot_pass(self):
+        for mutate in [lambda d: d["included"].pop(),
+                       lambda d: d["included"][1].update(id="other-app"),
+                       lambda d: d["included"][1].update(type="other-resources"),
+                       lambda d: d["included"][1]["attributes"].update(bundleId="other.bundle"),
+                       lambda d: d["included"][1].pop("attributes"),
+                       lambda d: d["included"].append(d["included"][1])]:
+            bad = self.document(); mutate(bad)
+            with self.assertRaisesRegex(release.ReleaseError, "asc_included_app_mismatch"):
+                release.evaluate_build(bad, "500.1.1")
 
     def test_valid_requires_internal_only_and_matching_app_version_build(self):
         self.assertEqual(release.evaluate_build(self.document(), "500.1.1"), "VALID")

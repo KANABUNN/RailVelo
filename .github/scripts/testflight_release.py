@@ -168,6 +168,10 @@ def evaluate_build(document, number):
     require(attributes.get("version") == number, "asc_build_mismatch")
     relationships = build.get("relationships", {})
     require(relationships.get("app", {}).get("data", {}).get("id") == APP_ID, "asc_app_mismatch")
+    applications = [resource for resource in document.get("included", [])
+                    if resource.get("type") == "apps" and resource.get("id") == APP_ID]
+    require(len(applications) == 1 and applications[0].get("attributes", {}).get("bundleId") == BUNDLE_ID,
+            "asc_included_app_mismatch")
     prerelease_id = relationships.get("preReleaseVersion", {}).get("data", {}).get("id")
     prereleases = [r for r in document.get("included", [])
                    if r.get("type") == "preReleaseVersions" and r.get("id") == prerelease_id]
@@ -304,8 +308,8 @@ def asc_get(path, p8_path, key_id, issuer):
 def builds_path(number):
     return "/v1/builds?" + urllib.parse.urlencode({
         "filter[app]": APP_ID, "filter[version]": number, "filter[preReleaseVersion.version]": VERSION,
-        "include": "preReleaseVersion", "fields[builds]": "version,processingState,buildAudienceType,expired,app,preReleaseVersion",
-        "fields[preReleaseVersions]": "version", "limit": 2,
+        "include": "preReleaseVersion,app", "fields[builds]": "version,processingState,buildAudienceType,expired,app,preReleaseVersion",
+        "fields[preReleaseVersions]": "version", "fields[apps]": "bundleId", "limit": 2,
     })
 
 

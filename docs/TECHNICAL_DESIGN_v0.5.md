@@ -20,7 +20,7 @@ GPS取得、RideProcessor/MapMatcher、履歴SQLite、CSV、SwiftUI/Charts、リ
 
 ローカル秘密鍵は暗号化し、所有者/SYSTEMに限定したACLで保管している。Secrets登録時の一時的なエージェント読取権限は利用者の明示許可後に追加し、登録後に削除したことを確認済み。保管先や秘密識別子は公開記録へ転記しない。
 
-最新のsource `083e`では[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39524933942)がPython52件・Swift32件・interop・17 fixture比較に成功。アプリCIはSimulator/端末向け署名なしビルドとsmokeが成功したが、復旧試験はfixtureの自然終了によって前提を満たさず失敗した。試験前提を修正済みで、次commitで再実行予定。v0.4の復旧成功を新しいsource全体の合格へ読み替えない。
+先行するsource `083e`では[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39524933942)がPython52件・Swift32件・interop・17 fixture比較に成功。アプリCIはSimulator/端末向け署名なしビルドとsmokeが成功したが、復旧試験はfixtureの自然終了によって前提を満たさず失敗した。試験前提を修正し、`3619ecc`の再実行では復旧まで成功した。追加UI試験の修正を含む最新版の結果は[検証記録](VALIDATION.md)を参照する。
 
 ## 2. 推奨する署名・認証の分離
 
@@ -68,7 +68,7 @@ runner上の鍵・p12・profileは権限制限した一時領域と一時keychai
 
 Archiveを検査後、`method=app-store-connect`、`destination=upload`、`signingStyle=manual`、`testFlightInternalTestingOnly=true`でXcodeから直接送信する。実行に使うXcode 26.6の`xcodebuild -help`に必要キー・型とmethodが存在しなければ停止する。このCLI確認と署名付き実行は未検証。送信後は読み取りAPIで`VALID`かつ`buildAudienceType=INTERNAL_ONLY`まで確認し、20分以内に確認できなければ失敗として記録する。本人のテスター追加・割当は自動化しない。[Appleの配布設定](https://developer.apple.com/documentation/xcode/distributing-your-app-for-beta-testing-and-releases)、[CLI設定確認](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)、[内部限定属性](https://developer.apple.com/documentation/appstoreconnectapi/buildaudiencetype)
 
-補助コードのオフライン境界試験22件が成功した。対象SHA/試験照合、profile/署名属性、内部限定API応答、ログ非出力、後処理復元、復元snapshotの原子的更新を合成データで確認した結果であり、実際のp12解析・署名・API認証・送信の成功を意味しない。失敗時は固定分類と整数の終了コードだけを公開し、生ログから秘密・名前・pathを転記しない試験も含む。Python依存はES256とp12/証明書解析に必要な`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定した。2026-10-21時点の安定版を公式変更履歴で確認し、arm64 runnerを使用する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
+補助コードのオフライン境界試験24件が成功した。対象SHA/試験照合、profile/署名属性、内部限定API応答、ログ非出力、後処理復元、復元snapshotの原子的更新を合成データで確認した結果であり、実際のp12解析・署名・API認証・送信の成功を意味しない。ASC readbackでは関連アプリを明示取得し、ID・Bundle ID・一意性を照合する。失敗時は固定分類と整数の終了コードだけを公開し、生ログから秘密・名前・pathを転記しない試験も含む。Python依存はES256とp12/証明書解析に必要な`PyJWT[crypto]==2.15.1`、`cryptography==50.0.2`に固定した。2026-10-21時点の安定版を公式変更履歴で確認し、arm64 runnerを使用する。[PyJWT変更履歴](https://pyjwt.readthedocs.io/en/stable/changelog.html)、[cryptography変更履歴](https://cryptography.io/en/latest/changelog/)
 
 ## 5. version/buildと監査記録
 

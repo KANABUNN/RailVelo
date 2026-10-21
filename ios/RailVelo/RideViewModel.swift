@@ -50,8 +50,8 @@ private final class RideWorker {
     private var sourceMode: RideMode = .live
     private var replay: ReplayObservationSource?
     private var generation = UUID()
-    private var ready = false
-    private var transitioning = false
+    @Published private(set) var ready = false
+    @Published private(set) var transitioning = false
     private var permissionPending = false
     private var lastReceipt = Date.distantPast
     private var lastObservationTime: Double?
@@ -61,10 +61,14 @@ private final class RideWorker {
     private var previousPoint: SpeedPoint?
     private var historySelection: String?
     private var lastGraphRefresh = 0.0
+    private var applicationPhase = "unknown"
 
     init() {
         live.onAuthorizationChange = { [weak self] status in
             guard let self else { return }
+            if self.sourceMode == .live && (self.state == "recording" || self.state == "paused") {
+                self.recordDiagnostic(kind: "location_authorization", detail: "status=\(status.rawValue);precise=\(self.live.hasPreciseLocation)")
+            }
             if status == .authorizedWhenInUse || status == .authorizedAlways {
                 if self.permissionPending { self.permissionPending = false; self.start() }
             } else if status == .denied || status == .restricted {
@@ -72,6 +76,10 @@ private final class RideWorker {
                 self.message = "位置情報を利用できません。設定アプリでRailVeloの位置情報を許可してください。"
                 if self.sourceMode == .live && self.state == "recording" { self.pause() }
             }
+        }
+        live.onFailureDetails = { [weak self] domain, code, detail in
+            guard let self, self.sourceMode == .live, self.state == "recording" else { return }
+            self.recordDiagnostic(kind: "location_error", domain: domain, code: code, detail: detail)
         }
         let database = Bundle.main.url(forResource: "railway", withExtension: "sqlite")
         worker.perform({ worker in
@@ -139,6 +147,7 @@ private final class RideWorker {
                 self.sessionOverview = []; self.lastGraphRefresh = 0
                 self.maximumSpeedKmh = 0; self.speedKmh = nil; self.lastObservationTime = nil
                 self.lastSectionText = ""; self.clearMatch(); self.state = "recording"
+                self.recordDiagnostic(kind: "session_context", detail: "application_phase=\(self.applicationPhase);authorization=\(self.live.authorizationStatus.rawValue);precise=\(self.live.hasPreciseLocation)")
                 self.connectSource(token: token); self.refreshHistory()
             case .failure(let error): self.storageFailure(error)
             }
@@ -156,6 +165,7 @@ private final class RideWorker {
         source?.onFailure = { [weak self] detail in
             guard let self, self.state == "recording", self.generation == token else { return }
             self.message = "GPS: \(detail)"
+            if self.sourceMode == .replay { self.recordDiagnostic(kind: "replay_error", detail: detail) }
             self.insertGap(token: token)
         }
         replay?.onCompletion = { [weak self] in self?.finish() }
@@ -202,7 +212,8 @@ private final class RideWorker {
 
     private func ingest(_ observation: Observation, token: UUID) {
         guard let id = sessionID else { return }
-        let receivedAt = sourceMode == .live ? Date().timeIntervalSince1970 : nil
+        let wallReceivedAt = Date().timeIntervalSince1970
+        let receivedAt = sourceMode == .live ? wallReceivedAt : nil
         if observation.timestamp.isFinite,
            receivedAt == nil || (observation.timestamp <= receivedAt! + 5 && observation.timestamp >= receivedAt! - 10) {
             lastObservationTime = max(lastObservationTime ?? observation.timestamp, observation.timestamp)
@@ -210,7 +221,7 @@ private final class RideWorker {
         worker.perform({ worker -> (RecordedSample, Double, String?, String?, String?) in
             guard let processor = worker.processor else { throw AppError.notRecording }
             let sample = processor.process(observation, receivedAt: receivedAt)
-            try worker.store.append(sample, to: id, recordedAt: Date().timeIntervalSince1970)
+            try worker.store.append(sample, to: id, recordedAt: Date().timeIntervalSince1970, receivedAt: wallReceivedAt)
             return (sample, processor.maximumSpeedKmh,
                     sample.result.routeId.flatMap { worker.network.routes[$0]?.name },
                     sample.result.previousStationId.flatMap { worker.network.stations[$0]?.name },
@@ -333,10 +344,25 @@ private final class RideWorker {
     }
 
     private func storageFailure(_ error: Error) {
+        let failure = error as NSError
+        recordDiagnostic(kind: "storage_error", domain: failure.domain, code: failure.code, detail: failure.localizedDescription)
         source?.stop(); watchdog?.invalidate(); watchdog = nil
         state = "finished"; speedKmh = nil; signalText = "保存エラー・記録停止"
         clearMatch(); transitioning = false
         message = "履歴の保存に失敗しました。保存済みデータは履歴から確認できます。\(error.localizedDescription)"
+    }
+
+    func recordApplicationPhase(_ phase: String) {
+        guard ["active", "inactive", "background"].contains(phase) else { return }
+        applicationPhase = phase
+        if state == "recording" || state == "paused" { recordDiagnostic(kind: "application_phase", detail: phase) }
+    }
+
+    private func recordDiagnostic(kind: String, domain: String? = nil, code: Int? = nil, detail: String? = nil) {
+        guard ready, let id = sessionID else { return }
+        let time = Date().timeIntervalSince1970
+        // A full/unavailable database may also reject the diagnostic; do not recurse or report it as saved.
+        worker.perform({ try $0.store.recordDiagnostic(session: id, at: time, kind: kind, domain: domain, code: code, detail: detail) }, completion: { _ in })
     }
 
     func refreshHistory() {

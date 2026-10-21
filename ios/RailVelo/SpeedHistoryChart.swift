@@ -19,11 +19,13 @@ enum ChartRange: String, CaseIterable, Identifiable {
 struct SpeedHistoryChart: View {
     let points: [SpeedPoint]
     let allPoints: [SpeedPoint]?
+    let accessibilityPrefix: String
     @State private var range: ChartRange
 
-    init(points: [SpeedPoint], allPoints: [SpeedPoint]? = nil, initialRange: ChartRange = .minute) {
+    init(points: [SpeedPoint], allPoints: [SpeedPoint]? = nil, initialRange: ChartRange = .minute, accessibilityPrefix: String = "ride.chart") {
         self.points = points
         self.allPoints = allPoints
+        self.accessibilityPrefix = accessibilityPrefix
         _range = State(initialValue: initialRange)
     }
 
@@ -48,7 +50,7 @@ struct SpeedHistoryChart: View {
                 }
             }
             .pickerStyle(.segmented)
-            .accessibilityIdentifier("ride.chart.range")
+            .accessibilityIdentifier("\(accessibilityPrefix).range")
             Chart(visiblePoints.filter { $0.speedKmh != nil }, id: \.id) { point in
                 if let speed = point.speedKmh {
                     LineMark(
@@ -80,6 +82,9 @@ struct SpeedHistoryChart: View {
             }
             .chartYAxisLabel("km/h", position: .topLeading)
             .frame(height: 190)
+            .accessibilityLabel("速度グラフ")
+            .accessibilityValue("\(range.rawValue)、有効な速度 \(visiblePoints.filter { $0.speedKmh != nil }.count) 件")
+            .accessibilityIdentifier(accessibilityPrefix)
             .overlay {
                 if visiblePoints.allSatisfy({ $0.speedKmh == nil }) {
                     Text("有効な速度を待っています")

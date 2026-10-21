@@ -20,6 +20,7 @@ public extension Observation {
 public final class CoreLocationSource: NSObject, CLLocationManagerDelegate {
     public var onObservations: (([Observation]) -> Void)?
     public var onFailure: ((String) -> Void)?
+    public var onFailureDetails: ((String, Int, String) -> Void)?
     public var onAuthorizationChange: ((CLAuthorizationStatus) -> Void)?
     private let manager: CLLocationManager
 
@@ -61,8 +62,12 @@ public final class CoreLocationSource: NSObject, CLLocationManagerDelegate {
         Task { @MainActor [weak self] in self?.onObservations?(observations) }
     }
     nonisolated public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        let detail = error.localizedDescription
-        Task { @MainActor [weak self] in self?.onFailure?(detail) }
+        let failure = error as NSError
+        let detail = failure.localizedDescription, domain = failure.domain, code = failure.code
+        Task { @MainActor [weak self] in
+            self?.onFailureDetails?(domain, code, detail)
+            self?.onFailure?(detail)
+        }
     }
     nonisolated public func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus

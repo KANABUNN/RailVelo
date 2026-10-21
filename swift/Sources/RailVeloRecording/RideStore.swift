@@ -40,7 +40,8 @@ public final class RideStore {
                 CREATE TABLE IF NOT EXISTS samples (
                     id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
                     timestamp REAL, observation_json TEXT NOT NULL, match_json TEXT NOT NULL,
-                    speed_kmh REAL, exclusion_reason TEXT, segment INTEGER NOT NULL
+                    speed_kmh REAL, exclusion_reason TEXT, segment INTEGER NOT NULL,
+                    received_at REAL, persistence_started_at REAL
                 );
                 CREATE INDEX IF NOT EXISTS samples_session_order ON samples(session_id,id);
                 CREATE TABLE IF NOT EXISTS events (
@@ -50,6 +51,10 @@ public final class RideStore {
                 CREATE TABLE IF NOT EXISTS status_events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
                     status TEXT NOT NULL, timestamp REAL NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS diagnostics (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+                    timestamp REAL NOT NULL, payload_json TEXT NOT NULL
                 );
                 PRAGMA user_version=1;
                 """)
@@ -63,6 +68,18 @@ public final class RideStore {
                 return found
             }
             if !hasSavedAt { try execute("ALTER TABLE sessions ADD COLUMN last_saved_at REAL") }
+            let sampleColumns: Set<String> = try statement("PRAGMA table_info(samples)") { pointer in
+                var names = Set<String>(), code = sqlite3_step(pointer)
+                while code == SQLITE_ROW {
+                    if let name = text(pointer, 1) { names.insert(name) }
+                    code = sqlite3_step(pointer)
+                }
+                guard code == SQLITE_DONE else { throw RideStoreError.database(message()) }
+                return names
+            }
+            for column in ["received_at", "persistence_started_at"] where !sampleColumns.contains(column) {
+                try execute("ALTER TABLE samples ADD COLUMN \(column) REAL")
+            }
         } catch {
             if let database { sqlite3_close(database) }; database = nil
             throw error
@@ -135,7 +152,7 @@ public final class RideStore {
         return id
     }
 
-    public func append(_ sample: RecordedSample, to id: String, recordedAt: Double? = nil) throws {
+    public func append(_ sample: RecordedSample, to id: String, recordedAt: Double? = nil, receivedAt: Double? = nil) throws {
         try validate(id)
         let observationJSON = String(decoding: try encoder().encode(sample.observation), as: UTF8.self)
         let matchJSON = String(decoding: try encoder().encode(sample.result), as: UTF8.self)
@@ -150,8 +167,8 @@ public final class RideStore {
             }
             var segment = previous.2
             if previous.0 != nil && ((previous.1 == nil && speed != nil) || sample.observation.timestamp - previous.0! > 10) { segment += 1 }
-            try write("INSERT INTO samples(session_id,timestamp,observation_json,match_json,speed_kmh,exclusion_reason,segment) VALUES(?,?,?,?,?,?,?)", [
-                .text(id), .number(sample.observation.timestamp), .text(observationJSON), .text(matchJSON), numeric(speed), optionalText(reason), .integer(Int64(segment))
+            try write("INSERT INTO samples(session_id,timestamp,observation_json,match_json,speed_kmh,exclusion_reason,segment,received_at,persistence_started_at) VALUES(?,?,?,?,?,?,?,?,?)", [
+                .text(id), .number(sample.observation.timestamp), .text(observationJSON), .text(matchJSON), numeric(speed), optionalText(reason), .integer(Int64(segment)), numeric(receivedAt), numeric(recordedAt)
             ])
             let sampleID = sqlite3_last_insert_rowid(database)
             for event in sample.result.events {
@@ -171,6 +188,20 @@ public final class RideStore {
                 .number(speed ?? 0), numeric(latest), numeric(latestSavedAt), numeric(speed), .integer(Int64(segment)), .text(id)
             ])
         }
+    }
+
+    /// Best-effort caller diagnostics remain private and are exported with their session.
+    /// These are error/context events, not a CPU, memory, or battery profiler.
+    public func recordDiagnostic(session id: String, at time: Double, kind: String,
+                                 domain: String? = nil, code: Int? = nil, detail: String? = nil) throws {
+        try validate(id)
+        guard time.isFinite, !kind.isEmpty, kind.count <= 128 else { throw RideStoreError.invalidValue("Invalid diagnostic") }
+        var payload: [String: Any] = ["kind": kind]
+        if let domain { payload["domain"] = String(domain.prefix(256)) }
+        if let code { payload["code"] = code }
+        if let detail { payload["detail"] = String(detail.prefix(2000)) }
+        let json = String(decoding: try JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]), as: UTF8.self)
+        try write("INSERT INTO diagnostics(session_id,timestamp,payload_json) VALUES(?,?,?)", [.text(id), .number(time), .text(json)])
     }
 
     public func setStatus(_ status: String, session id: String, at: Double) throws {
@@ -280,8 +311,8 @@ public final class RideStore {
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         func utc(_ time: Double) -> String { time.isFinite ? formatter.string(from: Date(timeIntervalSince1970: time)) : "" }
-        try row(["record_type","session_id","mode","time_utc","unix_seconds","time_zone","latitude","longitude","coordinate_reference_system","horizontal_accuracy_m","raw_speed_mps","speed_accuracy_mps","course_deg","speed_kmh","speed_valid","exclusion_reason","match_status","match_reason","route_id","direction","direction_label","previous_station_id","next_station_id","distance_to_next_m","progress","confidence","uncertainty_m","matched_latitude","matched_longitude","edge_id","offset_m","events_json","match_json","observation_json","segment","session_status"])
-        try statement("SELECT observation_json,match_json,speed_kmh,exclusion_reason,segment FROM samples WHERE session_id=? ORDER BY id", [.text(id)]) { pointer in
+        try row(["record_type","session_id","mode","time_utc","unix_seconds","time_zone","latitude","longitude","coordinate_reference_system","horizontal_accuracy_m","raw_speed_mps","speed_accuracy_mps","course_deg","speed_kmh","speed_valid","exclusion_reason","match_status","match_reason","route_id","direction","direction_label","previous_station_id","next_station_id","distance_to_next_m","progress","confidence","uncertainty_m","matched_latitude","matched_longitude","edge_id","offset_m","events_json","match_json","observation_json","segment","session_status","received_unix_seconds","persistence_started_unix_seconds","details_json"])
+        try statement("SELECT observation_json,match_json,speed_kmh,exclusion_reason,segment,received_at,persistence_started_at FROM samples WHERE session_id=? ORDER BY id", [.text(id)]) { pointer in
             var code = sqlite3_step(pointer)
             while code == SQLITE_ROW {
                 guard let raw = text(pointer, 0), let matched = text(pointer, 1) else { throw RideStoreError.database("Malformed sample") }
@@ -289,7 +320,7 @@ public final class RideStore {
                 let result = try decoder().decode(MatchResult.self, from: Data(matched.utf8))
                 let speed = number(pointer, 2)
                 let events = String(decoding: try encoder().encode(result.events), as: UTF8.self)
-                try row(["observation",id,mode,utc(observation.timestamp),value(observation.timestamp),"UTC (+00:00)",value(observation.lat),value(observation.lon),"WGS84 (EPSG:4326)",value(observation.horizontalAccuracyM),value(observation.speedMps),value(observation.speedAccuracyMps),value(observation.courseDeg),value(speed),speed == nil ? "false" : "true",text(pointer, 3) ?? "",result.status,result.reason,result.routeId ?? "",String(result.direction),result.directionLabel ?? "",result.previousStationId ?? "",result.nextStationId ?? "",value(result.distanceToNextM),value(result.progress),value(result.confidence),value(result.uncertaintyM),value(result.lat),value(result.lon),result.edgeId ?? "",value(result.offsetM),events,matched,raw,String(sqlite3_column_int64(pointer, 4)),""])
+                try row(["observation",id,mode,utc(observation.timestamp),value(observation.timestamp),"UTC (+00:00)",value(observation.lat),value(observation.lon),"WGS84 (EPSG:4326)",value(observation.horizontalAccuracyM),value(observation.speedMps),value(observation.speedAccuracyMps),value(observation.courseDeg),value(speed),speed == nil ? "false" : "true",text(pointer, 3) ?? "",result.status,result.reason,result.routeId ?? "",String(result.direction),result.directionLabel ?? "",result.previousStationId ?? "",result.nextStationId ?? "",value(result.distanceToNextM),value(result.progress),value(result.confidence),value(result.uncertaintyM),value(result.lat),value(result.lon),result.edgeId ?? "",value(result.offsetM),events,matched,raw,String(sqlite3_column_int64(pointer, 4)),"",value(number(pointer, 5)),value(number(pointer, 6)),""])
                 code = sqlite3_step(pointer)
             }
             guard code == SQLITE_DONE else { throw RideStoreError.database(message()) }
@@ -298,7 +329,7 @@ public final class RideStore {
             var code = sqlite3_step(pointer)
             while code == SQLITE_ROW {
                 let time = sqlite3_column_double(pointer, 1)
-                var fields = Array(repeating: "", count: 36)
+                var fields = Array(repeating: "", count: 39)
                 fields[0] = "session_status"; fields[1] = id; fields[2] = mode; fields[3] = utc(time)
                 fields[4] = value(time); fields[5] = "UTC (+00:00)"; fields[8] = "WGS84 (EPSG:4326)"
                 fields[35] = text(pointer, 0) ?? ""
@@ -306,6 +337,31 @@ public final class RideStore {
                 code = sqlite3_step(pointer)
             }
             guard code == SQLITE_DONE else { throw RideStoreError.database(message()) }
+        }
+        try statement("SELECT timestamp,payload_json FROM diagnostics WHERE session_id=? ORDER BY id", [.text(id)]) { pointer in
+            var code = sqlite3_step(pointer)
+            while code == SQLITE_ROW {
+                let time = sqlite3_column_double(pointer, 0)
+                var fields = Array(repeating: "", count: 39)
+                fields[0] = "diagnostic"; fields[1] = id; fields[2] = mode; fields[3] = utc(time)
+                fields[4] = value(time); fields[5] = "UTC (+00:00)"; fields[38] = text(pointer, 1) ?? ""
+                try row(fields)
+                code = sqlite3_step(pointer)
+            }
+            guard code == SQLITE_DONE else { throw RideStoreError.database(message()) }
+        }
+        try statement("SELECT started_at,ended_at,last_saved_at,maximum_speed_kmh,status FROM sessions WHERE id=?", [.text(id)]) { pointer in
+            guard sqlite3_step(pointer) == SQLITE_ROW else { throw RideStoreError.invalidSession("Session does not exist") }
+            let started = sqlite3_column_double(pointer, 0), ended = number(pointer, 1)
+            let summary: [String: Any] = ["started_at": started, "ended_at": ended.map { $0 as Any } ?? NSNull(),
+                "last_saved_at": number(pointer, 2).map { $0 as Any } ?? NSNull(),
+                "maximum_speed_kmh": sqlite3_column_double(pointer, 3), "status": text(pointer, 4) ?? "",
+                "timing_semantics": "received_to_persistence_start_excludes_sql_and_commit"]
+            var fields = Array(repeating: "", count: 39)
+            fields[0] = "session_summary"; fields[1] = id; fields[2] = mode; fields[3] = utc(ended ?? started)
+            fields[4] = value(ended ?? started); fields[5] = "UTC (+00:00)"; fields[35] = text(pointer, 4) ?? ""
+            fields[38] = String(decoding: try JSONSerialization.data(withJSONObject: summary, options: [.sortedKeys]), as: UTF8.self)
+            try row(fields)
         }
         try handle.synchronize()
         try handle.close()

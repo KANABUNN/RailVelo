@@ -28,6 +28,60 @@ final class RecordingTests: XCTestCase {
                        speedKmh: speed, exclusionReason: reason)
     }
 
+    private func withSQLDatabase<T>(_ url: URL, flags: Int32 = SQLITE_OPEN_READONLY,
+                                    _ body: (OpaquePointer) throws -> T) throws -> T {
+        var pointer: OpaquePointer?
+        let code = sqlite3_open_v2(url.path, &pointer, flags, nil)
+        guard code == SQLITE_OK, let database = pointer else {
+            if let pointer { sqlite3_close(pointer) }
+            throw NSError(domain: "RecordingTestSQLite", code: Int(code))
+        }
+        defer { sqlite3_close(database) }
+        return try body(database)
+    }
+
+    /// Parse RFC 4180 quoting as a consumer, including UTF-8, escaped quotes and embedded newlines.
+    private func parsedCSV(_ url: URL) throws -> (header: [String], records: [[String: String]]) {
+        let bytes = Array(try Data(contentsOf: url))
+        var cells: [[String]] = [], row: [String] = [], field: [UInt8] = []
+        var quoted = false, index = 0
+        while index < bytes.count {
+            let byte = bytes[index]
+            if quoted {
+                if byte == 34 {
+                    if index + 1 < bytes.count && bytes[index + 1] == 34 { field.append(34); index += 1 }
+                    else { quoted = false }
+                } else { field.append(byte) }
+            } else if byte == 34 { quoted = true }
+            else if byte == 44 { row.append(String(decoding: field, as: UTF8.self)); field = [] }
+            else if byte == 13 || byte == 10 {
+                if byte == 13 && index + 1 < bytes.count && bytes[index + 1] == 10 { index += 1 }
+                row.append(String(decoding: field, as: UTF8.self)); cells.append(row); row = []; field = []
+            } else { field.append(byte) }
+            index += 1
+        }
+        XCTAssertFalse(quoted, "CSV ended inside a quoted field")
+        if !field.isEmpty || !row.isEmpty { row.append(String(decoding: field, as: UTF8.self)); cells.append(row) }
+        let header = try XCTUnwrap(cells.first)
+        let records = cells.dropFirst().map { values -> [String: String] in
+            XCTAssertEqual(values.count, header.count, "CSV record has the wrong column count")
+            return Dictionary(uniqueKeysWithValues: zip(header, values))
+        }
+        return (header, records)
+    }
+
+    private func rowCount(_ table: String, at url: URL) throws -> Int {
+        // Test-only table names are fixed by the callers below.
+        try withSQLDatabase(url) { database in
+            var pointer: OpaquePointer?
+            XCTAssertEqual(sqlite3_prepare_v2(database, "SELECT COUNT(*) FROM \(table)", -1, &pointer, nil), SQLITE_OK)
+            let statement = try XCTUnwrap(pointer)
+            defer { sqlite3_finalize(statement) }
+            XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW)
+            return Int(sqlite3_column_int64(statement, 0))
+        }
+    }
+
     func testInvalidMeasurementsAndSpikesDoNotPolluteMaximum() throws {
         let processor = RideProcessor(network: try network())
         XCTAssertEqual(processor.process(observation(100)).speedKmh, 36)
@@ -271,5 +325,119 @@ final class RecordingTests: XCTestCase {
         XCTAssertEqual(try store.points(session: first, limit: 100).count, 0)
         XCTAssertThrowsError(try store.exportCSV(session: first, to: FileManager.default.temporaryDirectory.appendingPathComponent("invalid.csv")))
         XCTAssertThrowsError(try store.delete(session: "../rides.sqlite"))
+    }
+
+    func testExtendedCSVPreservesReceiptClocksDiagnosticsAndSessionSummary() throws {
+        let directory = try folder(), store = try RideStore(url: directory.appendingPathComponent("rides.sqlite"))
+        let id = try store.begin(mode: .replay, at: 1000)
+        try store.append(sample(100), to: id, recordedAt: 1002, receivedAt: 1001.5)
+        let detail = "poor, \"signal\"\n再取得"
+        try store.recordDiagnostic(session: id, at: 1003, kind: "location_error", domain: "kCLErrorDomain", code: 0, detail: detail)
+        try store.setStatus("completed", session: id, at: 1010)
+        let output = directory.appendingPathComponent("extended.csv")
+        try store.exportCSV(session: id, to: output)
+        let csv = try parsedCSV(output)
+        XCTAssertEqual(csv.header.count, 39)
+        XCTAssertEqual(Array(csv.header.suffix(3)), ["received_unix_seconds", "persistence_started_unix_seconds", "details_json"])
+        let observation = try XCTUnwrap(csv.records.first { $0["record_type"] == "observation" })
+        XCTAssertEqual(observation["unix_seconds"], "100.0")
+        XCTAssertEqual(observation["received_unix_seconds"], "1001.5")
+        XCTAssertEqual(observation["persistence_started_unix_seconds"], "1002.0")
+        let diagnostic = try XCTUnwrap(csv.records.first { $0["record_type"] == "diagnostic" })
+        let diagnosticJSON = try XCTUnwrap(diagnostic["details_json"])
+        let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(diagnosticJSON.utf8)) as? [String: Any])
+        XCTAssertEqual(payload["kind"] as? String, "location_error")
+        XCTAssertEqual(payload["domain"] as? String, "kCLErrorDomain")
+        XCTAssertEqual(payload["code"] as? Int, 0)
+        XCTAssertEqual(payload["detail"] as? String, detail)
+        let summary = try XCTUnwrap(csv.records.first { $0["record_type"] == "session_summary" })
+        let summaryJSON = try XCTUnwrap(summary["details_json"])
+        let values = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(summaryJSON.utf8)) as? [String: Any])
+        XCTAssertEqual(values["started_at"] as? Double, 1000)
+        XCTAssertEqual(values["ended_at"] as? Double, 1010)
+        XCTAssertEqual(values["last_saved_at"] as? Double, 1002)
+        XCTAssertEqual(values["maximum_speed_kmh"] as? Double, 36)
+        XCTAssertEqual(values["status"] as? String, "completed")
+        XCTAssertEqual(values["timing_semantics"] as? String, "received_to_persistence_start_excludes_sql_and_commit")
+        // CI may explicitly retain this artificial replay for the Python consumer interoperability check.
+        if let path = ProcessInfo.processInfo.environment["RAILVELO_TEST_EXPORT_PATH"], !path.isEmpty {
+            let destination = URL(fileURLWithPath: path)
+            try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data(contentsOf: output).write(to: destination, options: .atomic)
+        }
+    }
+
+    func testExistingVersionFourSamplesMigrateWithoutLosingRowsOrFabricatingReceiptTime() throws {
+        let url = try folder().appendingPathComponent("rides.sqlite")
+        let id = "22222222-2222-2222-2222-222222222222", old = sample(100)
+        let raw = String(decoding: try RailVeloJSON.encoder().encode(old.observation), as: UTF8.self)
+        let matched = String(decoding: try RailVeloJSON.encoder().encode(old.result), as: UTF8.self)
+        try withSQLDatabase(url, flags: SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE) { database in
+            let schema = """
+                PRAGMA user_version=1;
+                CREATE TABLE sessions (
+                    id TEXT PRIMARY KEY,mode TEXT NOT NULL,started_at REAL NOT NULL,ended_at REAL,
+                    maximum_speed_kmh REAL NOT NULL DEFAULT 0,status TEXT NOT NULL,last_timestamp REAL,
+                    last_saved_at REAL,previous_speed REAL,segment INTEGER NOT NULL DEFAULT 0
+                );
+                CREATE TABLE samples (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,session_id TEXT NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+                    timestamp REAL,observation_json TEXT NOT NULL,match_json TEXT NOT NULL,
+                    speed_kmh REAL,exclusion_reason TEXT,segment INTEGER NOT NULL
+                );
+                INSERT INTO sessions(id,mode,started_at,status,last_timestamp,last_saved_at,maximum_speed_kmh)
+                    VALUES('22222222-2222-2222-2222-222222222222','replay',1000,'recording',100,1001,36);
+                """
+            XCTAssertEqual(sqlite3_exec(database, schema, nil, nil, nil), SQLITE_OK)
+            var pointer: OpaquePointer?
+            XCTAssertEqual(sqlite3_prepare_v2(database, "INSERT INTO samples(session_id,timestamp,observation_json,match_json,speed_kmh,segment) VALUES(?,100,?,?,36,0)", -1, &pointer, nil), SQLITE_OK)
+            let statement = try XCTUnwrap(pointer)
+            defer { sqlite3_finalize(statement) }
+            let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+            XCTAssertEqual(sqlite3_bind_text(statement, 1, id, -1, transient), SQLITE_OK)
+            XCTAssertEqual(sqlite3_bind_text(statement, 2, raw, -1, transient), SQLITE_OK)
+            XCTAssertEqual(sqlite3_bind_text(statement, 3, matched, -1, transient), SQLITE_OK)
+            XCTAssertEqual(sqlite3_step(statement), SQLITE_DONE)
+        }
+        let store = try RideStore(url: url)
+        try store.append(sample(101), to: id, recordedAt: 1003, receivedAt: 1002.5)
+        try store.recoverInterrupted(at: 1100)
+        let output = url.deletingLastPathComponent().appendingPathComponent("migrated.csv")
+        try store.exportCSV(session: id, to: output)
+        let observations = try parsedCSV(output).records.filter { $0["record_type"] == "observation" }
+        XCTAssertEqual(observations.count, 2)
+        XCTAssertEqual(observations[0]["unix_seconds"], "100.0")
+        XCTAssertEqual(observations[0]["speed_kmh"], "36.0")
+        XCTAssertEqual(observations[0]["received_unix_seconds"], "")
+        XCTAssertEqual(observations[0]["persistence_started_unix_seconds"], "")
+        XCTAssertEqual(observations[1]["received_unix_seconds"], "1002.5")
+        XCTAssertEqual(observations[1]["persistence_started_unix_seconds"], "1003.0")
+        XCTAssertEqual(try store.summaries().first?.endedAt, 1003)
+        XCTAssertEqual(try rowCount("samples", at: url), 2)
+    }
+
+    func testDiagnosticDeletionCascadesOnlyForTheEndedTargetSession() throws {
+        let url = try folder().appendingPathComponent("rides.sqlite"), store = try RideStore(url: url)
+        let first = try store.begin(mode: .live, at: 100), second = try store.begin(mode: .replay, at: 200)
+        var result = MatchResult(timestamp: 101, status: "matched", reason: "test")
+        result.events = [StationEvent(type: "pass", timestamp: 101, stationId: "station", confidence: 0.9)]
+        try store.append(RecordedSample(observation: observation(101), result: result, speedKmh: 36, exclusionReason: nil), to: first)
+        try store.append(sample(201), to: second)
+        try store.recordDiagnostic(session: first, at: 102, kind: "remove")
+        try store.recordDiagnostic(session: second, at: 202, kind: "keep")
+        XCTAssertEqual(try rowCount("diagnostics", at: url), 2)
+        XCTAssertThrowsError(try store.delete(session: first))
+        try store.setStatus("completed", session: first, at: 103)
+        try store.delete(session: first)
+        XCTAssertEqual(try rowCount("sessions", at: url), 1)
+        XCTAssertEqual(try rowCount("diagnostics", at: url), 1)
+        XCTAssertEqual(try rowCount("samples", at: url), 1)
+        XCTAssertEqual(try rowCount("events", at: url), 0)
+        XCTAssertEqual(try rowCount("status_events", at: url), 1)
+        let output = url.deletingLastPathComponent().appendingPathComponent("survivor.csv")
+        try store.exportCSV(session: second, to: output)
+        let rows = try parsedCSV(output).records.filter { $0["record_type"] == "diagnostic" }
+        XCTAssertEqual(rows.count, 1)
+        XCTAssertTrue(rows[0]["details_json"]?.contains("keep") == true)
     }
 }

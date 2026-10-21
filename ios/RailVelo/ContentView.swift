@@ -5,6 +5,7 @@ struct ContentView: View {
     @ObservedObject var model: RideViewModel
     @State private var showingHistory = false
     @State private var confirmFinish = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var running: Bool { model.state == "recording" || model.state == "paused" }
 
@@ -34,9 +35,14 @@ struct ContentView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(versionText)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("ride.version")
                 }
                 .padding()
             }
+            .accessibilityIdentifier("ride.scroll")
             .background(Color(uiColor: .systemGroupedBackground))
             .safeAreaInset(edge: .bottom) {
                 recordingControls
@@ -62,6 +68,7 @@ struct ContentView: View {
             }
             .confirmationDialog("走行の記録を終了しますか？", isPresented: $confirmFinish, titleVisibility: .visible) {
                 Button("記録を終了", role: .destructive) { model.finish() }
+                    .accessibilityIdentifier("ride.confirmFinish")
             } message: {
                 Text("この走行は履歴に保存されます。")
             }
@@ -103,6 +110,7 @@ struct ContentView: View {
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(.cyan.opacity(0.12), in: Capsule())
+                    .accessibilityIdentifier("ride.state")
             }
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(model.speedKmh.map { String(format: "%.1f", $0) } ?? "—")
@@ -110,21 +118,28 @@ struct ContentView: View {
                     .monospacedDigit()
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
-                    .accessibilityIdentifier("ride.speed")
                 Text("km/h").font(.title3).foregroundStyle(.secondary)
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("現在速度")
             .accessibilityValue(model.speedKmh.map { String(format: "時速 %.1f キロメートル", $0) } ?? "有効な速度なし")
-            HStack {
-                metric("最高速度", value: String(format: "%.1f km/h", model.maximumSpeedKmh))
-                Spacer()
-                metric("位置精度", value: model.horizontalAccuracyM.map { String(format: "±%.0f m", $0) } ?? "—")
-                Spacer()
-                metric("速度精度", value: model.speedAccuracyMps.map { String(format: "±%.1f km/h", $0 * 3.6) } ?? "—")
+            .accessibilityIdentifier("ride.speed")
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 12) {
+                    speedMetrics
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                HStack(alignment: .top, spacing: 14) { speedMetrics }
             }
         }
         .monitorCard()
+    }
+
+    @ViewBuilder private var speedMetrics: some View {
+        metric("最高速度", value: String(format: "%.1f km/h", model.maximumSpeedKmh))
+        metric("位置精度", value: model.horizontalAccuracyM.map { String(format: "±%.0f m", $0) } ?? "—")
+        metric("速度精度", value: model.speedAccuracyMps.map { String(format: "±%.1f km/h", $0 * 3.6) } ?? "—")
     }
 
     private var routeCard: some View {
@@ -133,6 +148,7 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("走行路線").font(.caption).foregroundStyle(.secondary)
                     Text(model.routeName).font(.title3.weight(.bold))
+                        .accessibilityIdentifier("ride.route")
                 }
                 Spacer()
                 Text(model.directionText)
@@ -206,6 +222,7 @@ struct ContentView: View {
             }
         }
         .controlSize(.large)
+        .disabled(!model.ready || model.transitioning)
     }
 
     private var travelState: String {
@@ -219,11 +236,17 @@ struct ContentView: View {
         }
     }
 
+    private var versionText: String {
+        let info = Bundle.main.infoDictionary ?? [:]
+        return "RailVelo \(info["CFBundleShortVersionString"] as? String ?? "—")（\(info["CFBundleVersion"] as? String ?? "—")）"
+    }
+
     private func metric(_ name: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(name).font(.caption2).foregroundStyle(.secondary)
             Text(value).font(.caption.weight(.semibold)).monospacedDigit()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
     }
 
@@ -280,6 +303,8 @@ private struct RideHistoryView: View {
                                 }
                                 .padding(.vertical, 4)
                             }
+                            .accessibilityIdentifier("history.row.\(ride.id)")
+                            .accessibilityValue("\(ride.mode == .replay ? "リプレイのテスト記録" : "実GPSの走行記録")、\(rideStatus(ride.status))")
                             .swipeActions {
                                 if ride.status != "recording" && ride.status != "paused" {
                                     Button(role: .destructive) {
@@ -288,6 +313,7 @@ private struct RideHistoryView: View {
                                     } label: {
                                         Label("削除", systemImage: "trash")
                                     }
+                                    .accessibilityIdentifier("history.delete.\(ride.id)")
                                 }
                             }
                         }
@@ -299,6 +325,7 @@ private struct RideHistoryView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("閉じる") { dismiss() }
+                        .accessibilityIdentifier("history.close")
                 }
             }
             .confirmationDialog("この走行履歴を削除しますか？", isPresented: $confirmDeletion, titleVisibility: .visible) {
@@ -306,6 +333,7 @@ private struct RideHistoryView: View {
                     if let ride = pendingDeletion { model.deleteHistory(ride) }
                     pendingDeletion = nil
                 }
+                .accessibilityIdentifier("history.confirmDelete")
             } message: {
                 Text("削除した履歴は復元できません。共有先へ渡したCSVは削除されません。")
             }
@@ -333,7 +361,7 @@ private struct RideHistoryDetailView: View {
                 .monitorCard()
                 VStack(alignment: .leading, spacing: 14) {
                     Text("速度履歴").font(.headline)
-                    SpeedHistoryChart(points: model.historyPoints, initialRange: .all)
+                    SpeedHistoryChart(points: model.historyPoints, initialRange: .all, accessibilityPrefix: "history.chart")
                 }
                 .monitorCard()
                 if let url = model.exportURL {
@@ -342,6 +370,7 @@ private struct RideHistoryDetailView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
+                    .accessibilityIdentifier("history.shareCSV")
                     Text("CSVには観測時刻と位置情報が含まれます。共有先をご確認ください。")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
@@ -351,6 +380,7 @@ private struct RideHistoryDetailView: View {
             }
             .padding()
         }
+        .accessibilityIdentifier("history.detail.scroll")
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle("走行の詳細")
         .navigationBarTitleDisplayMode(.inline)

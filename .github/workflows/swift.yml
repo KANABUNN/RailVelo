@@ -25,7 +25,23 @@ jobs:
       - name: Python reference unit tests
         run: python -m unittest discover -s tests -v
       - name: Swift package unit tests
+        env:
+          RAILVELO_TEST_EXPORT_PATH: ${{ github.workspace }}/artifacts/analysis/artificial-swift-export.csv
         run: swift test --package-path swift
+      - name: Read actual Swift-generated synthetic CSV with the ride evaluator
+        run: |
+          python scripts/analyze_ride.py artifacts/analysis/artificial-swift-export.csv --output artifacts/analysis/swift-consumer.json
+          python - <<'PY'
+          import json, pathlib
+          report = json.loads(pathlib.Path('artifacts/analysis/swift-consumer.json').read_text())
+          assert report['evidence_kind'] == 'synthetic_replay'
+          assert report['input']['mode'] == 'replay'
+          assert report['recording']['observation_rows'] == 1
+          assert report['recording']['wall_recording_duration_s'] == 10
+          assert report['application_diagnostics']['rows'] == 1
+          assert report['processing_performance']['received_to_persistence_start_s']['mean'] == 0.5
+          assert report['device_measurements']['cpu_percent_one_core'] is None
+          PY
       - name: iOS Simulator library build
         working-directory: swift
         run: |
@@ -54,4 +70,7 @@ jobs:
         if: always()
         with:
           name: swift-python-parity-replays
-          path: artifacts/parity/
+          path: |
+            artifacts/parity/
+            artifacts/analysis/
+          retention-days: 1

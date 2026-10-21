@@ -15,7 +15,7 @@ v0.5のsource `083e`は[engine CI](https://github.com/KANABUNN/RailVelo/actions/
 | 試験日時・担当 | 未記入 |
 | Git commit | 未記入 |
 | アプリversion / build・導入方式 | 未記入 |
-| iPhoneモデル・iOS版/ビルド | 未記入 |
+| iPhoneモデル・iOS版/ビルド | iPhone 16 / iOS 27.0.1（2026-10-21本人申告。OSビルド番号は未記入） |
 | 位置許可・正確な位置情報 | 未記入 |
 | 低電力モード・充電・画面明るさ・通信状態 | 未記入 |
 | 開始時/終了時の電池残量・所要時間 | 未記入 |
@@ -23,6 +23,8 @@ v0.5のsource `083e`は[engine CI](https://github.com/KANABUNN/RailVelo/actions/
 | 実走時の路線・乗車区間・進行方向 | 個人用の非公開記録へ記入 |
 
 TestFlightの対象buildと端末に導入されたbuildを照合する。位置情報を含むCSV・画面は公開のGitHub issueやCI成果物へ添付しない。実走は乗客として周囲に配慮し、操作のために危険な場所へ移動しない。
+
+TestFlightはインストール済みと本人から回答を得た。RailVeloの導入・起動・実GPSはまだ確認していない。SimulatorのiOS 26.5での結果とは別に、本人端末のiOS 27.0.1で受入を行う。
 
 ### v0.5のTestFlight導入前チェック
 

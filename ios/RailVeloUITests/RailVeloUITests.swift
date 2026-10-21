@@ -30,10 +30,19 @@ final class RailVeloUITests: XCTestCase {
         XCTAssertEqual(speed.label, "現在速度")
         attach("01-replay-started")
 
+        // Keep the genuine recorded points stable during screenshots and audits.
+        // At 25x the complete fixture can finish while a slow CI host renders them.
+        XCTAssertTrue(pause.isHittable)
+        pause.tap()
+        let resume = app.buttons["ride.resume"]
+        waitUntil("Pause is durably stored before inspecting the graph") { resume.exists && resume.isEnabled }
+        XCTAssertTrue(resume.isHittable)
+        attach("02-paused")
+
         let chart = element("ride.chart", in: app)
         reveal(chart, in: app.scrollViews["ride.scroll"], app: app)
         let ranges = app.segmentedControls["ride.chart.range"]
-        for (label, name) in [("60秒", "02-chart-60-seconds"), ("5分", "03-chart-five-minutes"), ("全体", "04-chart-entire-session")] {
+        for (label, name) in [("60秒", "03-chart-60-seconds"), ("5分", "04-chart-five-minutes"), ("全体", "05-chart-entire-session")] {
             let button = ranges.buttons[label]
             XCTAssertTrue(button.isHittable)
             button.tap()
@@ -46,19 +55,22 @@ final class RailVeloUITests: XCTestCase {
             attach(name)
         }
 
-        XCTAssertTrue(pause.isHittable)
-        pause.tap()
-        let resume = app.buttons["ride.resume"]
-        waitUntil("Pause is durably stored before resuming") { resume.exists && resume.isEnabled }
-        XCTAssertTrue(resume.isHittable)
-        attach("05-paused")
         app.buttons["ride.history"].tap()
         let pausedRow = newestHistoryRow(in: app)
         waitUntil("The current paused replay appears in history") {
             (pausedRow.value as? String)?.contains("一時停止中") == true
         }
+        let pausedRowID = pausedRow.identifier
         pausedRow.swipeLeft()
-        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "history.delete.")).firstMatch.exists)
+        // With no swipe action, iOS can activate the NavigationLink instead.
+        // Return through the real back button before checking the protected row.
+        let detailNavigation = app.navigationBars["走行の詳細"]
+        if detailNavigation.exists { detailNavigation.buttons.element(boundBy: 0).tap() }
+        let protectedRow = app.buttons[pausedRowID]
+        waitUntil("The protected paused session remains in the history list") {
+            protectedRow.exists && (protectedRow.value as? String)?.contains("一時停止中") == true && app.buttons["history.close"].exists
+        }
+        XCTAssertFalse(app.buttons[pausedRowID.replacingOccurrences(of: "history.row.", with: "history.delete.")].exists)
         attach("06-active-history-cannot-delete")
         app.buttons["history.close"].tap()
         XCTAssertTrue(resume.isHittable)

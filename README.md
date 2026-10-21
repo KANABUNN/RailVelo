@@ -1,8 +1,8 @@
-# RailVelo — JR九州 鉄道走行モニター v0.4
+# RailVelo — JR九州 鉄道走行モニター v0.5
 
 JR九州・鹿児島本線の門司港〜博多を対象に、GPS速度と線路上の推定位置・駅間情報を表示するSwiftUIアプリです。既存のオフライン推定エンジンを再利用し、Core Location、Swift Charts、走行履歴SQLite、CSV共有、合成GPSリプレイを接続しています。推定に外部APIやクラウドへのGPS送信は使用しません。
 
-**Python36件・Swift29件、17シナリオ比較、アプリのSimulator/端末向け署名なしビルド、Simulatorリプレイ・DB・中断復旧・ライト/ダーク表示の確認が成功しました。** [GitHubリポジトリ](https://github.com/KANABUNN/RailVelo) は公開済みです。署名・TestFlight・iPhone実GPS・背景動作・電池・実走は未検証です。グラフの目視とUI全操作・VoiceOverも受入が残ります。実行結果は [検証記録](docs/VALIDATION.md) を確認してください。合成GPSの評価値を実測精度として扱わないでください。
+**v0.5のSimulator UI検証と本人用TestFlight配布を進めています。** Python74件がローカルで成功し、先行するv0.5 engine CIではSwift32件・17シナリオ比較・Swift出力CSVの解析も成功しました。v0.4の署名なしアプリビルド・限定したSimulator検証を継承しています。署名資料とGitHubの保護設定は準備済みですが、実署名・TestFlight・iPhone実GPS・背景動作・電池・実走は未検証です。最新の対象commitと結果は [検証記録](docs/VALIDATION.md) を確認してください。合成GPSの評価値を実測精度として扱わないでください。
 
 ## アプリに接続した機能
 
@@ -10,6 +10,7 @@ JR九州・鹿児島本線の門司港〜博多を対象に、GPS速度と線路
 - 60秒・5分・全体の速度グラフ。取得時刻を横軸に使い、欠測・速度無効・一時停止の間は線を切ります。
 - 路線、方面、前後駅、次に通る駅までの線路距離、駅間進捗、推定の候補支持度。
 - 記録開始・一時停止・再開・終了。履歴の再読込、確認付き削除、UTC/WGS84/単位/有効性を明示したCSV共有。
+- 実走調査用のGPSエラー・権限・前面/背景状態・受信/保存開始時刻を端末内へ記録。既存CSVの先頭36列を保ち、末尾に3列を追加します。[非公開ログの解析・正解記録様式](docs/RIDE_EVALUATION.md)を用意しています。
 - 実GPSと、同梱の門司港〜博多の合成走行を25倍速で再生するモード。履歴にもモードを残します。
 - 日本語、ダークモード、iPhone縦画面、基本的なVoiceOverラベル。実機の表示・操作性は受入試験が必要です。
 
@@ -64,10 +65,14 @@ result = matcher.update({
 | `data/railway.sqlite` / `data/network.json` | 検証済みの計算用ネットワーク |
 | `scripts/` | データ変換、合成GPS生成、評価、Python/Swift結果比較、リプレイ |
 | `fixtures/` / `tests/` | 観測値と正解を分離した共通データ、自動テスト |
-| `docs/TECHNICAL_DESIGN_v0.4.md` | アプリ・入力分離・速度採否・履歴・背景・拡張の設計 |
+| `docs/TECHNICAL_DESIGN_v0.5.md` | 本人限定TestFlight・署名・実機受入と実走診断の設計 |
+| `docs/TECHNICAL_DESIGN_v0.4.md` | 継承したアプリ・入力分離・速度採否・履歴・背景の設計 |
 | `docs/TECHNICAL_DESIGN_v0.3.md` | 継承した推定方式・入力出力・既定値 |
 | `docs/APPLE_SETUP.md` | Windows中心のビルド、署名、Apple設定、本人用TestFlight導入 |
 | `docs/DEVICE_TEST_PLAN.md` | 許可・欠測・背景・OS終了・電池・実走の試験手順 |
+| `docs/SIMULATOR_UI_VALIDATION.md` | 実グラフ・記録操作・履歴・共有画面・アクセシビリティの確認 |
+| `scripts/analyze_ride.py` / `docs/RIDE_EVALUATION.md` | 非公開の実走CSVと本人の正解記録・補助測定から評価 |
+| `docs/templates/` | 実機結果、駅イベント・位置の正解、電池等の記録様式 |
 | `.github/workflows/` | Swift/Python比較とiOSアプリのビルド・Simulator検証の定義 |
 | `docs/evaluation.json` / `docs/evaluation.md` | 実行済み評価の定量結果 |
 | `docs/data-quality.md` / `docs/data-quality.json` | 前工程と今回のSQLite検証 |

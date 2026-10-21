@@ -6,6 +6,7 @@ struct ContentView: View {
     @State private var showingHistory = false
     @State private var confirmFinish = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .largeTitle) private var speedFontSize: CGFloat = 76
 
     private var running: Bool { model.state == "recording" || model.state == "paused" }
 
@@ -114,7 +115,7 @@ struct ContentView: View {
             }
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(model.speedKmh.map { String(format: "%.1f", $0) } ?? "—")
-                    .font(.system(size: 76, weight: .medium, design: .rounded))
+                    .font(.system(size: speedFontSize, weight: .medium, design: .rounded))
                     .monospacedDigit()
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
@@ -305,6 +306,9 @@ private struct RideHistoryView: View {
                             }
                             .accessibilityIdentifier("history.row.\(ride.id)")
                             .accessibilityValue("\(ride.mode == .replay ? "リプレイのテスト記録" : "実GPSの走行記録")、\(rideStatus(ride.status))")
+                            .accessibilityHint(ride.status == "recording" || ride.status == "paused"
+                                ? "詳細を表示します。記録中と一時停止中の履歴は削除できません。"
+                                : "詳細を表示します。左へスワイプすると削除できます。")
                             .swipeActions {
                                 if ride.status != "recording" && ride.status != "paused" {
                                     Button(role: .destructive) {

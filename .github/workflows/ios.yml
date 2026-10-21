@@ -3,9 +3,9 @@ name: iOS App
 on:
   push:
     branches: [main]
-    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml', '.github/scripts/**']
+    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml', '.github/scripts/check-screenshot.swift']
   pull_request:
-    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml', '.github/scripts/**']
+    paths: ['ios/**', 'swift/**', 'data/railway.sqlite', 'fixtures/corridor_full.jsonl', '.github/workflows/ios.yml', '.github/scripts/check-screenshot.swift']
   workflow_dispatch:
 
 permissions:
@@ -229,6 +229,7 @@ jobs:
           command('xcrun', 'simctl', 'terminate', device, 'jp.kb-dev.railvelo', timeout=30)
           PY
       - name: Test recording, graphs, history, CSV and large-text accessibility
+        id: ui_light
         timeout-minutes: 12
         run: |
           set -o pipefail
@@ -242,6 +243,7 @@ jobs:
             -only-testing:RailVeloUITests/RailVeloUITests/testLargeTextAccessibility \
             CODE_SIGNING_ALLOWED=NO test | tee artifacts/ui-light-tests.log
       - name: Test dark appearance and accessibility
+        if: ${{ !cancelled() && (steps.ui_light.outcome == 'success' || steps.ui_light.outcome == 'failure') && hashFiles('.build/ios-simulator/Build/Products/Debug-iphonesimulator/RailVeloUITests-Runner.app/PlugIns/RailVeloUITests.xctest/RailVeloUITests') != '' }}
         timeout-minutes: 6
         run: |
           set -o pipefail
@@ -253,6 +255,20 @@ jobs:
             -default-test-execution-time-allowance 180 -maximum-test-execution-time-allowance 240 \
             -only-testing:RailVeloUITests/RailVeloUITests/testDarkReplayAccessibility \
             CODE_SIGNING_ALLOWED=NO test-without-building | tee artifacts/ui-dark-tests.log
+      - name: Export UI screenshot attachments
+        if: always()
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          xcrun xcresulttool export attachments --help > artifacts/xcresult-attachments-help.txt
+          for appearance in light dark; do
+            result="artifacts/ui-${appearance}.xcresult"
+            if [ -d "$result" ]; then
+              xcrun xcresulttool export attachments --path "$result" \
+                --output-path "artifacts/ui-${appearance}-screenshots"
+            fi
+          done
       # User approved public diagnostics limited to synthetic replay on this disposable CI device.
       - name: Capture failed synthetic replay check
         if: failure() && steps.replay.outcome == 'failure'

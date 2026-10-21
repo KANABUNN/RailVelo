@@ -22,6 +22,8 @@
     <string>$(CURRENT_PROJECT_VERSION)</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>鉄道乗車中の速度と線路上の位置を表示し、開始した走行履歴を端末内に保存するために位置情報を使用します。記録中は画面をロックしても位置情報を使用します。</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

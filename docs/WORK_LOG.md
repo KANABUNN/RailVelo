@@ -57,3 +57,20 @@
 3. 署名付きアップロード、Apple処理完了、本人用テストグループと対象buildの割当を確認する。
 4. iPhone 16へ導入し、`DEVICE_TEST_PLAN.md`に従って前面GPS、拒否・概算位置、古い速度・欠測、ロック/別アプリ、中断復旧、保存・CSV、電池を確認する。
 5. 門司港〜博多の実走ログで並走・折尾・トンネル・駅イベントを評価し、未較正の閾値と長時間性能を改善する。
+
+## v0.5 追加作業（2026-10-21）
+
+実機導入を優先し、時刻表API・遅延推定・一般公開・外部テスターを追加しない方針で進めた。
+
+- 実リプレイを操作するXCUITestを追加。グラフ3期間・実画素、スクロール、開始/一時停止/再開/終了、履歴/削除、CSV共有画面、大きい文字と明暗Accessibility Auditを対象にする。実際のVoiceOver読み上げは別の実機項目とした。
+- 既存履歴へ受信時刻/保存処理開始時刻と診断テーブルを追加し、GPSエラー・権限・アプリ状態を保存する。先頭36列を維持した39列CSVへ診断/セッション要約を追加。旧DB移行、CSV consumer、対象限定削除のSwift試験を追加した。
+- `analyze_ride.py`、本人の正解/駅時刻メモ・端末測定の雛形と非公開運用手順を作成。不明を正解に含めず、線路との残差を独立した実測精度と呼ばず、CPU/メモリ/電池が未測定なら数値を作らない。
+- source `083e16c`の[engine CI](https://github.com/KANABUNN/RailVelo/actions/runs/39524933942)でPython52件、Swift32件、実Swift出力CSV→Python解析、17 fixture比較とiOSライブラリが成功した。アプリ2種ビルドと既存smokeも成功したが、画像取得中のfixture自然終了で中断復旧の試験前提が失われた。復旧直前に新規実リプレイを開始し、対象セッションIDを固定する試験へ修正した。新規UI試験は後続CIの結果待ち。
+- 手動起動・main祖先の完全SHA・同一SHAのengine/app成功を要求するTestFlight内部限定配布処理を作成。秘密を非公開一時領域へ閉じ込め、署名資料・署名後アプリを照合し、直接アップロード後に`VALID`/`INTERNAL_ONLY`を読み取り確認する。公開成果物は許可項目のみの状態JSONを1日保持する。
+- 配布の独立レビューで復元snapshotの更新中断に対応。固定分類/終了コード以外の失敗内容を公開しない。Apple実発行profileのiOS/xrOS/visionOS互換区分に対応し、YAML plain scalar中のcolonを複数行形式へ修正した。ローカルPython74件が成功、GitHubに配布workflowが有効として登録された。
+- 利用者が新しい署名資料/APIキー発行・GitHub Secrets保管・本人限定upload/割当を許可。新Distribution証明書（2027-10-21まで）と生成鍵の一致、専用App Store profileの対象/期限/証明書一致、API鍵の形式をローカルで確認した。既存アプリの秘密情報は流用していない。
+- Environment `railvelo-testflight`をmainブランチのみ・tag 0件・本人reviewer必須・admin bypass無効とし、7 Secretsを登録して名前を確認した。値はソース・公開ログ・画面証跡に記載していない。鍵は暗号化しowner/SYSTEM ACLで保管。登録中だけのCodex読取権限は追加の明示許可後に付与し、登録後に削除を確認した。
+- 本人端末はiPhone 16 / iOS 27.0.1、TestFlight導入済みという回答を得た。RailVeloの署名・Apple認証・アップロード・本人割当・端末導入・実GPS・背景・電池・実走の成功とは区別する。
+- source `3619ecc`のengine CIはPython74件・Swift32件・相互運用・17 fixture・iOSライブラリが成功。アプリCIは両ビルド・smoke・中断復旧が成功し、新UI試験でグラフ3期間の画素を確認したが、速度表示のDynamic Typeと履歴の画面遷移で失敗した。ScaledMetric、早期pause、同一履歴IDの保護確認へ修正し、Dark試験の独立実行とPNG添付の書き出しを追加した。実アプリの暗号機能はOSに依存し、独自/第三者暗号を含まないため免除宣言を設定した。
+
+最新のCI・配布・実機結果は`VALIDATION.md`へ追記する。実走ログは未取得で、実走精度の評価値は確定していない。

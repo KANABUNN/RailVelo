@@ -2,11 +2,17 @@
 
 ## v0.5の追加確認（2026-10-21）
 
+**最新版engine CI成功:** [run 39526756758](https://github.com/KANABUNN/RailVelo/actions/runs/39526756758)、対象commit `3619eccf8d4bcb2638064ea41c387d02f96f426f`。Python74件、Swift32件（Core/SQLite12＋Recording20）が0失敗。Swiftが生成した実39列の人工CSVをPython解析へ渡す相互運用、17 fixture比較、iOS向けライブラリのビルドも成功した。
+
+同commitの[アプリCI](https://github.com/KANABUNN/RailVelo/actions/runs/39526756727)は両ビルド・既存smoke・修正済み中断復旧まで成功した。新規UI試験はグラフ3期間の描画まで通ったが、大きい文字の速度表示と履歴スワイプ後の画面遷移で失敗した。速度文字へDynamic Type対応を追加し、リプレイを早めに一時停止して履歴画面を確認する手順へ修正した。再実行の合格を確認するまで、UI全操作・配布の受入は未完了とする。
+
 既存v0.4の成功結果を下に保存する。v0.5では実リプレイを使用したXCUITest（グラフ描画・3期間切替・スクロール・記録操作・履歴/削除・CSV共有画面・大きい文字/明暗Accessibility Audit）を追加し、CIで実行する。実行前の項目を成功と扱わない。VoiceOverの実際の読み上げ、TestFlight配布、iPhone 16の実GPS・背景・電池、実走評価は未実施。
 
 実走ログは既存CSVの先頭36列を維持し、受信時刻・保存処理開始時刻・診断JSONを末尾へ追加した39列へ拡張した。GPSエラー、権限、アプリ状態を端末内に記録する。保存処理開始までの経過はSQL/commit時間やCPU使用率ではない。個人の位置情報を含むファイルは`recordings/`に保存し、公開CIでは人工データだけを使う。[実走解析と記録様式](RIDE_EVALUATION.md)
 
-署名付き配布は手動起動・内部テスト限定のワークフローを準備中。Appleの秘密情報発行・GitHub Secrets登録・Apple側設定の変更は利用者の確認後に行う。アップロード成功・Apple処理完了・本人グループへの割当・実機導入は別々に記録する。
+署名付き配布は手動起動・内部テスト限定のワークフローを作成済み。利用者の明示許可を得て新しいDistribution証明書と生成鍵の一致、専用App Store profileの対象・期限・証明書一致、API鍵形式を実ファイルで確認した。GitHubはmainのみ・本人reviewer必須・admin bypass無効のEnvironmentに7 Secretsを登録済み。秘密値は記録しない。登録中だけの一時的な読取権限は別途明示許可を得て設定し、登録後に削除・確認した。実署名・Apple認証・アップロード成功・処理完了・本人グループへの割当・実機導入はまだ未確認。
+
+本人の申告による実機条件はiPhone 16 / iOS 27.0.1、TestFlightインストール済み。RailVeloの導入・実GPSの合格とは扱わない。
 
 ## v0.4で確認済みの基準
 

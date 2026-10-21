@@ -149,7 +149,8 @@ jobs:
           while True:
               try:
                   with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
-                      ready = connection.execute('SELECT COUNT(*) FROM samples WHERE speed_kmh IS NOT NULL').fetchone()[0] >= 5
+                      latest = connection.execute('SELECT id FROM sessions ORDER BY started_at DESC LIMIT 1').fetchone()
+                      ready = latest is not None and connection.execute('SELECT COUNT(*) FROM samples WHERE session_id=? AND speed_kmh IS NOT NULL', latest).fetchone()[0] >= 5
               except sqlite3.Error:
                   ready = False
               if ready:
@@ -158,9 +159,9 @@ jobs:
                   raise SystemExit('Replay did not persist five valid speed samples within 45 seconds.')
               time.sleep(1)
           with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
-              mode, status = connection.execute('SELECT mode,status FROM sessions ORDER BY started_at DESC LIMIT 1').fetchone()
+              session, mode, status = connection.execute('SELECT id,mode,status FROM sessions ORDER BY started_at DESC LIMIT 1').fetchone()
               assert mode == 'replay' and status == 'recording', (mode, status)
-              rows = connection.execute('SELECT speed_kmh,match_json FROM samples').fetchall()
+              rows = connection.execute('SELECT speed_kmh,match_json FROM samples WHERE session_id=?', (session,)).fetchall()
               valid = sum(speed is not None for speed, _ in rows)
               matched = sum(json.loads(match)['status'] == 'matched' for _, match in rows)
               assert len(rows) >= 5 and valid >= 5 and matched >= 1, (len(rows), valid, matched)
@@ -184,28 +185,49 @@ jobs:
           done
           test "$DARK_READY" = 1
       - name: Recover interrupted replay
-        timeout-minutes: 3
+        timeout-minutes: 5
         run: |
           set -x
           DEVICE='${{ steps.simulator.outputs.id }}'
           export APP_DATA="$(xcrun simctl get_app_container "$DEVICE" jp.kb-dev.railvelo data)"
-          xcrun simctl terminate "$DEVICE" jp.kb-dev.railvelo
-          xcrun simctl launch "$DEVICE" jp.kb-dev.railvelo
           python3 - <<'PY'
-          import os, pathlib, sqlite3, time
+          import os, pathlib, sqlite3, subprocess, time
+          device = os.environ.get('SIMULATOR_ID', '${{ steps.simulator.outputs.id }}')
           database = pathlib.Path(os.environ['APP_DATA']) / 'Library/Application Support/RailVelo/rides.sqlite'
+          def command(*args, timeout=60):
+              print('Recovery command:', ' '.join(args), flush=True)
+              subprocess.run(args, check=True, timeout=timeout)
+          with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
+              previous = {row[0] for row in connection.execute('SELECT id FROM sessions')}
+          # Appearance capture may outlast the complete fixture. Start another genuine
+          # replay, then interrupt it while its own SQLite session is still recording.
+          command('xcrun', 'simctl', 'terminate', device, 'jp.kb-dev.railvelo', timeout=30)
+          command('xcrun', 'simctl', 'launch', device, 'jp.kb-dev.railvelo', '--replay-smoke')
+          deadline = time.monotonic() + 45
+          while True:
+              with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
+                  row = connection.execute('SELECT id,mode,status FROM sessions ORDER BY started_at DESC LIMIT 1').fetchone()
+                  if row is not None and row[0] not in previous and row[1:] == ('replay', 'recording'):
+                      if connection.execute('SELECT COUNT(*) FROM samples WHERE session_id=?', (row[0],)).fetchone()[0] >= 1:
+                          session = row[0]
+                          break
+              if time.monotonic() >= deadline:
+                  raise SystemExit('A new replay did not enter recording with a persisted sample.')
+              time.sleep(1)
+          command('xcrun', 'simctl', 'terminate', device, 'jp.kb-dev.railvelo', timeout=30)
+          command('xcrun', 'simctl', 'launch', device, 'jp.kb-dev.railvelo')
           deadline = time.monotonic() + 30
           while True:
               with sqlite3.connect(f'file:{database}?mode=ro', uri=True) as connection:
-                  status, ended = connection.execute('SELECT status,ended_at FROM sessions ORDER BY started_at DESC LIMIT 1').fetchone()
-              if status == 'interrupted' and ended is not None:
+                  status, started, ended = connection.execute('SELECT status,started_at,ended_at FROM sessions WHERE id=?', (session,)).fetchone()
+              if status == 'interrupted' and ended is not None and ended >= started:
                   break
               if time.monotonic() >= deadline:
                   raise SystemExit(f'Replay was not recovered as interrupted: {status}')
               time.sleep(1)
           pathlib.Path('artifacts/recovery-smoke.txt').write_text('Terminated replay recovered as interrupted with an end timestamp.\n')
+          command('xcrun', 'simctl', 'terminate', device, 'jp.kb-dev.railvelo', timeout=30)
           PY
-          xcrun simctl terminate "$DEVICE" jp.kb-dev.railvelo
       - name: Test recording, graphs, history, CSV and large-text accessibility
         timeout-minutes: 12
         run: |

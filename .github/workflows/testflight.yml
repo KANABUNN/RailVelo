@@ -1,0 +1,106 @@
+name: TestFlight internal (manual signing draft)
+
+# This workflow is intentionally manual. Creating credentials, registering its
+# Environment/Secrets, running it, and adding testers require the user's approval.
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Full 40-character main-ancestor SHA with successful engine and app CI
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: railvelo-testflight
+  cancel-in-progress: false
+
+jobs:
+  prerequisites:
+    if: github.repository == 'KANABUNN/RailVelo' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      source_sha: ${{ steps.gate.outputs.source_sha }}
+      engine_run_id: ${{ steps.gate.outputs.engine_run_id }}
+      app_run_id: ${{ steps.gate.outputs.app_run_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: control
+          persist-credentials: false
+      - name: Require exact successful source and main ancestry
+        id: gate
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 control/.github/scripts/testflight_gate.py
+
+  sign-and-upload:
+    needs: prerequisites
+    if: github.repository == 'KANABUNN/RailVelo' && github.ref == 'refs/heads/main'
+    runs-on: macos-26
+    timeout-minutes: 70
+    environment: railvelo-testflight
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: control
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prerequisites.outputs.source_sha }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Select reviewed Xcode 26.6
+        run: |
+          python3 - <<'PY'
+          import pathlib, plistlib, subprocess
+          selected = None
+          for app in sorted(pathlib.Path('/Applications').glob('Xcode*.app')):
+              info = app / 'Contents/Info.plist'
+              if info.is_file() and 'beta' not in app.name.lower():
+                  version = plistlib.loads(info.read_bytes()).get('CFBundleShortVersionString')
+                  if version == '26.6':
+                      selected = app
+          if selected is None:
+              raise SystemExit('Reviewed Xcode 26.6 is unavailable; do not substitute silently.')
+          subprocess.run(['sudo', 'xcode-select', '-s', str(selected / 'Contents/Developer')], check=True)
+          PY
+          xcodebuild -version
+      - name: Install minimal pinned signing dependencies
+        # PyJWT 2.15.1 and cryptography 50.0.2 were the reviewed stable releases
+        # on 2026-10-21. ES256 JWT and PKCS#12/certificate parsing require them.
+        # https://pyjwt.readthedocs.io/en/stable/changelog.html
+        # https://cryptography.io/en/latest/changelog/
+        run: python3 -m pip install --only-binary=:all: 'PyJWT[crypto]==2.15.1' 'cryptography==50.0.2'
+      - name: Manual sign, upload Internal Only, and read Apple processing state
+        env:
+          SOURCE_SHA: ${{ needs.prerequisites.outputs.source_sha }}
+          RAILVELO_TEAM_ID: ${{ secrets.RAILVELO_TEAM_ID }}
+          DISTRIBUTION_P12_BASE64: ${{ secrets.DISTRIBUTION_P12_BASE64 }}
+          DISTRIBUTION_P12_PASSWORD: ${{ secrets.DISTRIBUTION_P12_PASSWORD }}
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: python3 control/.github/scripts/testflight_release.py
+      - name: Restore keychains and profiles and remove private files
+        if: always()
+        run: python3 control/.github/scripts/testflight_release.py cleanup
+      - name: Upload safe status only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testflight-safe-status
+          path: ${{ runner.temp }}/railvelo-testflight-safe/evidence.json
+          if-no-files-found: warn
+          retention-days: 1

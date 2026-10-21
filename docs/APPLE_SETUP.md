@@ -2,7 +2,7 @@
 
 更新日: 2026-10-21。対象: 個人用RailVelo、iPhone 16、内部TestFlight配布。
 
-**本人限定TestFlight配布と、本人申告によるiPhoneへの導入・起動確認が完了した。** [配布run 39536734020](https://github.com/KANABUNN/RailVelo/actions/runs/39536734020)で、検証済みsource `afd55bb73ac919feed936a943899da115a6cd2b5`を`0.5.0 (500.7.1)`として送信し、読み取りAPIで`VALID`・`INTERNAL_ONLY`、後処理成功を確認した。「本人検証」へ本人1名・対象build1個を手動割当済み。利用者はiPhone 16 / iOS 27.0.1で対象版を「インストール・起動できた」と回答した。端末の直接観測はしておらず、実GPS・連続線・背景・電池・実走の合格には含めない。
+**本人限定TestFlight配布と、本人申告によるiPhoneへの導入・起動・前面実GPSの基本動作確認が完了した。** [配布run 39536734020](https://github.com/KANABUNN/RailVelo/actions/runs/39536734020)で、検証済みsource `afd55bb73ac919feed936a943899da115a6cd2b5`を`0.5.0 (500.7.1)`として送信し、読み取りAPIで`VALID`・`INTERNAL_ONLY`、後処理成功を確認した。「本人検証」へ本人1名・対象build1個を手動割当済み。利用者はiPhone 16 / iOS 27.0.1で対象版を導入・起動し、GPS精度・静止/歩行速度・グラフの表示、CSV保存を確認したと回答した。画面上のエラーは出ていないとの報告。端末の直接観測や数値の定量評価はしていない。
 
 Apple Developer Programの有効な会員資格・契約同意済み状態、Explicit App ID `jp.kb-dev.railvelo`、App Store Connectアプリ「RailVelo」（ID `6824978233`）の登録完了を確認済み。内部グループは手動配信で、外部グループ・公開リンクは作成していない。App Store審査への提出も行っていない。利用者承認後、新しいDistribution証明書/p12・専用プロファイル・Developer Team APIキーを生成し、保護した配布Environmentへ7種類のSecretsを登録した。実際の登録・署名・配布状態と試験結果は [検証記録](VALIDATION.md) と [作業記録](WORK_LOG.md) に記録する。
 
@@ -49,7 +49,7 @@ CIの定義は `.github/workflows/`、Xcodeプロジェクトは `ios/RailVelo.x
 
 過去版の結果と修正・再試験の経緯は[検証記録](VALIDATION.md)に保存する。配布補助の最新オフライン試験49件と全Python101件は、暗号依存を含むbundled Pythonでskipなし成功した。最終アプリ候補のCI件数と、後から追加した配布制御のローカル試験件数を区別する。
 
-Swift/Python試験と17 fixture比較は`macos-15-intel`のengine CI、アプリ確認は`macos-26`のアプリCIで実施する。関連pathに絞った自動実行とブランチ単位のconcurrencyを使用する。Simulator診断は利用者の明示許可を得た合成リプレイの失敗画面・件数に限定し、artifactを1日保持する。署名・送信・Apple処理・本人への割当は成功し、実機導入と起動は本人申告で確認済み。実GPS・背景・電池・実走は未検証。結果は [検証記録](VALIDATION.md) に記録する。
+Swift/Python試験と17 fixture比較は`macos-15-intel`のengine CI、アプリ確認は`macos-26`のアプリCIで実施する。関連pathに絞った自動実行とブランチ単位のconcurrencyを使用する。Simulator診断は利用者の明示許可を得た合成リプレイの失敗画面・件数に限定し、artifactを1日保持する。署名・送信・Apple処理・本人への割当は成功し、実機導入・起動・前面実GPSの基本表示とCSV保存は本人申告で確認済み。精度や速度の定量妥当性・背景・電池・実走は未検証。結果は [検証記録](VALIDATION.md) に記録する。
 
 ```sh
 swift test --package-path swift
@@ -106,6 +106,10 @@ Ad Hocは対象iPhoneのUDID登録、Distribution証明書、端末を含むプ�
 
 ## 9. 位置情報と個人情報
 
+今回のiPhone 16 / iOS 27.0.1 / RailVelo `0.5.0 (500.7.1)`では、本人が前面でGPS精度・静止/歩行速度・グラフの表示とCSV保存を確認し、画面上のエラーはないと報告した。最優先のTestFlight導入と前面実GPSの基本動作確認には到達した。端末・ログ・CSVを直接確認した結果ではなく、報告の有無だけを記録する。
+
+GPS精度・速度の数値の定量妥当性、最高速度、連続線、履歴の再読込/復旧、CSVの内容、実VoiceOver、ロック/他アプリでの背景動作、電池・CPU・メモリ、列車実走と精度評価は未確認。実機ログ・座標・CSVを公開の証跡に追加しない。
+
 アプリを前面で開いてから実GPS記録を開始し、用途説明を読んで位置情報を許可する。正確な位置情報を無効にした場合や拒否した場合の表示は [実機試験計画](DEVICE_TEST_PLAN.md) で確認する。Core Locationの許可はGPSを毎秒取得できる保証にはならない。
 
 背景継続は`UIBackgroundModes=location`と`allowsBackgroundLocationUpdates`を記録中に使う構成。画面ロック・他アプリ移動・OS終了・強制終了は条件が違う。標準位置更新はアプリ終了で停止するので、自動再起動による無欠測記録を保証しない。[背景更新設定](https://developer.apple.com/documentation/corelocation/cllocationmanager/allowsbackgroundlocationupdates)、[標準位置更新の終了条件](https://developer.apple.com/documentation/CoreLocation/CLLocationManager/startUpdatingLocation%28%29?language=objc)
@@ -129,7 +133,7 @@ GPS履歴は端末内に保存し、利用者がCSV共有操作を行った場�
 
 以下は2026-10-21にApple/GitHubの一次情報を確認した配布方式と実行結果。利用者は新しい署名資料/APIキーの発行、Secrets保管、本人限定uploadとグループ割当を承認済み。[配布run 39536734020](https://github.com/KANABUNN/RailVelo/actions/runs/39536734020)は制御commit `1ac3489cac9029ae8a63e62125eed75f1248d98b`、アプリsource `afd55bb73ac919feed936a943899da115a6cd2b5`、`0.5.0 (500.7.1)`で成功し、実署名・Archive検査・送信・`VALID`/`INTERNAL_ONLY`のAPI照合・後処理完了を確認した。対象は`jp.kb-dev.railvelo` / App Store Connect `6824978233`。その後「本人検証」へ本人1名・対象build1個を手動割当し、対象版のiPhone導入・起動は本人申告で確認した。
 
-[CIの安全な状態記録](evidence/testflight-500.7.1.json)はCI終了時点のsnapshotである。`testers_modified=false`はCIが招待を実行していないこと、`device_acceptance=not_verified`はCIが実機を確認していないことを示し、その後の手動割当と本人申告を否定しない。実GPSの静止・徒歩、履歴・グラフ・CSVの実機試験は利用者へ依頼中で、結果は未回答である。
+[CIの安全な状態記録](evidence/testflight-500.7.1.json)はCI終了時点のsnapshotである。`testers_modified=false`はCIが招待を実行していないこと、`device_acceptance=not_verified`はCIが実機を確認していないことを示し、その後の手動割当と本人申告を否定しない。追加の本人申告では、前面でGPS精度・静止/歩行速度・グラフの表示とCSV保存を確認し、画面上のエラーはないと報告された。履歴の再読込/復旧やCSV内容の検査まで確認したものとは扱わない。
 
 ### 推奨: 署名とアップロードの権限を分ける
 

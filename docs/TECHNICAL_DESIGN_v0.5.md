@@ -1,6 +1,6 @@
 # RailVelo 技術設計 v0.5 — 内部配布・実機受入
 
-更新日: 2026-10-21。状態: **Simulator UI検証・内部限定配布が成功し、本人申告でiPhoneへの導入・起動を確認**。[配布run 39536734020](https://github.com/KANABUNN/RailVelo/actions/runs/39536734020)で`0.5.0 (500.7.1)`を送信し、読み取りAPIで`VALID`・`INTERNAL_ONLY`、後処理成功を確認した。その後「本人検証」へ本人1名・対象build1個を手動割当した。本書はv0.4の実装・検証を継承し、実GPS等の実機受入へ進む条件を記録する。導入・起動は本人申告であり、端末の直接観測ではない。実GPS・連続線・実VoiceOver・背景・電池・実走は未検証。
+更新日: 2026-10-21。状態: **Simulator UI検証・内部限定配布が成功し、本人申告でiPhoneへの導入・起動・前面実GPSの基本表示とCSV保存を確認**。[配布run 39536734020](https://github.com/KANABUNN/RailVelo/actions/runs/39536734020)で`0.5.0 (500.7.1)`を送信し、読み取りAPIで`VALID`・`INTERNAL_ONLY`、後処理成功を確認した。その後「本人検証」へ本人1名・対象build1個を手動割当した。本書はv0.4の実装・検証を継承し、実機受入の到達点と残る条件を記録する。本人はGPS精度・静止/歩行速度・グラフの表示とCSV保存を確認し、画面上にエラーはないと回答した。直接端末観測や数値の定量評価はしていない。
 
 ## 1. 継承するものと現在位置
 
@@ -14,7 +14,7 @@ GPS取得、RideProcessor/MapMatcher、履歴SQLite、CSV、SwiftUI/Charts、リ
 | 署名資料 | 新しいDistribution証明書（2027-10-21まで）、自前秘密鍵との一致を確認したp12、RailVelo専用App Store Connectプロファイルを生成済み。既存アプリの秘密情報は流用していない |
 | API/CI | 新しいDeveloper Teamキーを発行済み。Environment `railvelo-testflight`はmainのみ・tag 0件・本人required reviewer・admin bypass無効、7種類のSecrets名を確認済み |
 | 署名/配布 | 利用者が新規発行・Secrets保管・本人限定uploadとグループ割当を承認済み。`0.5.0 (500.7.1)`のArchive・署名検査・upload・`VALID`/`INTERNAL_ONLY`確認・cleanup、本人への割当が成功。App Store審査へは提出していない |
-| 実機 | iPhone 16 / iOS 27.0.1で対象版のTestFlightからのインストール・起動を本人申告で確認。直接端末観測なし。実GPS・実機リプレイ・背景・電池・実走は未検証 |
+| 実機 | iPhone 16 / iOS 27.0.1 / `0.5.0 (500.7.1)`の導入・起動、前面でのGPS精度・静止/歩行速度・グラフ表示、CSV保存、画面エラーなしを本人申告で確認。直接端末観測なし。定量妥当性・実機リプレイ・背景・電池・実走は未検証 |
 
 本人のApple Account、Team ID、APIキー識別情報、秘密鍵、端末UDID、実走位置を設計書へ転記しない。v0.1/v0.2設計書本文の未取得制約も継承する。
 
@@ -91,15 +91,17 @@ Archive失敗の固定分類だけで原因を特定できない場合に限り�
 | 内部限定 | Internal Onlyの表示または対応API属性を確認 |
 | テスト割当 | 「本人検証」に本人1名・対象build1個を手動割当済み。外部グループ・公開リンクなし、自動配信オフ |
 | 端末 | 本人がTestFlightから`0.5.0 (500.7.1)`をインストール・起動できたと回答。本人申告で合格、直接端末観測なし |
-| 実機受入 | 実GPSの静止/徒歩・履歴・グラフ・CSVは依頼中、結果未回答。背景・欠測・電池・実走等も未検証 |
+| 実機受入 | 前面実GPSの精度・静止/歩行速度・グラフの表示とCSV保存、画面エラーなしを本人申告で確認。数値の定量妥当性、履歴の再読込/復旧、CSV内容、背景・電池・実走等は未検証 |
 
 処理完了、グループ作成、本人への割当、iPhone導入は別の状態である。ASCの「招待済み」「テスト中」は配布状態で、実機受入の合格を意味しない。[CIの状態記録](evidence/testflight-500.7.1.json)の`testers_modified=false`と`device_acceptance=not_verified`はCI終了時点の確認範囲であり、後から実施した手動割当・本人申告を否定しない。`VALID`やインストール・起動だけで実GPS等を合格にはしない。[build処理状態](https://developer.apple.com/documentation/appstoreconnectapi/build/attributes-data.dictionary)、[内部テスター](https://developer.apple.com/help/app-store-connect/test-a-beta-version/add-internal-testers)
 
+追加の本人申告により、最優先のTestFlight導入と前面実GPSの基本動作確認には到達した。GPS精度・速度の数値の定量妥当性、最高速度、連続線、履歴の再読込/復旧、CSV内容、実VoiceOver、ロック/他アプリでの背景動作、電池・CPU・メモリ、列車実走と精度評価は未確認。端末ログ・座標・CSVは公開せず、報告の有無だけを記録する。
+
 ## 7. 実機への引継ぎ
 
-[実機試験計画](DEVICE_TEST_PLAN.md)でまず配布buildを照合し、同梱リプレイ、前面GPS、許可拒否/概算位置、5秒の表示失効、保存・CSVを確認する。続いてロック/別アプリ、終了復旧、電池・長時間を試験し、門司港〜博多の実走へ進む。グラフ目視・UI全操作・VoiceOverはv0.4から残る受入項目として確認する。
+[実機試験計画](DEVICE_TEST_PLAN.md)に沿い、配布buildの導入・起動と前面GPSの基本表示・CSV保存は本人申告で確認した。残る同梱リプレイ、許可拒否/概算位置、5秒の表示失効、履歴の再読込/復旧、CSV内容を確認し、ロック/別アプリ、終了復旧、電池・長時間、門司港〜博多の実走へ進む。グラフの基本表示から連続線・数値の正しさ・全UI操作・VoiceOverの合格へ拡張しない。
 
-実走CSV・画面・端末ログは個人用の非公開管理とし、公開の成果物には条件と集計結果を記録する。実測結果とSimulatorの合成結果を混ぜず、試験失敗を再現fixtureへ縮約して改善する。実署名・認証・アップロード・Apple処理・本人への割当は成功し、iPhone導入・起動は本人申告で確認した。実GPS・実機リプレイ・連続線・実VoiceOver・ロック/背景・電池・実走は別途確認する。
+実走CSV・画面・端末ログは個人用の非公開管理とし、公開の成果物には条件と集計結果を記録する。実測結果とSimulatorの合成結果を混ぜず、試験失敗を再現fixtureへ縮約して改善する。実署名・認証・アップロード・Apple処理・本人への割当は成功し、iPhone導入・起動・前面実GPSの基本表示とCSV保存は本人申告で確認した。実機リプレイ・連続線・実VoiceOver・ロック/背景・電池・実走など残る項目は別途確認する。
 
 ## 8. 実走診断と解析
 

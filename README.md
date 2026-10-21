@@ -2,7 +2,7 @@
 
 JR九州・鹿児島本線の門司港〜博多を対象に、GPS速度と線路上の推定位置・駅間情報を表示するSwiftUIアプリです。既存のオフライン推定エンジンを再利用し、Core Location、Swift Charts、走行履歴SQLite、CSV共有、合成GPSリプレイを接続しています。推定に外部APIやクラウドへのGPS送信は使用しません。
 
-**v0.5のSimulator UI検証と本人限定のTestFlight配布が成功しました。** 配布版は`0.5.0 (500.7.1)`。本人からiPhone 16へのインストール・起動成功の回答を得ており、実GPSの短時間試験は結果待ちです。同じアプリsourceのCIでPython76件・Swift32件・17シナリオ比較、両署名なしビルド、3件のUI試験が成功。配布処理も実署名・証明書検査・Appleの`VALID`/`INTERNAL_ONLY`確認まで成功しました。背景・長時間/電池・実走評価は未検証です。最新の証跡と未完了項目は[検証記録](docs/VALIDATION.md)を確認してください。
+**v0.5の本人限定TestFlight配布と、iPhone 16での実GPS基本動作確認ができました。** 配布版は`0.5.0 (500.7.1)`。導入・起動に加え、GPS精度・静止/歩行速度・グラフの表示とCSV保存ができ、画面エラーがないとの本人申告を得ています。速度・位置の定量精度や連続線は未確認です。同じアプリsourceのCIでPython76件・Swift32件・17シナリオ比較、両署名なしビルド、3件のUI試験が成功。配布処理も実署名・証明書検査・Appleの`VALID`/`INTERNAL_ONLY`確認まで成功しました。背景・長時間/電池・実走評価は未検証です。最新の証跡と未完了項目は[検証記録](docs/VALIDATION.md)を確認してください。
 
 ## アプリに接続した機能
 
@@ -93,7 +93,7 @@ xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generi
 xcodebuild -project ios/RailVelo.xcodeproj -scheme RailVelo -destination 'generic/platform=iOS' -derivedDataPath artifacts/DeviceBuild CODE_SIGNING_ALLOWED=NO build
 ```
 
-署名付きの個人導入は内部TestFlightで実施しました。App IDは`jp.kb-dev.railvelo`、App Store Connectアプリは「RailVelo」（ID `6824978233`）です。内部グループ「本人検証」は本人1人・`0.5.0 (500.7.1)`のビルド1件、自動配信オフ・公開リンクなし。署名・アップロード・Apple処理と本人への割当が成功し、本人から端末への導入・起動成功の回答を得ています。証跡と実機試験の範囲は[検証記録](docs/VALIDATION.md)を確認してください。秘密鍵や証明書のパスワードはリポジトリへ保存しません。
+署名付きの個人導入は内部TestFlightで実施しました。App IDは`jp.kb-dev.railvelo`、App Store Connectアプリは「RailVelo」（ID `6824978233`）です。内部グループ「本人検証」は本人1人・`0.5.0 (500.7.1)`のビルド1件、自動配信オフ・公開リンクなし。署名・アップロード・Apple処理と本人への割当が成功し、本人から端末への導入・起動、実GPSの基本表示とCSV保存成功の回答を得ています。証跡と実機試験の範囲は[検証記録](docs/VALIDATION.md)を確認してください。秘密鍵や証明書のパスワードはリポジトリへ保存しません。
 
 導入後は「リプレイ」で開始すると同梱合成GPSを再生します。「実GPS」は前面で開始し、位置情報を許可します。停止・再開・終了は画面下の操作、保存済み走行は履歴からグラフ参照・CSV共有・削除を行います。
 
@@ -118,7 +118,7 @@ python3 scripts/compare_replays.py python-normal.jsonl swift-normal.jsonl
 
 `next_station_id` は次に通過する地理上の駅です。次の**停車駅**・列車種別・列車ID・到着予定時刻は提供しません。`predicted` は欠測時の短時間予測、`uncertain` / `lost` / `rejected` は位置や路線を確定できない状態です。信頼度は候補内の相対支持度で、実世界の正解確率に較正した値ではありません。
 
-受入が残る項目は、iPhoneの実GPSと連続線・実際のVoiceOver、ロック/別アプリ中の継続、端末上の履歴/CSV共有先・OS終了復旧、長時間性能と電池、実際の駅イベント・並走・トンネル復帰です。実走ログは未取得で、合成データの評価値から実走精度を確定していません。v0.1/v0.2設計書の本文は再取得できておらず、前工程の元SQLと設計対応記録を継承しています。全国対応、他路線への直通、営業上の停車駅判定には追加データと実証が必要です。
+受入が残る項目は、実GPSの定量精度と連続線・実際のVoiceOver、ロック/別アプリ中の継続、端末上の履歴再読込/CSV内容・再読込・OS終了復旧、長時間性能と電池、実際の駅イベント・並走・トンネル復帰です。実走ログは未取得で、合成データの評価値から実走精度を確定していません。v0.1/v0.2設計書の本文は再取得できておらず、前工程の元SQLと設計対応記録を継承しています。全国対応、他路線への直通、営業上の停車駅判定には追加データと実証が必要です。
 
 ## 出典と再現
 
